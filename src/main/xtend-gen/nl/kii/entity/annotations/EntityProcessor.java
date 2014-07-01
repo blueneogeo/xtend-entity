@@ -6,14 +6,14 @@ import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import nl.kii.entity.Change;
+import nl.kii.entity.EntityList;
+import nl.kii.entity.EntityMap;
+import nl.kii.entity.Reactive;
+import nl.kii.entity.ReactiveObject;
 import nl.kii.entity.annotations.Ignore;
 import nl.kii.entity.annotations.Require;
 import nl.kii.observe.Observable;
-import nl.kii.reactive.Change;
-import nl.kii.reactive.EntityList;
-import nl.kii.reactive.EntityMap;
-import nl.kii.reactive.Reactive;
-import nl.kii.reactive.ReactiveObject;
 import nl.kii.util.IterableExtensions;
 import nl.kii.util.OptExtensions;
 import org.eclipse.xtend.lib.macro.TransformationContext;
@@ -343,21 +343,28 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 final CompilationStrategy _function = new CompilationStrategy() {
                   public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                     StringConcatenation _builder = new StringConcatenation();
-                    _builder.append("// stop listening to old value");
-                    _builder.newLine();
-                    _builder.append("if(this.");
-                    String _simpleName = f.getSimpleName();
-                    _builder.append(_simpleName, "");
-                    _builder.append(" != null && this.");
-                    String _stopObservingFunctionName = EntityProcessor.this.getStopObservingFunctionName(f);
-                    _builder.append(_stopObservingFunctionName, "");
-                    _builder.append(" != null)");
-                    _builder.newLineIfNotEmpty();
-                    _builder.append("\t");
-                    String _stopObservingFunctionName_1 = EntityProcessor.this.getStopObservingFunctionName(f);
-                    _builder.append(_stopObservingFunctionName_1, "\t");
-                    _builder.append(".apply();");
-                    _builder.newLineIfNotEmpty();
+                    {
+                      TypeReference _type = f.getType();
+                      boolean _isPrimitive = _type.isPrimitive();
+                      boolean _not = (!_isPrimitive);
+                      if (_not) {
+                        _builder.append("// stop listening to old value");
+                        _builder.newLine();
+                        _builder.append("if(this.");
+                        String _simpleName = f.getSimpleName();
+                        _builder.append(_simpleName, "");
+                        _builder.append(" != null && this.");
+                        String _stopObservingFunctionName = EntityProcessor.this.getStopObservingFunctionName(f);
+                        _builder.append(_stopObservingFunctionName, "");
+                        _builder.append(" != null)");
+                        _builder.newLineIfNotEmpty();
+                        _builder.append("\t");
+                        String _stopObservingFunctionName_1 = EntityProcessor.this.getStopObservingFunctionName(f);
+                        _builder.append(_stopObservingFunctionName_1, "\t");
+                        _builder.append(".apply();");
+                        _builder.newLineIfNotEmpty();
+                      }
+                    }
                     _builder.append("// set the value");
                     _builder.newLine();
                     _builder.append("this.");
@@ -374,32 +381,38 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     _builder.newLine();
                     _builder.append("if(this.isPublishing()) {");
                     _builder.newLine();
+                    _builder.append("\t");
+                    _builder.append("// test: ");
+                    TypeReference _type_1 = f.getType();
+                    boolean _isPrimitive_1 = _type_1.isPrimitive();
+                    _builder.append(_isPrimitive_1, "\t");
+                    _builder.newLineIfNotEmpty();
                     {
                       boolean _or = false;
-                      TypeReference _type = f.getType();
-                      boolean _isPrimitive = _type.isPrimitive();
-                      if (_isPrimitive) {
+                      TypeReference _type_2 = f.getType();
+                      boolean _isPrimitive_2 = _type_2.isPrimitive();
+                      if (_isPrimitive_2) {
                         _or = true;
                       } else {
-                        TypeReference _type_1 = f.getType();
+                        TypeReference _type_3 = f.getType();
                         TypeReference _newTypeReference = context.newTypeReference(String.class);
-                        boolean _isAssignableFrom = _type_1.isAssignableFrom(_newTypeReference);
+                        boolean _isAssignableFrom = _type_3.isAssignableFrom(_newTypeReference);
                         _or = _isAssignableFrom;
                       }
                       if (_or) {
                         _builder.append("\t");
-                        _builder.append("getPublisher().apply(new Change(nl.kii.reactive.ChangeType.UPDATE, \"");
+                        _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
                         String _simpleName_2 = f.getSimpleName();
                         _builder.append(_simpleName_2, "\t");
                         _builder.append("\", value));");
                         _builder.newLineIfNotEmpty();
                       } else {
-                        TypeReference _type_2 = f.getType();
+                        TypeReference _type_4 = f.getType();
                         TypeReference _newTypeReference_1 = context.newTypeReference(Map.class);
-                        boolean _isAssignableFrom_1 = _type_2.isAssignableFrom(_newTypeReference_1);
+                        boolean _isAssignableFrom_1 = _type_4.isAssignableFrom(_newTypeReference_1);
                         if (_isAssignableFrom_1) {
                           _builder.append("\t");
-                          _builder.append("getPublisher().apply(new Change(nl.kii.reactive.ChangeType.UPDATE, \"");
+                          _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
                           String _simpleName_3 = f.getSimpleName();
                           _builder.append(_simpleName_3, "\t");
                           _builder.append("\", ((");
@@ -412,12 +425,12 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                           _builder.append(").clone()));");
                           _builder.newLineIfNotEmpty();
                         } else {
-                          TypeReference _type_3 = f.getType();
+                          TypeReference _type_5 = f.getType();
                           TypeReference _newTypeReference_2 = context.newTypeReference(List.class);
-                          boolean _isAssignableFrom_2 = _type_3.isAssignableFrom(_newTypeReference_2);
+                          boolean _isAssignableFrom_2 = _type_5.isAssignableFrom(_newTypeReference_2);
                           if (_isAssignableFrom_2) {
                             _builder.append("\t");
-                            _builder.append("getPublisher().apply(new Change(nl.kii.reactive.ChangeType.UPDATE, \"");
+                            _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
                             String _simpleName_5 = f.getSimpleName();
                             _builder.append(_simpleName_5, "\t");
                             _builder.append("\", ((");
@@ -431,7 +444,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                             _builder.newLineIfNotEmpty();
                           } else {
                             _builder.append("\t");
-                            _builder.append("getPublisher().apply(new Change(nl.kii.reactive.ChangeType.UPDATE, \"");
+                            _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
                             String _simpleName_7 = f.getSimpleName();
                             _builder.append(_simpleName_7, "\t");
                             _builder.append("\", this.");
@@ -509,12 +522,19 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.newLineIfNotEmpty();
                 {
                   for(final MutableFieldDeclaration field : reactiveFields) {
-                    _builder.append("\t\t");
-                    _builder.append("if(value.");
-                    String _simpleName = field.getSimpleName();
-                    _builder.append(_simpleName, "\t\t");
-                    _builder.append(" != null) ");
-                    _builder.newLineIfNotEmpty();
+                    {
+                      TypeReference _type = field.getType();
+                      boolean _isPrimitive = _type.isPrimitive();
+                      boolean _not = (!_isPrimitive);
+                      if (_not) {
+                        _builder.append("\t\t");
+                        _builder.append("if(value.");
+                        String _simpleName = field.getSimpleName();
+                        _builder.append(_simpleName, "\t\t");
+                        _builder.append(" != null) ");
+                        _builder.newLineIfNotEmpty();
+                      }
+                    }
                     _builder.append("\t\t");
                     _builder.append("\t");
                     _builder.append("this.set");
@@ -560,8 +580,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     String _firstUpper_1 = StringExtensions.toFirstUpper(_simpleName_4);
                     _builder.append(_firstUpper_1, "\t\t\t\t\t");
                     _builder.append("((");
-                    TypeReference _type = field_1.getType();
-                    String _simpleName_5 = _type.getSimpleName();
+                    TypeReference _type_1 = field_1.getType();
+                    String _simpleName_5 = _type_1.getSimpleName();
                     _builder.append(_simpleName_5, "\t\t\t\t\t");
                     _builder.append(")change.getValue());");
                     _builder.newLineIfNotEmpty();
@@ -571,8 +591,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     String _simpleName_6 = field_1.getSimpleName();
                     _builder.append(_simpleName_6, "\t\t\t\t\t");
                     _builder.append(" = (");
-                    TypeReference _type_1 = field_1.getType();
-                    String _simpleName_7 = _type_1.getSimpleName();
+                    TypeReference _type_2 = field_1.getType();
+                    String _simpleName_7 = _type_2.getSimpleName();
                     _builder.append(_simpleName_7, "\t\t\t\t\t");
                     _builder.append(")change.getValue();");
                     _builder.newLineIfNotEmpty();
@@ -584,13 +604,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     _builder.append("\t\t");
                     _builder.append("case CLEAR:");
                     _builder.newLine();
-                    _builder.append("\t\t");
-                    _builder.append("\t\t\t");
-                    _builder.append("this.");
-                    String _simpleName_8 = field_1.getSimpleName();
-                    _builder.append(_simpleName_8, "\t\t\t\t\t");
-                    _builder.append(" = null;");
-                    _builder.newLineIfNotEmpty();
+                    {
+                      TypeReference _type_3 = field_1.getType();
+                      boolean _isPrimitive_1 = _type_3.isPrimitive();
+                      boolean _not_1 = (!_isPrimitive_1);
+                      if (_not_1) {
+                        _builder.append("\t\t");
+                        _builder.append("\t\t\t");
+                        _builder.append("this.");
+                        String _simpleName_8 = field_1.getSimpleName();
+                        _builder.append(_simpleName_8, "\t\t\t\t\t");
+                        _builder.append(" = null;");
+                        _builder.newLineIfNotEmpty();
+                      }
+                    }
                     _builder.append("\t\t");
                     _builder.append("\t\t\t");
                     _builder.append("break;");
@@ -632,8 +659,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     _builder.append("\")) {");
                     _builder.newLineIfNotEmpty();
                     {
-                      TypeReference _type_2 = field_2.getType();
-                      boolean _isAssignableFrom = reactiveType.isAssignableFrom(_type_2);
+                      TypeReference _type_4 = field_2.getType();
+                      boolean _isAssignableFrom = reactiveType.isAssignableFrom(_type_4);
                       if (_isAssignableFrom) {
                         _builder.append("\t\t");
                         _builder.append("\t");
@@ -766,53 +793,68 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                       } else {
                         _builder.appendImmediate(" && ", "\t\t");
                       }
-                      _builder.append("\t\t");
-                      _builder.append("(");
-                      _builder.newLine();
-                      _builder.append("\t\t");
-                      _builder.append("\t");
-                      _builder.append("(this.");
-                      String _simpleName_1 = field.getSimpleName();
-                      _builder.append(_simpleName_1, "\t\t\t");
-                      _builder.append(" == null && ((");
-                      String _simpleName_2 = cls.getSimpleName();
-                      _builder.append(_simpleName_2, "\t\t\t");
-                      _builder.append(") object).");
-                      String _simpleName_3 = field.getSimpleName();
-                      _builder.append(_simpleName_3, "\t\t\t");
-                      _builder.append(" == null) ||");
-                      _builder.newLineIfNotEmpty();
-                      _builder.append("\t\t");
-                      _builder.append("\t");
-                      _builder.append("(");
-                      _builder.newLine();
-                      _builder.append("\t\t");
-                      _builder.append("\t\t");
-                      _builder.append("this.");
-                      String _simpleName_4 = field.getSimpleName();
-                      _builder.append(_simpleName_4, "\t\t\t\t");
-                      _builder.append(" != null && ");
-                      _builder.newLineIfNotEmpty();
-                      _builder.append("\t\t");
-                      _builder.append("\t\t");
-                      _builder.append("this.");
-                      String _simpleName_5 = field.getSimpleName();
-                      _builder.append(_simpleName_5, "\t\t\t\t");
-                      _builder.append(".equals(((");
-                      String _simpleName_6 = cls.getSimpleName();
-                      _builder.append(_simpleName_6, "\t\t\t\t");
-                      _builder.append(") object).");
-                      String _simpleName_7 = field.getSimpleName();
-                      _builder.append(_simpleName_7, "\t\t\t\t");
-                      _builder.append(")");
-                      _builder.newLineIfNotEmpty();
-                      _builder.append("\t\t");
-                      _builder.append("\t");
-                      _builder.append(") ");
-                      _builder.newLine();
-                      _builder.append("\t\t");
-                      _builder.append(")");
-                      _builder.newLine();
+                      {
+                        TypeReference _type = field.getType();
+                        boolean _isPrimitive = _type.isPrimitive();
+                        if (_isPrimitive) {
+                          _builder.append("\t\t");
+                          _builder.append("this.");
+                          String _simpleName_1 = field.getSimpleName();
+                          _builder.append(_simpleName_1, "\t\t");
+                          _builder.append(" == ");
+                          String _simpleName_2 = field.getSimpleName();
+                          _builder.append(_simpleName_2, "\t\t");
+                          _builder.newLineIfNotEmpty();
+                        } else {
+                          _builder.append("\t\t");
+                          _builder.append("(");
+                          _builder.newLine();
+                          _builder.append("\t\t");
+                          _builder.append("\t");
+                          _builder.append("(this.");
+                          String _simpleName_3 = field.getSimpleName();
+                          _builder.append(_simpleName_3, "\t\t\t");
+                          _builder.append(" == null && ((");
+                          String _simpleName_4 = cls.getSimpleName();
+                          _builder.append(_simpleName_4, "\t\t\t");
+                          _builder.append(") object).");
+                          String _simpleName_5 = field.getSimpleName();
+                          _builder.append(_simpleName_5, "\t\t\t");
+                          _builder.append(" == null) ||");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("\t\t");
+                          _builder.append("\t");
+                          _builder.append("(");
+                          _builder.newLine();
+                          _builder.append("\t\t");
+                          _builder.append("\t\t");
+                          _builder.append("this.");
+                          String _simpleName_6 = field.getSimpleName();
+                          _builder.append(_simpleName_6, "\t\t\t\t");
+                          _builder.append(" != null && ");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("\t\t");
+                          _builder.append("\t\t");
+                          _builder.append("this.");
+                          String _simpleName_7 = field.getSimpleName();
+                          _builder.append(_simpleName_7, "\t\t\t\t");
+                          _builder.append(".equals(((");
+                          String _simpleName_8 = cls.getSimpleName();
+                          _builder.append(_simpleName_8, "\t\t\t\t");
+                          _builder.append(") object).");
+                          String _simpleName_9 = field.getSimpleName();
+                          _builder.append(_simpleName_9, "\t\t\t\t");
+                          _builder.append(")");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("\t\t");
+                          _builder.append("\t");
+                          _builder.append(") ");
+                          _builder.newLine();
+                          _builder.append("\t\t");
+                          _builder.append(")");
+                          _builder.newLine();
+                        }
+                      }
                     }
                   }
                   _builder.append("\t");
@@ -856,34 +898,36 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                       } else {
                         _builder.appendImmediate(" + ", "\t");
                       }
-                      _builder.append("\t");
-                      _builder.append("((this.");
-                      String _simpleName = field.getSimpleName();
-                      _builder.append(_simpleName, "\t");
-                      _builder.append(" != null) ?");
-                      _builder.newLineIfNotEmpty();
                       {
                         TypeReference _type = field.getType();
                         boolean _isPrimitive = _type.isPrimitive();
                         if (_isPrimitive) {
                           _builder.append("\t");
                           _builder.append("(this.");
-                          String _simpleName_1 = field.getSimpleName();
-                          _builder.append(_simpleName_1, "\t");
+                          String _simpleName = field.getSimpleName();
+                          _builder.append(_simpleName, "\t");
                           _builder.append(" + \"\").hashCode()");
                           _builder.newLineIfNotEmpty();
                         } else {
                           _builder.append("\t");
-                          _builder.append("this.");
-                          String _simpleName_2 = field.getSimpleName();
-                          _builder.append(_simpleName_2, "\t");
-                          _builder.append(".hashCode()");
+                          _builder.append("((this.");
+                          String _simpleName_1 = field.getSimpleName();
+                          _builder.append(_simpleName_1, "\t");
+                          _builder.append(" != null) ?");
                           _builder.newLineIfNotEmpty();
+                          _builder.append("\t");
+                          _builder.append("\t");
+                          _builder.append("(this.");
+                          String _simpleName_2 = field.getSimpleName();
+                          _builder.append(_simpleName_2, "\t\t");
+                          _builder.append(" + \"\").hashCode()");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("\t");
+                          _builder.append("\t");
+                          _builder.append(": 0)");
+                          _builder.newLine();
                         }
                       }
-                      _builder.append("\t");
-                      _builder.append(": 0)");
-                      _builder.newLine();
                     }
                   }
                   _builder.append(") * 37;");
@@ -996,7 +1040,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         _builder.append(" == null || !(");
         String _simpleName_2 = f.getSimpleName();
         _builder.append(_simpleName_2, "");
-        _builder.append(" instanceof  nl.kii.reactive.EntityList<?>)) {");
+        _builder.append(" instanceof  nl.kii.entity.EntityList<?>)) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         TypeReference _type_1 = f.getType();
@@ -1055,7 +1099,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           _builder.append(" == null || !(");
           String _simpleName_9 = f.getSimpleName();
           _builder.append(_simpleName_9, "");
-          _builder.append(" instanceof  nl.kii.reactive.EntityMap<?>)) {");
+          _builder.append(" instanceof  nl.kii.entity.EntityMap<?>)) {");
           _builder.newLineIfNotEmpty();
           _builder.append("\t");
           TypeReference _type_3 = f.getType();

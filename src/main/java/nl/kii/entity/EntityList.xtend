@@ -1,16 +1,18 @@
 package nl.kii.entity
-import static extension java.lang.Integer.*
+
 import java.util.ArrayList
 import java.util.Collection
+import java.util.List
 import java.util.Map
 import java.util.concurrent.atomic.AtomicReference
 import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
 
-import static nl.kii.reactive.ChangeType.*
-import java.util.List
+import static nl.kii.entity.ChangeType.*
 
-class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
+import static extension java.lang.Integer.*
+
+class EntityList<E> extends ArrayList<E> implements Reactive {
 
 	// the contained type of the list. this is necessary because we lose
 	// type info due to erasure, and we need the type in order to create
@@ -18,7 +20,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 	val Class<E> type
 	val boolean isReactive
 	
-	transient val _publisher = new AtomicReference<Publisher<nl.kii.reactive.Change>>
+	transient val _publisher = new AtomicReference<Publisher<Change>>
 	transient var Map<Integer, =>void> subscriptionEnders = newHashMap
 		
 	// CONSTRUCTORS
@@ -43,7 +45,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 	
 	// MAKE THE LIST LISTENABLE
 
-	def private Publisher<nl.kii.reactive.Change> getPublisher() {
+	def private Publisher<Change> getPublisher() {
 		_publisher.get
 	}
 
@@ -52,12 +54,12 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 			_publisher.set(new Publisher)
 	}
 
-	override onChange((nl.kii.reactive.Change)=>void listener) {
+	override onChange((Change)=>void listener) {
 		initPublisher
 		publisher.onChange(listener)
 	}
 
-	def private publish(nl.kii.reactive.Change change) {
+	def private publish(Change change) {
 		publisher?.apply(change)
 	}
 	
@@ -65,7 +67,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 
 	def private observe(E element)	{
 		switch element {
-			Observable<nl.kii.reactive.Change>: element.onChange [ change |
+			Observable<Change>: element.onChange [ change |
 				// propagate the change, but expand the path to the element that was updated
 				val path = element.indexOf.toString
 				publish(change.addPath(path))
@@ -82,7 +84,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		val subscriptionEnder = observe(value)
 		subscriptionEnders.put(index, subscriptionEnder)
 		// publish the change
-		publish(new nl.kii.reactive.Change(UPDATE, index, value))
+		publish(new Change(UPDATE, index, value))
 		// return the previous value
 		previous		
 	}
@@ -95,7 +97,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		val index = element.indexOf
 		subscriptionEnders.put(index, subscriptionEnder)
 		// publish the change
-		publish(new nl.kii.reactive.Change(ADD, element))
+		publish(new Change(ADD, element))
 		// return the previous value
 		true
 	}
@@ -109,7 +111,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		val subscriptionEnder = observe(value)
 		subscriptionEnders.put(index, subscriptionEnder)
 		// publish the change
-		publish(new nl.kii.reactive.Change(UPDATE, index, value))
+		publish(new Change(UPDATE, index, value))
 	}
 	
 	override E remove(int index) {
@@ -118,7 +120,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		// remove the value
 		val previous = super.remove(index)
 		// publish the change
-		if(previous != null) publish(new nl.kii.reactive.Change(REMOVE, index, previous)) 
+		if(previous != null) publish(new Change(REMOVE, index, previous)) 
 		// return the previous value
 		previous
 	}
@@ -131,7 +133,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		// remove the value
 		val success = super.remove(o)
 		if(!success) return false
-		publish(new nl.kii.reactive.Change(REMOVE, index, o))
+		publish(new Change(REMOVE, index, o))
 		true
 	}
 	
@@ -142,7 +144,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		// clear the list
 		super.clear
 		// publish the change
-		publish(new nl.kii.reactive.Change(CLEAR))
+		publish(new Change(CLEAR))
 	}
 	
 	override boolean addAll(Collection<? extends E> c) {
@@ -169,15 +171,15 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		throw new UnsupportedOperationException
 	}
 	
-	private def getIndex(nl.kii.reactive.Change change) {
+	private def getIndex(Change change) {
 		try { 
 			change.path.head.parseInt
 		} catch(Exception e) {
-			throw new nl.kii.reactive.EntityException('could not parse list index from change path, for ' + change)
+			throw new EntityException('could not parse list index from change path, for ' + change)
 		}
 	}
 	
-	override apply(nl.kii.reactive.Change change) {
+	override apply(Change change) {
 		val wasPublishing = publisher != null && !publisher.publishing
 		try {
 			publisher?.setPublishing(false)
@@ -188,19 +190,19 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 					switch change.action {
 						case ADD: {
 							if(!change.value.class.isAssignableFrom(type)) 
-								throw new nl.kii.reactive.EntityException('value is not of correct type ' + type.simpleName + ', could not apply ' + change )
+								throw new EntityException('value is not of correct type ' + type.simpleName + ', could not apply ' + change )
 							add(change.value as E)
 						}
 						case UPDATE: {
 							if(!(change.value instanceof List<?>)) 
-								throw new nl.kii.reactive.EntityException('value is not a list, could not apply ' + change)
+								throw new EntityException('value is not a list, could not apply ' + change)
 							val list = change.value as List<E>
-							if(!list.empty && !list.head.class.isAssignableFrom(type)) throw new nl.kii.reactive.EntityException('change value is a list of the wrong type, expecting a List<' + type.name + '> but got a List<' + list.head.class.name + '> instead. For ' + change)
+							if(!list.empty && !list.head.class.isAssignableFrom(type)) throw new EntityException('change value is a list of the wrong type, expecting a List<' + type.name + '> but got a List<' + list.head.class.name + '> instead. For ' + change)
 							clear
 							addAll(list)
 						}
 						case REMOVE: {
-							throw new nl.kii.reactive.EntityException('cannot remove, change contains no index: ' + change)
+							throw new EntityException('cannot remove, change contains no index: ' + change)
 						}
 						case CLEAR: clear
 					}
@@ -210,11 +212,11 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 					switch change.action {
 						case ADD: {
 							val value = get(change.index)
-							if(value == null) throw new nl.kii.reactive.EntityException('path points to an empty value in the map, could not apply ' + change)
+							if(value == null) throw new EntityException('path points to an empty value in the map, could not apply ' + change)
 							change.applyToValue(value)
 						} 
 						case UPDATE: {
-							if(!change.value.class.isAssignableFrom(type)) throw new nl.kii.reactive.EntityException('value is not of correct type ' + type.simpleName + ', could not apply ' + change )
+							if(!change.value.class.isAssignableFrom(type)) throw new EntityException('value is not of correct type ' + type.simpleName + ', could not apply ' + change )
 							set(change.index, change.value as E)
 						}
 						case REMOVE, case CLEAR: {
@@ -227,7 +229,7 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 				// applies to inside an entry in this list 
 				case path.size > 1: {
 					val value = get(change.index)
-					if(value == null) throw new nl.kii.reactive.EntityException('path points to an empty value in the map, could not apply ' + change)
+					if(value == null) throw new EntityException('path points to an empty value in the map, could not apply ' + change)
 					change.applyToValue(value)
 				}
 			}
@@ -236,14 +238,14 @@ class EntityList<E> extends ArrayList<E> implements nl.kii.reactive.Reactive {
 		}
 	}
 	
-	private def applyToValue(nl.kii.reactive.Change change, E value) {
-		if(!(value instanceof nl.kii.reactive.Reactive)) throw new nl.kii.reactive.EntityException('path points inside an object that is not Reactive, could not apply ' + change)
-		val reactive = value as nl.kii.reactive.Reactive
+	private def applyToValue(Change change, E value) {
+		if(!(value instanceof Reactive)) throw new EntityException('path points inside an object that is not Reactive, could not apply ' + change)
+		val reactive = value as Reactive
 		reactive.apply(change.forward)
 	} 
 
-	override nl.kii.reactive.EntityList<E> clone() {
-		super.clone as nl.kii.reactive.EntityList<E>
+	override EntityList<E> clone() {
+		super.clone as EntityList<E>
 	}
 
 }

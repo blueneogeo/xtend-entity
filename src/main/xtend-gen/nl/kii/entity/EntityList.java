@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import nl.kii.entity.Change;
+import nl.kii.entity.ChangeType;
+import nl.kii.entity.EntityException;
+import nl.kii.entity.Reactive;
 import nl.kii.observe.Observable;
 import nl.kii.observe.Publisher;
-import nl.kii.reactive.Change;
-import nl.kii.reactive.ChangeType;
-import nl.kii.reactive.EntityException;
-import nl.kii.reactive.Reactive;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
@@ -435,8 +435,8 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     }
   }
   
-  public nl.kii.reactive.EntityList<E> clone() {
+  public EntityList<E> clone() {
     Object _clone = super.clone();
-    return ((nl.kii.reactive.EntityList<E>) _clone);
+    return ((EntityList<E>) _clone);
   }
 }

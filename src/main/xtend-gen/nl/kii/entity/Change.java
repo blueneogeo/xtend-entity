@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.List;
-import nl.kii.reactive.ChangeType;
-import nl.kii.reactive.EntityException;
-import nl.kii.reactive.EntityObject;
+import nl.kii.entity.ChangeType;
+import nl.kii.entity.EntityException;
+import nl.kii.entity.EntityObject;
 import nl.kii.util.IterableExtensions;
 import nl.kii.util.OptExtensions;
 import org.eclipse.xtend2.lib.StringConcatenation;
@@ -85,18 +85,18 @@ public class Change implements EntityObject {
   /**
    * add a part to the path of a change, and return a new change from that
    */
-  public nl.kii.reactive.Change addPath(final String addedPath) {
+  public Change addPath(final String addedPath) {
     List<String> _path = this.getPath();
     ImmutableList<String> _addSafe = IterableExtensions.<String>addSafe(addedPath, _path);
-    return new nl.kii.reactive.Change(this.id, this.action, _addSafe, this.value);
+    return new Change(this.id, this.action, _addSafe, this.value);
   }
   
   /**
    * remove the first part of the path of a change and create a new change from that
    */
-  public nl.kii.reactive.Change forward() {
+  public Change forward() {
     try {
-      nl.kii.reactive.Change _xblockexpression = null;
+      Change _xblockexpression = null;
       {
         boolean _or = false;
         boolean _equals = Objects.equal(this.path, null);
@@ -112,7 +112,7 @@ public class Change implements EntityObject {
         }
         Iterable<String> _tail = org.eclipse.xtext.xbase.lib.IterableExtensions.<String>tail(this.path);
         List<String> _list = IterableExtensions.<String>list(((String[])Conversions.unwrapArray(_tail, String.class)));
-        _xblockexpression = new nl.kii.reactive.Change(this.id, this.action, _list, this.value);
+        _xblockexpression = new Change(this.id, this.action, _list, this.value);
       }
       return _xblockexpression;
     } catch (Throwable _e) {
@@ -165,24 +165,20 @@ public class Change implements EntityObject {
     boolean _switchResult = false;
     boolean _matched = false;
     if (!_matched) {
-      if (o instanceof nl.kii.reactive.Change) {
+      if (o instanceof Change) {
         _matched=true;
         boolean _xblockexpression = false;
         {
-          long _id = ((nl.kii.reactive.Change)o).getId();
-          boolean _notEquals = (_id != this.id);
-          if (_notEquals) {
+          if ((((Change)o).id != this.id)) {
             return false;
           }
-          ChangeType _action = ((nl.kii.reactive.Change)o).getAction();
-          boolean _notEquals_1 = (!Objects.equal(_action, this.action));
-          if (_notEquals_1) {
+          boolean _notEquals = (!Objects.equal(((Change)o).action, this.action));
+          if (_notEquals) {
             return false;
           }
           boolean _or = false;
           boolean _and = false;
-          List<String> _path = ((nl.kii.reactive.Change)o).getPath();
-          boolean _equals = Objects.equal(_path, null);
+          boolean _equals = Objects.equal(((Change)o).path, null);
           if (!_equals) {
             _and = false;
           } else {
@@ -192,18 +188,17 @@ public class Change implements EntityObject {
           if (_and) {
             _or = true;
           } else {
-            List<String> _path_1 = ((nl.kii.reactive.Change)o).getPath();
-            List<String> _path_2 = this.getPath();
-            boolean _equals_2 = Objects.equal(_path_1, _path_2);
+            List<String> _path = ((Change)o).getPath();
+            List<String> _path_1 = this.getPath();
+            boolean _equals_2 = Objects.equal(_path, _path_1);
             _or = _equals_2;
           }
           boolean _not = (!_or);
           if (_not) {
             return false;
           }
-          Object _value = ((nl.kii.reactive.Change)o).getValue();
-          boolean _notEquals_2 = (!Objects.equal(_value, this.value));
-          if (_notEquals_2) {
+          boolean _notEquals_1 = (!Objects.equal(((Change)o).value, this.value));
+          if (_notEquals_1) {
             return false;
           }
           _xblockexpression = true;
@@ -234,11 +229,11 @@ public class Change implements EntityObject {
     return (_multiply_2 * 37);
   }
   
-  public nl.kii.reactive.Change clone() {
+  public Change clone() {
     String[] _clone = null;
     if (((String[])Conversions.unwrapArray(this.path, String.class))!=null) {
       _clone=((String[])Conversions.unwrapArray(this.path, String.class)).clone();
     }
-    return new nl.kii.reactive.Change(this.id, this.action, (List<String>)Conversions.doWrapArray(_clone), this.value);
+    return new Change(this.id, this.action, (List<String>)Conversions.doWrapArray(_clone), this.value);
   }
 }

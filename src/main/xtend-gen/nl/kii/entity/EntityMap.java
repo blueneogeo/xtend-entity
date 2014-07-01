@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import nl.kii.entity.Change;
+import nl.kii.entity.ChangeType;
+import nl.kii.entity.EntityException;
+import nl.kii.entity.Reactive;
 import nl.kii.observe.Observable;
 import nl.kii.observe.Publisher;
-import nl.kii.reactive.Change;
-import nl.kii.reactive.ChangeType;
-import nl.kii.reactive.EntityException;
-import nl.kii.reactive.Reactive;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
@@ -319,8 +319,8 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     }
   }
   
-  public nl.kii.reactive.EntityMap<V> clone() {
+  public EntityMap<V> clone() {
     Object _clone = super.clone();
-    return ((nl.kii.reactive.EntityMap<V>) _clone);
+    return ((EntityMap<V>) _clone);
   }
 }

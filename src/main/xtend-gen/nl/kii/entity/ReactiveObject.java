@@ -2,10 +2,10 @@ package nl.kii.entity;
 
 import com.google.common.base.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import nl.kii.entity.Change;
+import nl.kii.entity.EntityObject;
+import nl.kii.entity.Reactive;
 import nl.kii.observe.Publisher;
-import nl.kii.reactive.Change;
-import nl.kii.reactive.EntityObject;
-import nl.kii.reactive.Reactive;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 

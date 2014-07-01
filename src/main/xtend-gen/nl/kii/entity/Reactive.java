@@ -1,7 +1,7 @@
 package nl.kii.entity;
 
+import nl.kii.entity.Change;
 import nl.kii.observe.Observable;
-import nl.kii.reactive.Change;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 /**
