@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply from: 'gradle/xtend.gradle'
+
+repositories{
+	mavenLocal()
+    mavenCentral()
+}
+
+// add provided support:
+
+configurations {
+	provided
+	// provided.extendsFrom(compile)
+	
+	provided.transitive = false
+	
+	// provided.exclude group: 'log4j'
+	// provided.exclude group: 'org.slf4j'
+	
+}
+
+sourceSets {
+    main.compileClasspath += configurations.provided
+    test.compileClasspath += configurations.provided
+    test.runtimeClasspath += configurations.provided
+}
+
+eclipse.classpath.plusConfigurations += configurations.provided
+
+dependencies {
+
+    compile 'com.kimengi.util:xtend-tools:+'
+    compile 'com.kimengi.util:xtend-stream:+'
+    
+	compile 'org.eclipse.xtend:org.eclipse.xtend.core:+' // gives dependency missing error
+
+	testCompile "junit:junit:$junitVersion"
+}
