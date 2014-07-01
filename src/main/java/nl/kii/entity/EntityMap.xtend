@@ -1,4 +1,4 @@
-package nl.kii.reactive
+package nl.kii.entity
 
 import java.util.HashMap
 import java.util.Map
@@ -8,7 +8,7 @@ import nl.kii.observe.Publisher
 
 import static nl.kii.reactive.ChangeType.*
 
-class EntityMap<V> extends HashMap<String, V> implements Reactive {
+class EntityMap<V> extends HashMap<String, V> implements nl.kii.reactive.Reactive {
 	
 	// the contained type of the map. this is necessary because we lose
 	// type info due to erasure, and we need the type in order to create
@@ -16,7 +16,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 	val Class<V> type
 	val boolean isReactive
 
-	transient val _publisher = new AtomicReference<Publisher<Change>>
+	transient val _publisher = new AtomicReference<Publisher<nl.kii.reactive.Change>>
 	transient var Map<String, =>void> subscriptionEnders = newHashMap
 	
 	// CONSTRUCTORS
@@ -40,7 +40,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 	
 	// MAKE THE MAP LISTENABLE
 
-	def private Publisher<Change> getPublisher() {
+	def private Publisher<nl.kii.reactive.Change> getPublisher() {
 		_publisher.get
 	}
 
@@ -49,12 +49,12 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 			_publisher.set(new Publisher)
 	}
 
-	override onChange((Change)=>void listener) {
+	override onChange((nl.kii.reactive.Change)=>void listener) {
 		initPublisher
 		publisher.onChange(listener)
 	}
 
-	def private publish(Change change) {
+	def private publish(nl.kii.reactive.Change change) {
 		publisher?.apply(change)
 	}
 	
@@ -62,7 +62,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 	
 	def private observe(V element, String key)	{
 		switch element {
-			Observable<Change>: element.onChange [ change |
+			Observable<nl.kii.reactive.Change>: element.onChange [ change |
 				// propagate the change, but expand the path to the element that was updated
 				publish(change.addPath(key))
 			]
@@ -78,7 +78,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 		val subscriptionEnder = observe(value, key)
 		subscriptionEnders.put(key, subscriptionEnder)
 		// publish the change
-		publish(new Change(UPDATE, #[key], value))
+		publish(new nl.kii.reactive.Change(UPDATE, #[key], value))
 		// return the previous value
 		previous 
 	}
@@ -89,7 +89,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 		// remove the value
 		val previous = super.remove(key)
 		// publish the change
-		if(previous != null) publish(new Change(REMOVE, #[key.toString], previous)) 
+		if(previous != null) publish(new nl.kii.reactive.Change(REMOVE, #[key.toString], previous)) 
 		// return the previous value
 		previous
 	}
@@ -106,10 +106,10 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 		// clear the map
 		super.clear
 		// publish the change
-		publish(new Change(CLEAR, #[], null))
+		publish(new nl.kii.reactive.Change(CLEAR, #[], null))
 	}
 	
-	override apply(Change change) {
+	override apply(nl.kii.reactive.Change change) {
 		val wasPublishing = publisher != null && !publisher.publishing
 		try {
 			publisher?.setPublishing(false)
@@ -118,24 +118,24 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 				case path == null,
 				case path.size == 0: {
 					switch change.action {
-						case ADD: throw new EntityException('map does not support ADD, use UPDATE, for ' + change)
+						case ADD: throw new nl.kii.reactive.EntityException('map does not support ADD, use UPDATE, for ' + change)
 						case UPDATE: {
-							if(!(change.value instanceof Map<?,?>)) throw new EntityException('value is not a map, could not apply ' + change)
+							if(!(change.value instanceof Map<?,?>)) throw new nl.kii.reactive.EntityException('value is not a map, could not apply ' + change)
 							clear
 							val map = change.value as Map<String, V>
-							if(!map.empty && !map.values.head.class.isAssignableFrom(type)) throw new EntityException('change value is a list of the wrong type, expecting a List<' + type.name + '> but got a List<' + map.values.head.class.name + '> instead. For ' + change)
+							if(!map.empty && !map.values.head.class.isAssignableFrom(type)) throw new nl.kii.reactive.EntityException('change value is a list of the wrong type, expecting a List<' + type.name + '> but got a List<' + map.values.head.class.name + '> instead. For ' + change)
 							putAll(map)
 						}
-						case REMOVE: throw new EntityException('cannot remove, change contains no index: ' + change)
+						case REMOVE: throw new nl.kii.reactive.EntityException('cannot remove, change contains no index: ' + change)
 						case CLEAR: clear
 					}
 				}
 				// changes an entry in this map
 				case path.size == 1: {
 					switch change.action {
-						case ADD: throw new EntityException('map does not support ADD, use UPDATE, for ' + change) 
+						case ADD: throw new nl.kii.reactive.EntityException('map does not support ADD, use UPDATE, for ' + change) 
 						case UPDATE: {
-							if(!change.value.class.isAssignableFrom(type)) throw new EntityException('value is not of correct type ' + type.simpleName + ', could not apply ' + change )
+							if(!change.value.class.isAssignableFrom(type)) throw new nl.kii.reactive.EntityException('value is not of correct type ' + type.simpleName + ', could not apply ' + change )
 							put(change.path.head, change.value as V)
 						}
 						case REMOVE, case CLEAR: {
@@ -148,9 +148,9 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 				// applies to inside an entry in this map 
 				case path.size > 1: {
 					val value = get(change.path.head)
-					if(value == null) throw new EntityException('path points to an empty value in the map, could not apply ' + change)
-					if(!(value instanceof Reactive)) throw new EntityException('path points inside an object that is not Reactive, could not apply ' + change)
-					val reactive = value as Reactive
+					if(value == null) throw new nl.kii.reactive.EntityException('path points to an empty value in the map, could not apply ' + change)
+					if(!(value instanceof nl.kii.reactive.Reactive)) throw new nl.kii.reactive.EntityException('path points inside an object that is not Reactive, could not apply ' + change)
+					val reactive = value as nl.kii.reactive.Reactive
 					reactive.apply(change.forward)
 				}
 			}
@@ -159,8 +159,8 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 		}
 	}
 	
-	override EntityMap<V> clone() {
-		super.clone as EntityMap<V>
+	override nl.kii.reactive.EntityMap<V> clone() {
+		super.clone as nl.kii.reactive.EntityMap<V>
 	}
 	
 }

@@ -1,4 +1,4 @@
-xtend-reactive
+xtend-entity
 ====================
 
 # Entities

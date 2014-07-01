@@ -1,4 +1,4 @@
-package nl.kii.reactive
+package nl.kii.entity
 
 class EntityException extends Exception {
 	

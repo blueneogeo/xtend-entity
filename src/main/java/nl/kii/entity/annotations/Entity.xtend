@@ -1,4 +1,4 @@
-package nl.kii.reactive.annotations
+package nl.kii.entity.annotations
 
 import java.util.List
 import java.util.Map

@@ -1,4 +1,4 @@
-package nl.kii.reactive
+package nl.kii.entity
 
 import java.util.List
 
@@ -20,38 +20,38 @@ enum ChangeType {
  * @Property value - the new value of the item referenced by the path, if any
  */
 
-class Change implements EntityObject {
+class Change implements nl.kii.reactive.EntityObject {
 
 	val public static PATH_SEPARATOR = '.'
 
 	val long id
-	val ChangeType action
+	val nl.kii.reactive.ChangeType action
 	val List<String> path
 	val Object value
 
 	// CONSTRUCTOR
 	
-	new(ChangeType action) {
+	new(nl.kii.reactive.ChangeType action) {
 		this(-1, action, null, null)
 	}
 
-	new(ChangeType action, Object value) {
+	new(nl.kii.reactive.ChangeType action, Object value) {
 		this(-1, action, null, value)
 	}
 
-	new(ChangeType action, int index, Object value) {
+	new(nl.kii.reactive.ChangeType action, int index, Object value) {
 		this(-1, action, #['' + index], value)
 	}
 
-	new(ChangeType action, String key, Object value) {
+	new(nl.kii.reactive.ChangeType action, String key, Object value) {
 		this(-1, action, #[key], value)
 	}
 	
-	new(ChangeType action, List<String> path, Object value) {
+	new(nl.kii.reactive.ChangeType action, List<String> path, Object value) {
 		this(-1, action, path, value)
 	}
 	
-	new(long id, ChangeType action, List<String> path, Object value) {
+	new(long id, nl.kii.reactive.ChangeType action, List<String> path, Object value) {
 		this.id = id
 		this.action = action
 		this.path = path
@@ -69,13 +69,13 @@ class Change implements EntityObject {
 	
 	/** add a part to the path of a change, and return a new change from that */
 	def addPath(String addedPath) {
-		new Change(id, action, addedPath.addSafe(getPath), value)
+		new nl.kii.reactive.Change(id, action, addedPath.addSafe(getPath), value)
 	}
 	
 	/** remove the first part of the path of a change and create a new change from that */
 	def forward() {
-		if(path == null || path.length == 0) throw new EntityException('cannot forward a change with an empty path. for change ' + this)
-		new Change(id, action, path.tail.list, value)
+		if(path == null || path.length == 0) throw new nl.kii.reactive.EntityException('cannot forward a change with an empty path. for change ' + this)
+		new nl.kii.reactive.Change(id, action, path.tail.list, value)
 	}
 	
 	// ENTITY IMPLEMENTATION //////////////////////////////////////////////////
@@ -88,7 +88,7 @@ class Change implements EntityObject {
 	
 	override equals(Object o) {
 		switch o {
-			Change: {
+			nl.kii.reactive.Change: {
 				 if(o.id != id) return false
 				 if(o.action != action) return false
 				 if(!((o.path == null && path == null) || o.getPath == getPath)) return false
@@ -103,8 +103,8 @@ class Change implements EntityObject {
 		id.hashCode * action.hashCode * path?.hashCode * value?.hashCode * 37
 	}
 	
-	override Change clone() {
-		new Change(id, action, path?.clone, value)
+	override nl.kii.reactive.Change clone() {
+		new nl.kii.reactive.Change(id, action, path?.clone, value)
 	}
 	
 }

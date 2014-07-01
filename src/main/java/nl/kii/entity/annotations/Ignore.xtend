@@ -1,4 +1,4 @@
-package nl.kii.reactive.annotations
+package nl.kii.entity.annotations
 
 import java.lang.annotation.Target
 import java.lang.annotation.ElementType
