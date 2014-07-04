@@ -1,8 +1,10 @@
 package nl.kii.entity.annotations;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +63,10 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         final TypeReference clsType = context.newTypeReference(cls);
         TypeReference _newTypeReference_1 = context.newTypeReference(ReactiveObject.class);
         cls.setExtendedClass(_newTypeReference_1);
+        Iterable<? extends TypeReference> _implementedInterfaces = cls.getImplementedInterfaces();
         TypeReference _newTypeReference_2 = context.newTypeReference(Cloneable.class);
-        cls.setImplementedInterfaces(Collections.<TypeReference>unmodifiableList(Lists.<TypeReference>newArrayList(_newTypeReference_2)));
+        Iterable<TypeReference> _plus = Iterables.<TypeReference>concat(_implementedInterfaces, Collections.<TypeReference>unmodifiableList(Lists.<TypeReference>newArrayList(_newTypeReference_2)));
+        cls.setImplementedInterfaces(_plus);
         Iterable<? extends MutableFieldDeclaration> _declaredFields = cls.getDeclaredFields();
         final Function1<MutableFieldDeclaration, Boolean> _function = new Function1<MutableFieldDeclaration, Boolean>() {
           public Boolean apply(final MutableFieldDeclaration it) {
@@ -278,11 +282,18 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 StringConcatenation _builder = new StringConcatenation();
                 {
                   for(final MutableFieldDeclaration field : requiredFields) {
-                    _builder.append("if(");
-                    String _simpleName = field.getSimpleName();
-                    _builder.append(_simpleName, "");
-                    _builder.append("==null) return false;");
-                    _builder.newLineIfNotEmpty();
+                    {
+                      TypeReference _type = field.getType();
+                      boolean _isPrimitive = _type.isPrimitive();
+                      boolean _not = (!_isPrimitive);
+                      if (_not) {
+                        _builder.append("if(");
+                        String _simpleName = field.getSimpleName();
+                        _builder.append(_simpleName, "");
+                        _builder.append("==null) return false;");
+                        _builder.newLineIfNotEmpty();
+                      }
+                    }
                   }
                 }
                 _builder.append("return true;");
@@ -298,7 +309,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           {
             String _simpleName = f.getSimpleName();
             String _firstUpper = StringExtensions.toFirstUpper(_simpleName);
-            String _plus = ("get" + _firstUpper);
+            String _plus_1 = ("get" + _firstUpper);
             final Procedure1<MutableMethodDeclaration> _function_8 = new Procedure1<MutableMethodDeclaration>() {
               public void apply(final MutableMethodDeclaration it) {
                 TypeReference _type = f.getType();
@@ -324,10 +335,10 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus, _function_8);
+            cls.addMethod(_plus_1, _function_8);
             String _simpleName_1 = f.getSimpleName();
             String _firstUpper_1 = StringExtensions.toFirstUpper(_simpleName_1);
-            String _plus_1 = ("set" + _firstUpper_1);
+            String _plus_2 = ("set" + _firstUpper_1);
             final Procedure1<MutableMethodDeclaration> _function_9 = new Procedure1<MutableMethodDeclaration>() {
               public void apply(final MutableMethodDeclaration it) {
                 TypeReference _type = f.getType();
@@ -344,10 +355,17 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                   public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                     StringConcatenation _builder = new StringConcatenation();
                     {
+                      boolean _and = false;
                       TypeReference _type = f.getType();
                       boolean _isPrimitive = _type.isPrimitive();
                       boolean _not = (!_isPrimitive);
-                      if (_not) {
+                      if (!_not) {
+                        _and = false;
+                      } else {
+                        boolean _in = IterableExtensions.<MutableFieldDeclaration>in(f, reactiveFields);
+                        _and = _in;
+                      }
+                      if (_and) {
                         _builder.append("// stop listening to old value");
                         _builder.newLine();
                         _builder.append("if(this.");
@@ -377,94 +395,109 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     CharSequence _observeField = EntityProcessor.this.observeField(f, context);
                     _builder.append(_observeField, "");
                     _builder.newLineIfNotEmpty();
-                    _builder.append("// if we are publishing, publish the change we\'ve made");
-                    _builder.newLine();
-                    _builder.append("if(this.isPublishing()) {");
-                    _builder.newLine();
-                    _builder.append("\t");
-                    _builder.append("// test: ");
-                    TypeReference _type_1 = f.getType();
-                    boolean _isPrimitive_1 = _type_1.isPrimitive();
-                    _builder.append(_isPrimitive_1, "\t");
-                    _builder.newLineIfNotEmpty();
                     {
-                      boolean _or = false;
-                      TypeReference _type_2 = f.getType();
-                      boolean _isPrimitive_2 = _type_2.isPrimitive();
-                      if (_isPrimitive_2) {
-                        _or = true;
-                      } else {
-                        TypeReference _type_3 = f.getType();
-                        TypeReference _newTypeReference = context.newTypeReference(String.class);
-                        boolean _isAssignableFrom = _type_3.isAssignableFrom(_newTypeReference);
-                        _or = _isAssignableFrom;
-                      }
-                      if (_or) {
-                        _builder.append("\t");
-                        _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
-                        String _simpleName_2 = f.getSimpleName();
-                        _builder.append(_simpleName_2, "\t");
-                        _builder.append("\", value));");
-                        _builder.newLineIfNotEmpty();
-                      } else {
-                        TypeReference _type_4 = f.getType();
-                        TypeReference _newTypeReference_1 = context.newTypeReference(Map.class);
-                        boolean _isAssignableFrom_1 = _type_4.isAssignableFrom(_newTypeReference_1);
-                        if (_isAssignableFrom_1) {
-                          _builder.append("\t");
-                          _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
-                          String _simpleName_3 = f.getSimpleName();
-                          _builder.append(_simpleName_3, "\t");
-                          _builder.append("\", ((");
-                          TypeReference _entityMapType = EntityProcessor.this.toEntityMapType(f, context);
-                          String _name = _entityMapType.getName();
-                          _builder.append(_name, "\t");
-                          _builder.append(")this.");
-                          String _simpleName_4 = f.getSimpleName();
-                          _builder.append(_simpleName_4, "\t");
-                          _builder.append(").clone()));");
-                          _builder.newLineIfNotEmpty();
-                        } else {
-                          TypeReference _type_5 = f.getType();
-                          TypeReference _newTypeReference_2 = context.newTypeReference(List.class);
-                          boolean _isAssignableFrom_2 = _type_5.isAssignableFrom(_newTypeReference_2);
-                          if (_isAssignableFrom_2) {
+                      boolean _in_1 = IterableExtensions.<MutableFieldDeclaration>in(f, reactiveFields);
+                      if (_in_1) {
+                        _builder.append("// if we are publishing, publish the change we\'ve made");
+                        _builder.newLine();
+                        _builder.append("if(this.isPublishing()) {");
+                        _builder.newLine();
+                        {
+                          boolean _or = false;
+                          boolean _or_1 = false;
+                          TypeReference _type_1 = f.getType();
+                          boolean _isPrimitive_1 = _type_1.isPrimitive();
+                          if (_isPrimitive_1) {
+                            _or_1 = true;
+                          } else {
+                            TypeReference _type_2 = f.getType();
+                            Collection<Class<? extends Object>> _values = typeConversions.values();
+                            final Function1<Class<? extends Object>, TypeReference> _function = new Function1<Class<? extends Object>, TypeReference>() {
+                              public TypeReference apply(final Class<? extends Object> it) {
+                                return context.newTypeReference(it);
+                              }
+                            };
+                            Iterable<TypeReference> _map = org.eclipse.xtext.xbase.lib.IterableExtensions.<Class<? extends Object>, TypeReference>map(_values, _function);
+                            List<TypeReference> _list = IterableExtensions.<TypeReference>toList(_map);
+                            boolean _in_2 = IterableExtensions.<TypeReference>in(_type_2, _list);
+                            _or_1 = _in_2;
+                          }
+                          if (_or_1) {
+                            _or = true;
+                          } else {
+                            TypeReference _type_3 = f.getType();
+                            TypeReference _newTypeReference = context.newTypeReference(String.class);
+                            boolean _isAssignableFrom = _type_3.isAssignableFrom(_newTypeReference);
+                            _or = _isAssignableFrom;
+                          }
+                          if (_or) {
                             _builder.append("\t");
                             _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
-                            String _simpleName_5 = f.getSimpleName();
-                            _builder.append(_simpleName_5, "\t");
-                            _builder.append("\", ((");
-                            TypeReference _entityListType = EntityProcessor.this.toEntityListType(f, context);
-                            String _name_1 = _entityListType.getName();
-                            _builder.append(_name_1, "\t");
-                            _builder.append(")this.");
-                            String _simpleName_6 = f.getSimpleName();
-                            _builder.append(_simpleName_6, "\t");
-                            _builder.append(").clone()));");
+                            String _simpleName_2 = f.getSimpleName();
+                            _builder.append(_simpleName_2, "\t");
+                            _builder.append("\", value));");
                             _builder.newLineIfNotEmpty();
                           } else {
-                            _builder.append("\t");
-                            _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
-                            String _simpleName_7 = f.getSimpleName();
-                            _builder.append(_simpleName_7, "\t");
-                            _builder.append("\", this.");
-                            String _simpleName_8 = f.getSimpleName();
-                            _builder.append(_simpleName_8, "\t");
-                            _builder.append(".clone()));");
-                            _builder.newLineIfNotEmpty();
+                            TypeReference _type_4 = f.getType();
+                            TypeReference _newTypeReference_1 = context.newTypeReference(Map.class);
+                            boolean _isAssignableFrom_1 = _type_4.isAssignableFrom(_newTypeReference_1);
+                            if (_isAssignableFrom_1) {
+                              _builder.append("\t");
+                              _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
+                              String _simpleName_3 = f.getSimpleName();
+                              _builder.append(_simpleName_3, "\t");
+                              _builder.append("\", ((");
+                              TypeReference _entityMapType = EntityProcessor.this.toEntityMapType(f, context);
+                              String _name = _entityMapType.getName();
+                              _builder.append(_name, "\t");
+                              _builder.append(")this.");
+                              String _simpleName_4 = f.getSimpleName();
+                              _builder.append(_simpleName_4, "\t");
+                              _builder.append(").clone()));");
+                              _builder.newLineIfNotEmpty();
+                            } else {
+                              TypeReference _type_5 = f.getType();
+                              TypeReference _newTypeReference_2 = context.newTypeReference(List.class);
+                              boolean _isAssignableFrom_2 = _type_5.isAssignableFrom(_newTypeReference_2);
+                              if (_isAssignableFrom_2) {
+                                _builder.append("\t");
+                                _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
+                                String _simpleName_5 = f.getSimpleName();
+                                _builder.append(_simpleName_5, "\t");
+                                _builder.append("\", ((");
+                                TypeReference _entityListType = EntityProcessor.this.toEntityListType(f, context);
+                                String _name_1 = _entityListType.getName();
+                                _builder.append(_name_1, "\t");
+                                _builder.append(")this.");
+                                String _simpleName_6 = f.getSimpleName();
+                                _builder.append(_simpleName_6, "\t");
+                                _builder.append(").clone()));");
+                                _builder.newLineIfNotEmpty();
+                              } else {
+                                _builder.append("\t");
+                                _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
+                                String _simpleName_7 = f.getSimpleName();
+                                _builder.append(_simpleName_7, "\t");
+                                _builder.append("\", this.");
+                                String _simpleName_8 = f.getSimpleName();
+                                _builder.append(_simpleName_8, "\t");
+                                _builder.append(".clone()));");
+                                _builder.newLineIfNotEmpty();
+                              }
+                            }
                           }
                         }
+                        _builder.append("}");
+                        _builder.newLine();
                       }
                     }
-                    _builder.append("}");
-                    _builder.newLine();
                     return _builder;
                   }
                 };
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_1, _function_9);
+            cls.addMethod(_plus_2, _function_9);
           }
         }
         final Procedure1<MutableMethodDeclaration> _function_8 = new Procedure1<MutableMethodDeclaration>() {

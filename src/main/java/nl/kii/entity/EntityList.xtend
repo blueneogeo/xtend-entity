@@ -43,6 +43,8 @@ class EntityList<E> extends ArrayList<E> implements Reactive {
 		isReactive = true
 	}
 	
+	def getType() { type }
+	
 	// MAKE THE LIST LISTENABLE
 
 	def private Publisher<Change> getPublisher() {

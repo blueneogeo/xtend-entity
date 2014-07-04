@@ -80,7 +80,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			// Set the class
 			val clsType = cls.newTypeReference
 			cls.extendedClass = ReactiveObject.newTypeReference
-			cls.implementedInterfaces = #[Cloneable.newTypeReference]
+			cls.implementedInterfaces = cls.implementedInterfaces + #[Cloneable.newTypeReference]
 			
 			// determine which fields we create getters and setters for and which are monitored
 			
@@ -194,7 +194,9 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				returnType = 'boolean'.newTypeReference
 				body = ['''
 					«FOR field : requiredFields»
-						if(«field.simpleName»==null) return false;
+						«IF !field.type.primitive»
+							if(«field.simpleName»==null) return false;
+						«ENDIF»
 					«ENDFOR»
 					return true;
 				''']
@@ -217,7 +219,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						.or(f.type)
 					addParameter('value', setterType)
 					body = ['''
-						«IF !f.type.primitive»
+						«IF !f.type.primitive && f.in(reactiveFields)»
 							// stop listening to old value
 							if(this.«f.simpleName» != null && this.«f.stopObservingFunctionName» != null)
 								«f.stopObservingFunctionName».apply();
@@ -226,19 +228,20 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						this.«f.simpleName» = value;
 						// and start observing the new value for changes
 						«observeField(f, context)»
-						// if we are publishing, publish the change we've made
-						if(this.isPublishing()) {
-							// test: «f.type.primitive»
-							«IF f.type.primitive || f.type.isAssignableFrom(String.newTypeReference)»
-								getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", value));
-							«ELSEIF f.type.isAssignableFrom(Map.newTypeReference)»
-								getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityMapType(context).name»)this.«f.simpleName»).clone()));
-							«ELSEIF f.type.isAssignableFrom(List.newTypeReference)»
-								getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
-							«ELSE»
-								getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName».clone()));
-							«ENDIF»
-						}
+						«IF f.in(reactiveFields)»
+							// if we are publishing, publish the change we've made
+							if(this.isPublishing()) {
+								«IF f.type.primitive || f.type.in(typeConversions.values.map[newTypeReference].toList) || f.type.isAssignableFrom(String.newTypeReference)»
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", value));
+								«ELSEIF f.type.isAssignableFrom(Map.newTypeReference)»
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityMapType(context).name»)this.«f.simpleName»).clone()));
+								«ELSEIF f.type.isAssignableFrom(List.newTypeReference)»
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
+								«ELSE»
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName».clone()));
+								«ENDIF»
+							}
+						«ENDIF»
 					''']
 				]
 

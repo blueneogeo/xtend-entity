@@ -48,6 +48,10 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     this.isReactive = true;
   }
   
+  public Class<E> getType() {
+    return this.type;
+  }
+  
   private Publisher<Change> getPublisher() {
     return this._publisher.get();
   }
