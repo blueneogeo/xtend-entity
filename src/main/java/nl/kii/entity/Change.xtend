@@ -69,7 +69,7 @@ class Change implements EntityObject {
 	
 	/** add a part to the path of a change, and return a new change from that */
 	def addPath(String addedPath) {
-		new Change(id, action, addedPath.addSafe(getPath), value)
+		new Change(id, action, addedPath.concat(getPath), value)
 	}
 	
 	/** remove the first part of the path of a change and create a new change from that */

@@ -32,9 +32,9 @@ eclipse.classpath.plusConfigurations += configurations.provided
 dependencies {
 
     compile 'com.kimengi.util:xtend-tools:+'
-    compile 'com.kimengi.util:xtend-stream:+'
+    compile 'com.kimengi.util:xtend-async:+'
     
-	compile 'org.eclipse.xtend:org.eclipse.xtend.core:+' // gives dependency missing error
+	provided 'org.eclipse.xtend:org.eclipse.xtend.core:+' // gives dependency missing error
 
 	testCompile "junit:junit:$junitVersion"
 }

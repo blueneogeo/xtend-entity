@@ -34,5 +34,4 @@ import org.eclipse.xtend.lib.macro.Active;
  */
 @Active(EntityProcessor.class)
 public @interface Entity {
-  public boolean reactive() default true;
 }

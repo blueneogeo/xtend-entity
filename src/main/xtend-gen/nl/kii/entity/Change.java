@@ -87,8 +87,8 @@ public class Change implements EntityObject {
    */
   public Change addPath(final String addedPath) {
     List<String> _path = this.getPath();
-    ImmutableList<String> _addSafe = IterableExtensions.<String>addSafe(addedPath, _path);
-    return new Change(this.id, this.action, _addSafe, this.value);
+    ImmutableList<String> _concat = IterableExtensions.<String>concat(addedPath, _path);
+    return new Change(this.id, this.action, _concat, this.value);
   }
   
   /**
