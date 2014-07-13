@@ -60,6 +60,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
     for (final MutableClassDeclaration cls : classes) {
       {
         final TypeReference clsType = context.newTypeReference(cls);
+        context.setPrimarySourceElement(cls, cls);
         TypeReference _newTypeReference_1 = context.newTypeReference(ReactiveObject.class);
         cls.setExtendedClass(_newTypeReference_1);
         Iterable<? extends TypeReference> _implementedInterfaces = cls.getImplementedInterfaces();
@@ -158,6 +159,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           final Procedure1<MutableFieldDeclaration> _function_6 = new Procedure1<MutableFieldDeclaration>() {
             public void apply(final MutableFieldDeclaration it) {
               it.setType(stopObservingType);
+              context.setPrimarySourceElement(it, field);
               it.setVisibility(Visibility.PROTECTED);
               it.setTransient(true);
             }
@@ -218,6 +220,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               _builder.append(_simpleName, "");
               _builder.append(" for all fields annotated with @Require.");
               it.setDocComment(_builder.toString());
+              context.setPrimarySourceElement(it, cls);
               EntityProcessor.this.addClassTypeParameters(it, cls, context);
               for (final MutableFieldDeclaration field : requiredFields) {
                 String _simpleName_1 = field.getSimpleName();
@@ -264,6 +267,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               StringConcatenation _builder = new StringConcatenation();
               _builder.append("Create a constructor for all fields (except for those annotated with @Ignore).");
               it.setDocComment(_builder.toString());
+              context.setPrimarySourceElement(it, cls);
               EntityProcessor.this.addClassTypeParameters(it, cls, context);
               for (final MutableFieldDeclaration field : getSetFields) {
                 String _simpleName = field.getSimpleName();
@@ -343,6 +347,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             _builder.append("@return true if all the fields annotated with @Require have a value.");
             _builder.newLine();
             it.setDocComment(_builder.toString());
+            context.setPrimarySourceElement(it, cls);
             TypeReference _newTypeReference = context.newTypeReference("boolean");
             it.setReturnType(_newTypeReference);
             final CompilationStrategy _function = new CompilationStrategy() {
@@ -405,6 +410,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.append(" or null if not set.");
                 _builder.newLineIfNotEmpty();
                 it.setDocComment(_builder.toString());
+                context.setPrimarySourceElement(it, f);
                 TypeReference _type = f.getType();
                 String _simpleName_3 = _type.getSimpleName();
                 Class<? extends Object> _get = typeConversions.get(_simpleName_3);
@@ -446,6 +452,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.append("This will trigger a change event for the observers.");
                 _builder.newLine();
                 it.setDocComment(_builder.toString());
+                context.setPrimarySourceElement(it, f);
                 TypeReference _type = f.getType();
                 String _simpleName_2 = _type.getSimpleName();
                 Class<? extends Object> _get = typeConversions.get(_simpleName_2);
@@ -608,6 +615,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setSynchronized(true);
             TypeReference _newTypeReference = context.newTypeReference(Change.class);
             it.addParameter("change", _newTypeReference);
+            context.setPrimarySourceElement(it, cls);
             final CompilationStrategy _function = new CompilationStrategy() {
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 StringConcatenation _builder = new StringConcatenation();
@@ -1091,6 +1099,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         if (_not_2) {
           final Procedure1<MutableMethodDeclaration> _function_18 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
+              context.setPrimarySourceElement(it, cls);
               it.setReturnType(clsType);
               final CompilationStrategy _function = new CompilationStrategy() {
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
@@ -1170,6 +1179,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setDocComment("creates a listener for propagating to changes on a field to the publisher");
             TypeReference _string = context.getString();
             it.addParameter("path", _string);
+            context.setPrimarySourceElement(it, cls);
             it.setReturnType(changeHandlerType);
             final CompilationStrategy _function = new CompilationStrategy() {
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {

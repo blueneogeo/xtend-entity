@@ -80,6 +80,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 			// Set the class
 			val clsType = cls.newTypeReference
+			cls.primarySourceElement = cls
 			cls.extendedClass = ReactiveObject.newTypeReference
 			cls.implementedInterfaces = cls.implementedInterfaces + #[Cloneable.newTypeReference]
 			
@@ -112,6 +113,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			for(field : reactiveFields) {
 				cls.addField(field.stopObservingFunctionName) [ 
 					type = stopObservingType
+					primarySourceElement = field
 					visibility = PROTECTED
 					transient = true
 				]
@@ -139,6 +141,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			if(requiredFields.length > 0) {
 				cls.addConstructor [
 					docComment = '''Create a new «cls.simpleName» for all fields annotated with @Require.'''
+					primarySourceElement = cls
 					addClassTypeParameters(cls, context)
 					for(field : requiredFields)
 						addParameter(field.simpleName, field.type)
@@ -158,6 +161,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			if(observedFields.length > requiredFields.length ) {
 				cls.addConstructor [
 					docComment = '''Create a constructor for all fields (except for those annotated with @Ignore).'''
+					primarySourceElement = cls
 					addClassTypeParameters(cls, context)
 					for(field : getSetFields)
 						addParameter(field.simpleName, field.type)
@@ -191,6 +195,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					Also recursively checks contained entities within the members of «cls.simpleName».
 					@return true if all the fields annotated with @Require have a value.
 				'''
+				primarySourceElement = cls
 				returnType = 'boolean'.newTypeReference
 				body = ['''
 					«FOR field : requiredFields»
@@ -214,6 +219,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						Get the value of the «cls.simpleName» entity property «f.simpleName».
 						@return the found «f.simpleName» or null if not set.
 					'''
+					primarySourceElement = f
 					returnType = typeConversions
 						.get(f.type.simpleName)?.newTypeReference
 						.or(f.type)
@@ -225,6 +231,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						Set the value of the «cls.simpleName» entity property «f.simpleName».<p>
 						This will trigger a change event for the observers.
 					'''
+					primarySourceElement = f
 					val setterType = typeConversions
 						.get(f.type.simpleName)?.newTypeReference
 						.or(f.type)
@@ -268,6 +275,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				'''
 				synchronized = true
 				addParameter('change', Change.newTypeReference)
+				primarySourceElement = cls
 				body = ['''
 					boolean wasPublishing = this.isPublishing();
 					try {
@@ -399,6 +407,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			// create clone override
 			if(!cls.declaredMethods.findFirst[simpleName=='clone'].defined)
 				cls.addMethod('clone') [
+					primarySourceElement = cls
 					returnType = clsType
 					body = ['''
 						try {
@@ -462,6 +471,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				visibility = PROTECTED
 				docComment = 'creates a listener for propagating to changes on a field to the publisher'
 				addParameter('path', string)
+				primarySourceElement = cls
 				returnType = changeHandlerType
 				body = ['''
 					final «clsType.simpleName» entity = this;
