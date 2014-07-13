@@ -199,6 +199,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             _builder.append("</pre>");
             _builder.newLine();
             it.setDocComment(_builder.toString());
+            context.setPrimarySourceElement(it, cls);
             EntityProcessor.this.addClassTypeParameters(it, cls, context);
             final CompilationStrategy _function = new CompilationStrategy() {
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {

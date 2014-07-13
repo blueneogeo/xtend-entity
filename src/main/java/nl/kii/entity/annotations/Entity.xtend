@@ -132,6 +132,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						]
 					</pre>
 				'''
+				primarySourceElement = cls
 				addClassTypeParameters(cls, context)
 				body = ['']
 			]
