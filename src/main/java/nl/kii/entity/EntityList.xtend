@@ -12,7 +12,7 @@ import static nl.kii.entity.ChangeType.*
 
 import static extension java.lang.Integer.*
 
-class EntityList<E> extends ArrayList<E> implements Reactive {
+class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 
 	// the contained type of the list. this is necessary because we lose
 	// type info due to erasure, and we need the type in order to create
@@ -51,18 +51,23 @@ class EntityList<E> extends ArrayList<E> implements Reactive {
 		_publisher.get
 	}
 
-	def private initPublisher() {
-		if(_publisher.get == null) 
-			_publisher.set(new Publisher)
-	}
-
-	override onChange((Change)=>void listener) {
-		initPublisher
-		publisher.onChange(listener)
-	}
-
 	def private publish(Change change) {
 		publisher?.apply(change)
+	}
+
+	// IMPLEMENT REACTIVEOBJECT
+
+	override onChange((Change)=>void listener) {
+		if(_publisher.get == null) _publisher.set(new Publisher)
+		publisher.onChange(listener)
+	}
+	
+	override setPublishing(boolean publish) {
+		publisher.publishing = publish
+	}
+	
+	override isPublishing() {
+		_publisher.get != null && publisher.publishing
 	}
 	
 	// WRAP ALL METHODS THAT MODIFY THE LIST TO FIRE A CHANGE EVENT
@@ -248,6 +253,10 @@ class EntityList<E> extends ArrayList<E> implements Reactive {
 
 	override EntityList<E> clone() {
 		super.clone as EntityList<E>
+	}
+	
+	override isValid() {
+		true
 	}
 
 }

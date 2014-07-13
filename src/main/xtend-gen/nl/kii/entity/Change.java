@@ -2,7 +2,6 @@ package nl.kii.entity;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.List;
 import nl.kii.entity.ChangeType;
@@ -11,6 +10,7 @@ import nl.kii.entity.EntityObject;
 import nl.kii.util.IterableExtensions;
 import nl.kii.util.OptExtensions;
 import org.eclipse.xtend2.lib.StringConcatenation;
+import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 
@@ -42,11 +42,11 @@ public class Change implements EntityObject {
   }
   
   public Change(final ChangeType action, final int index, final Object value) {
-    this((-1), action, Collections.<String>unmodifiableList(Lists.<String>newArrayList(("" + Integer.valueOf(index)))), value);
+    this((-1), action, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(("" + Integer.valueOf(index)))), value);
   }
   
   public Change(final ChangeType action, final String key, final Object value) {
-    this((-1), action, Collections.<String>unmodifiableList(Lists.<String>newArrayList(key)), value);
+    this((-1), action, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(key)), value);
   }
   
   public Change(final ChangeType action, final List<String> path, final Object value) {
@@ -77,7 +77,7 @@ public class Change implements EntityObject {
     if (this.path != null) {
       _elvis = this.path;
     } else {
-      _elvis = Collections.<String>unmodifiableList(Lists.<String>newArrayList());
+      _elvis = Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList());
     }
     return _elvis;
   }

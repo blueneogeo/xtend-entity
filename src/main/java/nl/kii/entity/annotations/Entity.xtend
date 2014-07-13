@@ -15,6 +15,7 @@ import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableExecutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
@@ -22,7 +23,6 @@ import static org.eclipse.xtend.lib.macro.declaration.Visibility.*
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
 /**
  * Reactive Objects can be observed for changes and can have change objects applied to them to change them.
@@ -94,8 +94,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			]
 			
 			val observedFields = getSetFields.filter [
-				// findAnnotation(Ignore.newTypeReference.type) == null
-				true
+				findAnnotation(Ignore.newTypeReference.type) == null
 			]
 
 			val reactiveFields = observedFields.filter [ isReactive(context) ]
@@ -117,23 +116,6 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					transient = true
 				]
 			}
-			
-//			// convert maps to entitymaps
-//			
-//			reactiveFields.filter[ type.simpleName.startsWith('Map') ].forEach [
-//				val keyTypeArg = type.actualTypeArguments.get(0)
-//				if(!keyTypeArg.isAssignableFrom(String.newTypeReference()))
-//					throw new EntityException('Maps in Entities must be of type Map<String, primitive || Entity>')
-//				val valueTypeArg = type.actualTypeArguments.get(1)
-//				type = EntityMap.newTypeReference(valueTypeArg) 
-//			]
-//			
-//			// convert lists to entitylists
-//			
-//			reactiveFields.filter[ type.simpleName.startsWith('Map') ].forEach [
-//				val typeArg = type.actualTypeArguments.get(0)
-//				type = EntityList.newTypeReference(typeArg) 
-//			]
 
 			// create empty constructor
 			
@@ -214,7 +196,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					«FOR field : requiredFields»
 						«IF !field.type.primitive»
 							if(«field.simpleName»==null) return false;
-							«IF field.type.in(reactiveFields)»
+							«IF field.in(reactiveFields)»
 								if(!«field.simpleName».isValid()) return false;
 							«ENDIF»
 						«ENDIF»
@@ -248,25 +230,21 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						.or(f.type)
 					addParameter('value', setterType)
 					body = ['''
-						«IF reactiveFields.toList.contains(f)»
+						«IF f.in(reactiveFields)»
 							// stop listening to old value
 							if(this.«f.simpleName» != null && this.«f.stopObservingFunctionName» != null)
 								«f.stopObservingFunctionName».apply();
 						«ENDIF»
-						// set the value
-						this.«f.simpleName» = value;
-						«IF reactiveFields.toList.contains(f)»
-							// and start observing the new value for changes
-							«observeField(f, context)»
-						«ENDIF»
-						«IF observedFields.toList.contains(f)»
+						// start observing the new value for changes
+						«f.assignFieldValue(context)»
+						«IF f.in(observedFields)»
 							// if we are publishing, publish the change we've made
 							if(this.isPublishing()) {
 								«IF f.type.primitive || typeConversions.values.map[newTypeReference].toList.contains(f.type)|| f.type.isAssignableFrom(String.newTypeReference)»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", value));
-								«ELSEIF f.type.isAssignableFrom(Map.newTypeReference)»
+								«ELSEIF f.isEntityMap»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityMapType(context).name»)this.«f.simpleName»).clone()));
-								«ELSEIF f.type.isAssignableFrom(List.newTypeReference)»
+								«ELSEIF f.isEntityList»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
 								«ELSE»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName».clone()));
@@ -352,6 +330,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			
 			cls.addMethod('toString') [
 				// addAnnotation(overrideType.)
+				primarySourceElement = cls
 				val stringType = String.newTypeReference
 				returnType = string
 				body = ['''
@@ -372,6 +351,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			if(!cls.declaredMethods.findFirst[simpleName=='equals'].defined)
 				cls.addMethod('equals') [
 					//addAnnotation(overrideType.type)
+					primarySourceElement = cls
 					addParameter('object', object)
 					returnType = primitiveBoolean
 					body = ['''
@@ -399,6 +379,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			if(!cls.declaredMethods.findFirst[simpleName=='hashCode'].defined)
 				cls.addMethod('hashCode') [
 					// addAnnotation(overrideType.type)
+					primarySourceElement = cls
 					returnType = primitiveInt
 					body = ['''
 						return (
@@ -414,7 +395,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						) * 37;
 					''']
 				]
-				
+			
 			// create clone override
 			if(!cls.declaredMethods.findFirst[simpleName=='clone'].defined)
 				cls.addMethod('clone') [
@@ -426,7 +407,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 							return null;
 						}
 					''']
-					
+				]
 //					// addAnnotation(overrideType.type)
 //					docComment = '''
 //						Make a copy of the instance.
@@ -450,8 +431,31 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 //						«ENDFOR»
 //						return instance;
 //					''']
+
+			// convert map fields to entitymap fields
+
+			reactiveFields
+				.filter [ type.simpleName.startsWith('Map') ]
+				.each [
+					val key = type.actualTypeArguments.get(0)
+					val value = type.actualTypeArguments.get(1)
+					if(!key.extendsClass(string)) {
+						addError('Maps in EntityObjects may only have String as their key')
+					} else {
+						type = EntityMap.newTypeReference(value)
+					}
+
 				]
-			
+
+			// convert lists to entitylists
+
+			reactiveFields
+				.filter [ type.simpleName.startsWith('List') ]
+				.each [
+					val typeArg = type.actualTypeArguments.get(0)
+					type = EntityList.newTypeReference(typeArg) 
+				]
+
 			// helpers
 
 			cls.addMethod('newChangeHandler') [
@@ -474,17 +478,31 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 		}
 		
 	}
-	
+
 	def isReactive(MutableFieldDeclaration field, extension TransformationContext context) {
-		field.type.extendsClass(ReactiveObject.newTypeReference)
+		field.type.extendsClass(ReactiveObject.newTypeReference) ||
+		field.type.extendsClass(List.newTypeReference) ||
+		field.type.extendsClass(Map.newTypeReference)
+	}
+	
+	def isEntityList(MutableFieldDeclaration field) {
+		field.type.simpleName.startsWith('EntityList')
+	}
+
+	def isEntityMap(MutableFieldDeclaration field) {
+		field.type.simpleName.startsWith('EntityMap')
+	}
+	
+	def isObservable(MutableFieldDeclaration field, extension TransformationContext context) {
+		Observable.newTypeReference(Change.newTypeReference).isAssignableFrom(field.type)
 	}
 	
 	def <T> extendsClass(TypeReference type, TypeReference superType) {
 		superType.isAssignableFrom(type)
 	}
 
-	def observeField(MutableFieldDeclaration f, extension TransformationContext context) '''
-		«IF f.type.simpleName.startsWith('List')»
+	def assignFieldValue(MutableFieldDeclaration f, extension TransformationContext context) '''
+		«IF f.isEntityList»
 			// if the list is not already reactive, wrap the list as a reactive list
 			if(«f.simpleName» == null || !(«f.simpleName» instanceof  nl.kii.entity.EntityList<?>)) {
 				«val typeArg = f.type.actualTypeArguments.get(0)»
@@ -494,18 +512,21 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				«f.simpleName» = newList;
 				this.«f.getStopObservingFunctionName» = newList.onChange(newChangeHandler("«f.simpleName»"));
 			}
-		«ELSEIF f.type.simpleName.startsWith('Map')»
+		«ELSEIF f.entityMap»
 			// if the map is not already listenable, wrap the map as a listenable
 			if(«f.simpleName» == null || !(«f.simpleName» instanceof  nl.kii.entity.EntityMap<?>)) {
-				«val typeArg = f.type.actualTypeArguments.get(1)»
+				«val typeArg = f.type.actualTypeArguments.get(0)»
 				«val mapType = EntityMap.newTypeReference(typeArg)»
 				«mapType.name» newMap = new «mapType.name»(«typeArg.simpleName».class);
 				if(«f.simpleName» != null) newMap.putAll(«f.simpleName»);
 				«f.simpleName» = newMap;
 				this.«f.getStopObservingFunctionName» = newMap.onChange(newChangeHandler("«f.simpleName»"));
 			}
-		«ELSEIF Observable.newTypeReference(Change.newTypeReference).isAssignableFrom(f.type)»
+		«ELSEIF f.isObservable(context)»
+			this.«f.simpleName» = value;
 			this.«f.getStopObservingFunctionName» = this.«f.simpleName».onChange(newChangeHandler("«f.simpleName»"));
+		«ELSE»
+			this.«f.simpleName» = value;
 		«ENDIF»
 	'''
 
@@ -518,7 +539,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	}
 	
 	def toEntityMapType(MutableFieldDeclaration field, extension TransformationContext context) {
-		EntityMap.newTypeReference(field.type.actualTypeArguments.get(1))
+		EntityMap.newTypeReference(field.type.actualTypeArguments.get(0))
 	}
 	
 	def toEntityListType(MutableFieldDeclaration field, extension TransformationContext context) {

@@ -27,13 +27,13 @@ abstract class ReactiveObject implements Reactive, EntityObject {
 	}
 
 	/** set if we want the object to publish changes */
-	def setPublishing(boolean publish) {
+	override setPublishing(boolean publish) {
 		if(hasPublisher)
 			publisher.publishing = publish
 	}
 	
 	/** check if the object will publish internal changes to listeners */
-	def isPublishing() {
+	override isPublishing() {
 		if(hasPublisher)
 			publisher.isPublishing
 		else false

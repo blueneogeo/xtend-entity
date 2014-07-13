@@ -8,7 +8,7 @@ import nl.kii.observe.Publisher
 
 import static nl.kii.entity.ChangeType.*
 
-class EntityMap<V> extends HashMap<String, V> implements Reactive {
+class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject {
 	
 	// the contained type of the map. this is necessary because we lose
 	// type info due to erasure, and we need the type in order to create
@@ -16,8 +16,8 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 	val Class<V> type
 	val boolean isReactive
 
-	transient val _publisher = new AtomicReference<Publisher<Change>>
-	transient var Map<String, =>void> subscriptionEnders = newHashMap
+	val _publisher = new AtomicReference<Publisher<Change>>
+	var Map<String, =>void> subscriptionEnders = newHashMap
 	
 	// CONSTRUCTORS
 	
@@ -44,19 +44,24 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 		_publisher.get
 	}
 
-	def private initPublisher() {
-		if(_publisher.get == null) 
-			_publisher.set(new Publisher)
-	}
-
-	override onChange((Change)=>void listener) {
-		initPublisher
-		publisher.onChange(listener)
-	}
-
 	def private publish(Change change) {
 		publisher?.apply(change)
 	}
+
+	// IMPLEMENT REACTIVEOBJECT
+
+	override onChange((Change)=>void listener) {
+		if(_publisher.get == null) _publisher.set(new Publisher)
+		publisher.onChange(listener)
+	}
+	
+	override setPublishing(boolean publish) {
+		publisher.publishing = publish
+	}
+	
+	override isPublishing() {
+		_publisher.get != null && publisher.publishing
+	}	
 	
 	// WRAP ALL METHODS THAT MODIFY THE LIST TO FIRE A CHANGE EVENT
 	
@@ -161,6 +166,10 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive {
 	
 	override EntityMap<V> clone() {
 		super.clone as EntityMap<V>
+	}
+	
+	override isValid() {
+		true
 	}
 	
 }

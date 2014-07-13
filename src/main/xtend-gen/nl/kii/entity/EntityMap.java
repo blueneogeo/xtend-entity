@@ -1,7 +1,6 @@
 package nl.kii.entity;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
 import nl.kii.entity.EntityException;
+import nl.kii.entity.EntityObject;
 import nl.kii.entity.Reactive;
 import nl.kii.observe.Observable;
 import nl.kii.observe.Publisher;
@@ -24,14 +24,14 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 
 @SuppressWarnings("all")
-public class EntityMap<V extends Object> extends HashMap<String, V> implements Reactive {
+public class EntityMap<V extends Object> extends HashMap<String, V> implements Reactive, EntityObject {
   private final Class<V> type;
   
   private final boolean isReactive;
   
-  private final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
+  private final AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
   
-  private transient Map<String, Procedure0> subscriptionEnders = CollectionLiterals.<String, Procedure0>newHashMap();
+  private Map<String, Procedure0> subscriptionEnders = CollectionLiterals.<String, Procedure0>newHashMap();
   
   public EntityMap(final Class<V> type) {
     super();
@@ -54,30 +54,45 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     return this._publisher.get();
   }
   
-  private void initPublisher() {
-    Publisher<Change> _get = this._publisher.get();
-    boolean _equals = Objects.equal(_get, null);
-    if (_equals) {
-      Publisher<Change> _publisher = new Publisher<Change>();
-      this._publisher.set(_publisher);
+  private void publish(final Change change) {
+    Publisher<Change> _publisher = this.getPublisher();
+    if (_publisher!=null) {
+      _publisher.apply(change);
     }
   }
   
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
-      this.initPublisher();
-      Publisher<Change> _publisher = this.getPublisher();
-      _xblockexpression = _publisher.onChange(listener);
+      Publisher<Change> _get = this._publisher.get();
+      boolean _equals = Objects.equal(_get, null);
+      if (_equals) {
+        Publisher<Change> _publisher = new Publisher<Change>();
+        this._publisher.set(_publisher);
+      }
+      Publisher<Change> _publisher_1 = this.getPublisher();
+      _xblockexpression = _publisher_1.onChange(listener);
     }
     return _xblockexpression;
   }
   
-  private void publish(final Change change) {
+  public void setPublishing(final boolean publish) {
     Publisher<Change> _publisher = this.getPublisher();
-    if (_publisher!=null) {
-      _publisher.apply(change);
+    _publisher.setPublishing(publish);
+  }
+  
+  public boolean isPublishing() {
+    boolean _and = false;
+    Publisher<Change> _get = this._publisher.get();
+    boolean _notEquals = (!Objects.equal(_get, null));
+    if (!_notEquals) {
+      _and = false;
+    } else {
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _isPublishing = _publisher.isPublishing();
+      _and = _isPublishing;
     }
+    return _and;
   }
   
   private Procedure0 observe(final V element, final String key) {
@@ -108,7 +123,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
       final V previous = super.put(key, value);
       final Procedure0 subscriptionEnder = this.observe(value, key);
       this.subscriptionEnders.put(key, subscriptionEnder);
-      Change _change = new Change(ChangeType.UPDATE, Collections.<String>unmodifiableList(Lists.<String>newArrayList(key)), value);
+      Change _change = new Change(ChangeType.UPDATE, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(key)), value);
       this.publish(_change);
       _xblockexpression = previous;
     }
@@ -126,7 +141,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
       boolean _notEquals = (!Objects.equal(previous, null));
       if (_notEquals) {
         String _string = key.toString();
-        Change _change = new Change(ChangeType.REMOVE, Collections.<String>unmodifiableList(Lists.<String>newArrayList(_string)), previous);
+        Change _change = new Change(ChangeType.REMOVE, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(_string)), previous);
         this.publish(_change);
       }
       _xblockexpression = previous;
@@ -153,7 +168,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     MapExtensions.<String, Procedure0>forEach(this.subscriptionEnders, _function);
     this.subscriptionEnders.clear();
     super.clear();
-    Change _change = new Change(ChangeType.CLEAR, Collections.<String>unmodifiableList(Lists.<String>newArrayList()), null);
+    Change _change = new Change(ChangeType.CLEAR, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList()), null);
     this.publish(_change);
   }
   
@@ -322,5 +337,9 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   public EntityMap<V> clone() {
     Object _clone = super.clone();
     return ((EntityMap<V>) _clone);
+  }
+  
+  public boolean isValid() {
+    return true;
   }
 }

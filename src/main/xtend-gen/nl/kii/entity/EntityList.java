@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
 import nl.kii.entity.EntityException;
+import nl.kii.entity.EntityObject;
 import nl.kii.entity.Reactive;
 import nl.kii.observe.Observable;
 import nl.kii.observe.Publisher;
@@ -21,7 +22,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 
 @SuppressWarnings("all")
-public class EntityList<E extends Object> extends ArrayList<E> implements Reactive {
+public class EntityList<E extends Object> extends ArrayList<E> implements Reactive, EntityObject {
   private final Class<E> type;
   
   private final boolean isReactive;
@@ -56,30 +57,45 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return this._publisher.get();
   }
   
-  private void initPublisher() {
-    Publisher<Change> _get = this._publisher.get();
-    boolean _equals = Objects.equal(_get, null);
-    if (_equals) {
-      Publisher<Change> _publisher = new Publisher<Change>();
-      this._publisher.set(_publisher);
+  private void publish(final Change change) {
+    Publisher<Change> _publisher = this.getPublisher();
+    if (_publisher!=null) {
+      _publisher.apply(change);
     }
   }
   
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
-      this.initPublisher();
-      Publisher<Change> _publisher = this.getPublisher();
-      _xblockexpression = _publisher.onChange(listener);
+      Publisher<Change> _get = this._publisher.get();
+      boolean _equals = Objects.equal(_get, null);
+      if (_equals) {
+        Publisher<Change> _publisher = new Publisher<Change>();
+        this._publisher.set(_publisher);
+      }
+      Publisher<Change> _publisher_1 = this.getPublisher();
+      _xblockexpression = _publisher_1.onChange(listener);
     }
     return _xblockexpression;
   }
   
-  private void publish(final Change change) {
+  public void setPublishing(final boolean publish) {
     Publisher<Change> _publisher = this.getPublisher();
-    if (_publisher!=null) {
-      _publisher.apply(change);
+    _publisher.setPublishing(publish);
+  }
+  
+  public boolean isPublishing() {
+    boolean _and = false;
+    Publisher<Change> _get = this._publisher.get();
+    boolean _notEquals = (!Objects.equal(_get, null));
+    if (!_notEquals) {
+      _and = false;
+    } else {
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _isPublishing = _publisher.isPublishing();
+      _and = _isPublishing;
     }
+    return _and;
   }
   
   private Procedure0 observe(final E element) {
@@ -442,5 +458,9 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   public EntityList<E> clone() {
     Object _clone = super.clone();
     return ((EntityList<E>) _clone);
+  }
+  
+  public boolean isValid() {
+    return true;
   }
 }
