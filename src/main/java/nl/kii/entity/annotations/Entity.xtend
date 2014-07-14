@@ -340,13 +340,12 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			cls.addMethod('toString') [
 				// addAnnotation(overrideType.)
 				primarySourceElement = cls
-				val stringType = String.newTypeReference
 				returnType = string
 				body = ['''
 					return "«cls.simpleName» { "
 					«FOR field:getSetFields SEPARATOR ' + ", " '»
 						+ "«field.simpleName»: " +
-						«IF field.type.isAssignableFrom(stringType)»
+						«IF field.type.isAssignableFrom(string)»
 							"'" + this.«field.simpleName» + "'" 
 						«ELSE»
 							this.«field.simpleName» 
@@ -449,7 +448,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				.each [
 					val key = type.actualTypeArguments.get(0)
 					val value = type.actualTypeArguments.get(1)
-					if(!key.extendsClass(string)) {
+					if(!key.extendsType(string)) {
 						addError('Maps in EntityObjects may only have String as their key')
 					} else {
 						type = EntityMap.newTypeReference(value)
@@ -491,9 +490,9 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	}
 
 	def isReactive(MutableFieldDeclaration field, extension TransformationContext context) {
-		field.type.extendsClass(ReactiveObject.newTypeReference) ||
-		field.type.extendsClass(List.newTypeReference) ||
-		field.type.extendsClass(Map.newTypeReference)
+		field.type.extendsType(ReactiveObject.newTypeReference) ||
+		field.type.extendsType(List.newTypeReference) ||
+		field.type.extendsType(Map.newTypeReference)
 	}
 	
 	def isEntityList(MutableFieldDeclaration field) {
@@ -508,36 +507,32 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 		Observable.newTypeReference(Change.newTypeReference).isAssignableFrom(field.type)
 	}
 	
-	def <T> extendsClass(TypeReference type, TypeReference superType) {
+	def <T> extendsType(TypeReference type, TypeReference superType) {
 		superType.isAssignableFrom(type)
 	}
 
-	def assignFieldValue(MutableFieldDeclaration f, extension TransformationContext context) '''
-		«IF f.isEntityList»
+	def assignFieldValue(MutableFieldDeclaration field, extension TransformationContext context) '''
+		«IF field.isEntityList»
 			// if the list is not already reactive, wrap the list as a reactive list
-			if(«f.simpleName» == null || !(«f.simpleName» instanceof  nl.kii.entity.EntityList<?>)) {
-				«val typeArg = f.type.actualTypeArguments.get(0)»
-				«val listType = EntityList.newTypeReference(typeArg)»
-				«listType.name» newList = new «listType.name»(«typeArg.name».class);
-				if(«f.simpleName» != null) newList.addAll(«f.simpleName»);
-				«f.simpleName» = newList;
-				this.«f.getStopObservingFunctionName» = newList.onChange(newChangeHandler("«f.simpleName»"));
-			}
-		«ELSEIF f.entityMap»
+			«val typeArg = field.type.actualTypeArguments.get(0)»
+			«val listType = EntityList.newTypeReference(typeArg)»
+			«listType.name» newList = new «listType.name»(«typeArg.name».class);
+			if(value != null) newList.addAll(value);
+			«field.simpleName» = newList;
+			this.«field.getStopObservingFunctionName» = newList.onChange(newChangeHandler("«field.simpleName»"));
+		«ELSEIF field.entityMap»
 			// if the map is not already listenable, wrap the map as a listenable
-			if(«f.simpleName» == null || !(«f.simpleName» instanceof  nl.kii.entity.EntityMap<?>)) {
-				«val typeArg = f.type.actualTypeArguments.get(0)»
-				«val mapType = EntityMap.newTypeReference(typeArg)»
-				«mapType.name» newMap = new «mapType.name»(«typeArg.simpleName».class);
-				if(«f.simpleName» != null) newMap.putAll(«f.simpleName»);
-				«f.simpleName» = newMap;
-				this.«f.getStopObservingFunctionName» = newMap.onChange(newChangeHandler("«f.simpleName»"));
-			}
-		«ELSEIF f.isObservable(context)»
-			this.«f.simpleName» = value;
-			this.«f.getStopObservingFunctionName» = this.«f.simpleName».onChange(newChangeHandler("«f.simpleName»"));
+			«val typeArg = field.type.actualTypeArguments.get(0)»
+			«val mapType = EntityMap.newTypeReference(typeArg)»
+			«mapType.name» newMap = new «mapType.name»(«typeArg.simpleName».class);
+			if(value != null) newMap.putAll(value);
+			«field.simpleName» = newMap;
+			this.«field.getStopObservingFunctionName» = newMap.onChange(newChangeHandler("«field.simpleName»"));
+		«ELSEIF field.isObservable(context)»
+			this.«field.simpleName» = value;
+			this.«field.getStopObservingFunctionName» = this.«field.simpleName».onChange(newChangeHandler("«field.simpleName»"));
 		«ELSE»
-			this.«f.simpleName» = value;
+			this.«field.simpleName» = value;
 		«ENDIF»
 	'''
 

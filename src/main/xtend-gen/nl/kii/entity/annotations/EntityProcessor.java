@@ -850,7 +850,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
           public void apply(final MutableMethodDeclaration it) {
             context.setPrimarySourceElement(it, cls);
-            final TypeReference stringType = context.newTypeReference(String.class);
             TypeReference _string = context.getString();
             it.setReturnType(_string);
             final CompilationStrategy _function = new CompilationStrategy() {
@@ -876,7 +875,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     _builder.newLineIfNotEmpty();
                     {
                       TypeReference _type = field.getType();
-                      boolean _isAssignableFrom = _type.isAssignableFrom(stringType);
+                      TypeReference _string = context.getString();
+                      boolean _isAssignableFrom = _type.isAssignableFrom(_string);
                       if (_isAssignableFrom) {
                         _builder.append("\"\'\" + this.");
                         String _simpleName_2 = field.getSimpleName();
@@ -1145,8 +1145,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             List<TypeReference> _actualTypeArguments_1 = _type_1.getActualTypeArguments();
             final TypeReference value = _actualTypeArguments_1.get(1);
             TypeReference _string = context.getString();
-            boolean _extendsClass = EntityProcessor.this.<Object>extendsClass(key, _string);
-            boolean _not = (!_extendsClass);
+            boolean _extendsType = EntityProcessor.this.<Object>extendsType(key, _string);
+            boolean _not = (!_extendsType);
             if (_not) {
               context.addError(it, "Maps in EntityObjects may only have String as their key");
             } else {
@@ -1225,22 +1225,22 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
     boolean _or_1 = false;
     TypeReference _type = field.getType();
     TypeReference _newTypeReference = context.newTypeReference(ReactiveObject.class);
-    boolean _extendsClass = this.<Object>extendsClass(_type, _newTypeReference);
-    if (_extendsClass) {
+    boolean _extendsType = this.<Object>extendsType(_type, _newTypeReference);
+    if (_extendsType) {
       _or_1 = true;
     } else {
       TypeReference _type_1 = field.getType();
       TypeReference _newTypeReference_1 = context.newTypeReference(List.class);
-      boolean _extendsClass_1 = this.<Object>extendsClass(_type_1, _newTypeReference_1);
-      _or_1 = _extendsClass_1;
+      boolean _extendsType_1 = this.<Object>extendsType(_type_1, _newTypeReference_1);
+      _or_1 = _extendsType_1;
     }
     if (_or_1) {
       _or = true;
     } else {
       TypeReference _type_2 = field.getType();
       TypeReference _newTypeReference_2 = context.newTypeReference(Map.class);
-      boolean _extendsClass_2 = this.<Object>extendsClass(_type_2, _newTypeReference_2);
-      _or = _extendsClass_2;
+      boolean _extendsType_2 = this.<Object>extendsType(_type_2, _newTypeReference_2);
+      _or = _extendsType_2;
     }
     return _or;
   }
@@ -1264,149 +1264,105 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
     return _newTypeReference_1.isAssignableFrom(_type);
   }
   
-  public <T extends Object> boolean extendsClass(final TypeReference type, final TypeReference superType) {
+  public <T extends Object> boolean extendsType(final TypeReference type, final TypeReference superType) {
     return superType.isAssignableFrom(type);
   }
   
-  public CharSequence assignFieldValue(final MutableFieldDeclaration f, @Extension final TransformationContext context) {
+  public CharSequence assignFieldValue(final MutableFieldDeclaration field, @Extension final TransformationContext context) {
     StringConcatenation _builder = new StringConcatenation();
     {
-      boolean _isEntityList = this.isEntityList(f);
+      boolean _isEntityList = this.isEntityList(field);
       if (_isEntityList) {
         _builder.append("// if the list is not already reactive, wrap the list as a reactive list");
         _builder.newLine();
-        _builder.append("if(");
-        String _simpleName = f.getSimpleName();
-        _builder.append(_simpleName, "");
-        _builder.append(" == null || !(");
-        String _simpleName_1 = f.getSimpleName();
-        _builder.append(_simpleName_1, "");
-        _builder.append(" instanceof  nl.kii.entity.EntityList<?>)) {");
-        _builder.newLineIfNotEmpty();
-        _builder.append("\t");
-        TypeReference _type = f.getType();
+        TypeReference _type = field.getType();
         List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
         final TypeReference typeArg = _actualTypeArguments.get(0);
         _builder.newLineIfNotEmpty();
-        _builder.append("\t");
         final TypeReference listType = context.newTypeReference(EntityList.class, typeArg);
         _builder.newLineIfNotEmpty();
-        _builder.append("\t");
         String _name = listType.getName();
-        _builder.append(_name, "\t");
+        _builder.append(_name, "");
         _builder.append(" newList = new ");
         String _name_1 = listType.getName();
-        _builder.append(_name_1, "\t");
+        _builder.append(_name_1, "");
         _builder.append("(");
         String _name_2 = typeArg.getName();
-        _builder.append(_name_2, "\t");
+        _builder.append(_name_2, "");
         _builder.append(".class);");
         _builder.newLineIfNotEmpty();
-        _builder.append("\t");
-        _builder.append("if(");
-        String _simpleName_2 = f.getSimpleName();
-        _builder.append(_simpleName_2, "\t");
-        _builder.append(" != null) newList.addAll(");
-        String _simpleName_3 = f.getSimpleName();
-        _builder.append(_simpleName_3, "\t");
-        _builder.append(");");
-        _builder.newLineIfNotEmpty();
-        _builder.append("\t");
-        String _simpleName_4 = f.getSimpleName();
-        _builder.append(_simpleName_4, "\t");
+        _builder.append("if(value != null) newList.addAll(value);");
+        _builder.newLine();
+        String _simpleName = field.getSimpleName();
+        _builder.append(_simpleName, "");
         _builder.append(" = newList;");
         _builder.newLineIfNotEmpty();
-        _builder.append("\t");
         _builder.append("this.");
-        String _stopObservingFunctionName = this.getStopObservingFunctionName(f);
-        _builder.append(_stopObservingFunctionName, "\t");
+        String _stopObservingFunctionName = this.getStopObservingFunctionName(field);
+        _builder.append(_stopObservingFunctionName, "");
         _builder.append(" = newList.onChange(newChangeHandler(\"");
-        String _simpleName_5 = f.getSimpleName();
-        _builder.append(_simpleName_5, "\t");
+        String _simpleName_1 = field.getSimpleName();
+        _builder.append(_simpleName_1, "");
         _builder.append("\"));");
         _builder.newLineIfNotEmpty();
-        _builder.append("}");
-        _builder.newLine();
       } else {
-        boolean _isEntityMap = this.isEntityMap(f);
+        boolean _isEntityMap = this.isEntityMap(field);
         if (_isEntityMap) {
           _builder.append("// if the map is not already listenable, wrap the map as a listenable");
           _builder.newLine();
-          _builder.append("if(");
-          String _simpleName_6 = f.getSimpleName();
-          _builder.append(_simpleName_6, "");
-          _builder.append(" == null || !(");
-          String _simpleName_7 = f.getSimpleName();
-          _builder.append(_simpleName_7, "");
-          _builder.append(" instanceof  nl.kii.entity.EntityMap<?>)) {");
-          _builder.newLineIfNotEmpty();
-          _builder.append("\t");
-          TypeReference _type_1 = f.getType();
+          TypeReference _type_1 = field.getType();
           List<TypeReference> _actualTypeArguments_1 = _type_1.getActualTypeArguments();
           final TypeReference typeArg_1 = _actualTypeArguments_1.get(0);
           _builder.newLineIfNotEmpty();
-          _builder.append("\t");
           final TypeReference mapType = context.newTypeReference(EntityMap.class, typeArg_1);
           _builder.newLineIfNotEmpty();
-          _builder.append("\t");
           String _name_3 = mapType.getName();
-          _builder.append(_name_3, "\t");
+          _builder.append(_name_3, "");
           _builder.append(" newMap = new ");
           String _name_4 = mapType.getName();
-          _builder.append(_name_4, "\t");
+          _builder.append(_name_4, "");
           _builder.append("(");
-          String _simpleName_8 = typeArg_1.getSimpleName();
-          _builder.append(_simpleName_8, "\t");
+          String _simpleName_2 = typeArg_1.getSimpleName();
+          _builder.append(_simpleName_2, "");
           _builder.append(".class);");
           _builder.newLineIfNotEmpty();
-          _builder.append("\t");
-          _builder.append("if(");
-          String _simpleName_9 = f.getSimpleName();
-          _builder.append(_simpleName_9, "\t");
-          _builder.append(" != null) newMap.putAll(");
-          String _simpleName_10 = f.getSimpleName();
-          _builder.append(_simpleName_10, "\t");
-          _builder.append(");");
-          _builder.newLineIfNotEmpty();
-          _builder.append("\t");
-          String _simpleName_11 = f.getSimpleName();
-          _builder.append(_simpleName_11, "\t");
+          _builder.append("if(value != null) newMap.putAll(value);");
+          _builder.newLine();
+          String _simpleName_3 = field.getSimpleName();
+          _builder.append(_simpleName_3, "");
           _builder.append(" = newMap;");
           _builder.newLineIfNotEmpty();
-          _builder.append("\t");
           _builder.append("this.");
-          String _stopObservingFunctionName_1 = this.getStopObservingFunctionName(f);
-          _builder.append(_stopObservingFunctionName_1, "\t");
+          String _stopObservingFunctionName_1 = this.getStopObservingFunctionName(field);
+          _builder.append(_stopObservingFunctionName_1, "");
           _builder.append(" = newMap.onChange(newChangeHandler(\"");
-          String _simpleName_12 = f.getSimpleName();
-          _builder.append(_simpleName_12, "\t");
+          String _simpleName_4 = field.getSimpleName();
+          _builder.append(_simpleName_4, "");
           _builder.append("\"));");
           _builder.newLineIfNotEmpty();
-          _builder.append("}");
-          _builder.newLine();
         } else {
-          boolean _isObservable = this.isObservable(f, context);
+          boolean _isObservable = this.isObservable(field, context);
           if (_isObservable) {
             _builder.append("this.");
-            String _simpleName_13 = f.getSimpleName();
-            _builder.append(_simpleName_13, "");
+            String _simpleName_5 = field.getSimpleName();
+            _builder.append(_simpleName_5, "");
             _builder.append(" = value;");
             _builder.newLineIfNotEmpty();
             _builder.append("this.");
-            String _stopObservingFunctionName_2 = this.getStopObservingFunctionName(f);
+            String _stopObservingFunctionName_2 = this.getStopObservingFunctionName(field);
             _builder.append(_stopObservingFunctionName_2, "");
             _builder.append(" = this.");
-            String _simpleName_14 = f.getSimpleName();
-            _builder.append(_simpleName_14, "");
+            String _simpleName_6 = field.getSimpleName();
+            _builder.append(_simpleName_6, "");
             _builder.append(".onChange(newChangeHandler(\"");
-            String _simpleName_15 = f.getSimpleName();
-            _builder.append(_simpleName_15, "");
+            String _simpleName_7 = field.getSimpleName();
+            _builder.append(_simpleName_7, "");
             _builder.append("\"));");
             _builder.newLineIfNotEmpty();
           } else {
             _builder.append("this.");
-            String _simpleName_16 = f.getSimpleName();
-            _builder.append(_simpleName_16, "");
+            String _simpleName_8 = field.getSimpleName();
+            _builder.append(_simpleName_8, "");
             _builder.append(" = value;");
             _builder.newLineIfNotEmpty();
           }
