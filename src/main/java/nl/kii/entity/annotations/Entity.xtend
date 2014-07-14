@@ -23,6 +23,7 @@ import static org.eclipse.xtend.lib.macro.declaration.Visibility.*
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
 
 /**
  * Reactive Objects can be observed for changes and can have change objects applied to them to change them.
@@ -238,7 +239,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						.or(f.type)
 					addParameter('value', setterType)
 					body = ['''
-						«IF f.in(reactiveFields)»
+						«IF f.in(reactiveFields) » 
 							// stop listening to old value
 							if(this.«f.simpleName» != null && this.«f.stopObservingFunctionName» != null)
 								«f.stopObservingFunctionName».apply();
@@ -490,7 +491,13 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	}
 
 	def isReactive(MutableFieldDeclaration field, extension TransformationContext context) {
-		field.type.extendsType(ReactiveObject.newTypeReference) ||
+		val type = field.type.type
+		val isEntity = if(type instanceof AnnotationTarget) {
+			type.findAnnotation(Entity.newTypeReference.type) != null
+		}
+		
+		// field.type.extendsType(ReactiveObject.newTypeReference) ||
+		isEntity ||
 		field.type.extendsType(List.newTypeReference) ||
 		field.type.extendsType(Map.newTypeReference)
 	}

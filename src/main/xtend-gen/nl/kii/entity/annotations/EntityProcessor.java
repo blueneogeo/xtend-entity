@@ -10,6 +10,7 @@ import nl.kii.entity.Change;
 import nl.kii.entity.EntityList;
 import nl.kii.entity.EntityMap;
 import nl.kii.entity.ReactiveObject;
+import nl.kii.entity.annotations.Entity;
 import nl.kii.entity.annotations.Ignore;
 import nl.kii.entity.annotations.Require;
 import nl.kii.observe.Observable;
@@ -18,6 +19,7 @@ import nl.kii.util.OptExtensions;
 import org.eclipse.xtend.lib.macro.TransformationContext;
 import org.eclipse.xtend.lib.macro.TransformationParticipant;
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference;
+import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget;
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration;
 import org.eclipse.xtend.lib.macro.declaration.CompilationStrategy;
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration;
@@ -1221,28 +1223,39 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
   }
   
   public boolean isReactive(final MutableFieldDeclaration field, @Extension final TransformationContext context) {
-    boolean _or = false;
-    boolean _or_1 = false;
-    TypeReference _type = field.getType();
-    TypeReference _newTypeReference = context.newTypeReference(ReactiveObject.class);
-    boolean _extendsType = this.<Object>extendsType(_type, _newTypeReference);
-    if (_extendsType) {
-      _or_1 = true;
-    } else {
-      TypeReference _type_1 = field.getType();
-      TypeReference _newTypeReference_1 = context.newTypeReference(List.class);
-      boolean _extendsType_1 = this.<Object>extendsType(_type_1, _newTypeReference_1);
-      _or_1 = _extendsType_1;
+    boolean _xblockexpression = false;
+    {
+      TypeReference _type = field.getType();
+      final Type type = _type.getType();
+      boolean _xifexpression = false;
+      if ((type instanceof AnnotationTarget)) {
+        TypeReference _newTypeReference = context.newTypeReference(Entity.class);
+        Type _type_1 = _newTypeReference.getType();
+        AnnotationReference _findAnnotation = ((AnnotationTarget)type).findAnnotation(_type_1);
+        _xifexpression = (!Objects.equal(_findAnnotation, null));
+      }
+      final boolean isEntity = _xifexpression;
+      boolean _or = false;
+      boolean _or_1 = false;
+      if (isEntity) {
+        _or_1 = true;
+      } else {
+        TypeReference _type_2 = field.getType();
+        TypeReference _newTypeReference_1 = context.newTypeReference(List.class);
+        boolean _extendsType = this.<Object>extendsType(_type_2, _newTypeReference_1);
+        _or_1 = _extendsType;
+      }
+      if (_or_1) {
+        _or = true;
+      } else {
+        TypeReference _type_3 = field.getType();
+        TypeReference _newTypeReference_2 = context.newTypeReference(Map.class);
+        boolean _extendsType_1 = this.<Object>extendsType(_type_3, _newTypeReference_2);
+        _or = _extendsType_1;
+      }
+      _xblockexpression = _or;
     }
-    if (_or_1) {
-      _or = true;
-    } else {
-      TypeReference _type_2 = field.getType();
-      TypeReference _newTypeReference_2 = context.newTypeReference(Map.class);
-      boolean _extendsType_2 = this.<Object>extendsType(_type_2, _newTypeReference_2);
-      _or = _extendsType_2;
-    }
-    return _or;
+    return _xblockexpression;
   }
   
   public boolean isEntityList(final MutableFieldDeclaration field) {
