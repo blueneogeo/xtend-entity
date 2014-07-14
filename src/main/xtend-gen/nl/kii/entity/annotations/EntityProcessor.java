@@ -334,69 +334,80 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             }
           }
         }
-        final Procedure1<MutableMethodDeclaration> _function_10 = new Procedure1<MutableMethodDeclaration>() {
-          public void apply(final MutableMethodDeclaration it) {
-            StringConcatenation _builder = new StringConcatenation();
-            _builder.append("Check if the ");
-            String _simpleName = cls.getSimpleName();
-            _builder.append(_simpleName, "");
-            _builder.append(" is valid.");
-            _builder.newLineIfNotEmpty();
-            _builder.append("Also recursively checks contained entities within the members of ");
-            String _simpleName_1 = cls.getSimpleName();
-            _builder.append(_simpleName_1, "");
-            _builder.append(".");
-            _builder.newLineIfNotEmpty();
-            _builder.append("@return true if all the fields annotated with @Require have a value.");
-            _builder.newLine();
-            it.setDocComment(_builder.toString());
-            context.setPrimarySourceElement(it, cls);
-            TypeReference _newTypeReference = context.newTypeReference("boolean");
-            it.setReturnType(_newTypeReference);
-            final CompilationStrategy _function = new CompilationStrategy() {
-              public CharSequence compile(final CompilationStrategy.CompilationContext it) {
-                StringConcatenation _builder = new StringConcatenation();
-                {
-                  for(final MutableFieldDeclaration field : requiredFields) {
-                    {
-                      TypeReference _type = field.getType();
-                      boolean _isPrimitive = _type.isPrimitive();
-                      boolean _not = (!_isPrimitive);
-                      if (_not) {
-                        _builder.append("if(");
-                        String _simpleName = field.getSimpleName();
-                        _builder.append(_simpleName, "");
-                        _builder.append("==null) return false;");
-                        _builder.newLineIfNotEmpty();
-                        {
-                          boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
-                          if (_in) {
-                            _builder.append("if(!");
-                            String _simpleName_1 = field.getSimpleName();
-                            _builder.append(_simpleName_1, "");
-                            _builder.append(".isValid()) return false;");
-                            _builder.newLineIfNotEmpty();
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_10 = new Function1<MutableMethodDeclaration, Boolean>() {
+          public Boolean apply(final MutableMethodDeclaration it) {
+            String _simpleName = it.getSimpleName();
+            return Boolean.valueOf(Objects.equal(_simpleName, "isValid"));
+          }
+        };
+        Iterable<? extends MutableMethodDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods, _function_10);
+        boolean _isEmpty = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter);
+        if (_isEmpty) {
+          final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
+            public void apply(final MutableMethodDeclaration it) {
+              StringConcatenation _builder = new StringConcatenation();
+              _builder.append("Check if the ");
+              String _simpleName = cls.getSimpleName();
+              _builder.append(_simpleName, "");
+              _builder.append(" is valid.");
+              _builder.newLineIfNotEmpty();
+              _builder.append("Also recursively checks contained entities within the members of ");
+              String _simpleName_1 = cls.getSimpleName();
+              _builder.append(_simpleName_1, "");
+              _builder.append(".");
+              _builder.newLineIfNotEmpty();
+              _builder.append("@return true if all the fields annotated with @Require have a value.");
+              _builder.newLine();
+              it.setDocComment(_builder.toString());
+              context.setPrimarySourceElement(it, cls);
+              TypeReference _newTypeReference = context.newTypeReference("boolean");
+              it.setReturnType(_newTypeReference);
+              final CompilationStrategy _function = new CompilationStrategy() {
+                public CharSequence compile(final CompilationStrategy.CompilationContext it) {
+                  StringConcatenation _builder = new StringConcatenation();
+                  {
+                    for(final MutableFieldDeclaration field : requiredFields) {
+                      {
+                        TypeReference _type = field.getType();
+                        boolean _isPrimitive = _type.isPrimitive();
+                        boolean _not = (!_isPrimitive);
+                        if (_not) {
+                          _builder.append("if(");
+                          String _simpleName = field.getSimpleName();
+                          _builder.append(_simpleName, "");
+                          _builder.append("==null) return false;");
+                          _builder.newLineIfNotEmpty();
+                          {
+                            boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
+                            if (_in) {
+                              _builder.append("if(!");
+                              String _simpleName_1 = field.getSimpleName();
+                              _builder.append(_simpleName_1, "");
+                              _builder.append(".isValid()) return false;");
+                              _builder.newLineIfNotEmpty();
+                            }
                           }
                         }
                       }
                     }
                   }
+                  _builder.append("return true;");
+                  _builder.newLine();
+                  return _builder;
                 }
-                _builder.append("return true;");
-                _builder.newLine();
-                return _builder;
-              }
-            };
-            it.setBody(_function);
-          }
-        };
-        cls.addMethod("isValid", _function_10);
+              };
+              it.setBody(_function);
+            }
+          };
+          cls.addMethod("isValid", _function_11);
+        }
         for (final MutableFieldDeclaration f : getSetFields) {
           {
             String _simpleName = f.getSimpleName();
             String _firstUpper = StringExtensions.toFirstUpper(_simpleName);
             String _plus_1 = ("get" + _firstUpper);
-            final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
+            final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("Get the value of the ");
@@ -437,11 +448,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_1, _function_11);
+            cls.addMethod(_plus_1, _function_12);
             String _simpleName_1 = f.getSimpleName();
             String _firstUpper_1 = StringExtensions.toFirstUpper(_simpleName_1);
             String _plus_2 = ("set" + _firstUpper_1);
-            final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
+            final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("Set the value of the ");
@@ -592,10 +603,10 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_2, _function_12);
+            cls.addMethod(_plus_2, _function_13);
           }
         }
-        final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
+        final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Apply a change to the ");
@@ -848,74 +859,85 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("apply", _function_11);
-        final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
-          public void apply(final MutableMethodDeclaration it) {
-            context.setPrimarySourceElement(it, cls);
-            TypeReference _string = context.getString();
-            it.setReturnType(_string);
-            final CompilationStrategy _function = new CompilationStrategy() {
-              public CharSequence compile(final CompilationStrategy.CompilationContext it) {
-                StringConcatenation _builder = new StringConcatenation();
-                _builder.append("return \"");
-                String _simpleName = cls.getSimpleName();
-                _builder.append(_simpleName, "");
-                _builder.append(" { \"");
-                _builder.newLineIfNotEmpty();
-                {
-                  boolean _hasElements = false;
-                  for(final MutableFieldDeclaration field : getSetFields) {
-                    if (!_hasElements) {
-                      _hasElements = true;
-                    } else {
-                      _builder.appendImmediate(" + \", \" ", "");
-                    }
-                    _builder.append("+ \"");
-                    String _simpleName_1 = field.getSimpleName();
-                    _builder.append(_simpleName_1, "");
-                    _builder.append(": \" +");
-                    _builder.newLineIfNotEmpty();
-                    {
-                      TypeReference _type = field.getType();
-                      TypeReference _string = context.getString();
-                      boolean _isAssignableFrom = _type.isAssignableFrom(_string);
-                      if (_isAssignableFrom) {
-                        _builder.append("\"\'\" + this.");
-                        String _simpleName_2 = field.getSimpleName();
-                        _builder.append(_simpleName_2, "");
-                        _builder.append(" + \"\'\" ");
-                        _builder.newLineIfNotEmpty();
+        cls.addMethod("apply", _function_12);
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_1 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_13 = new Function1<MutableMethodDeclaration, Boolean>() {
+          public Boolean apply(final MutableMethodDeclaration it) {
+            String _simpleName = it.getSimpleName();
+            return Boolean.valueOf(Objects.equal(_simpleName, "toString"));
+          }
+        };
+        Iterable<? extends MutableMethodDeclaration> _filter_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_1, _function_13);
+        boolean _isEmpty_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_1);
+        if (_isEmpty_1) {
+          final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
+            public void apply(final MutableMethodDeclaration it) {
+              context.setPrimarySourceElement(it, cls);
+              TypeReference _string = context.getString();
+              it.setReturnType(_string);
+              final CompilationStrategy _function = new CompilationStrategy() {
+                public CharSequence compile(final CompilationStrategy.CompilationContext it) {
+                  StringConcatenation _builder = new StringConcatenation();
+                  _builder.append("return \"");
+                  String _simpleName = cls.getSimpleName();
+                  _builder.append(_simpleName, "");
+                  _builder.append(" { \"");
+                  _builder.newLineIfNotEmpty();
+                  {
+                    boolean _hasElements = false;
+                    for(final MutableFieldDeclaration field : getSetFields) {
+                      if (!_hasElements) {
+                        _hasElements = true;
                       } else {
-                        _builder.append("this.");
-                        String _simpleName_3 = field.getSimpleName();
-                        _builder.append(_simpleName_3, "");
-                        _builder.append(" ");
-                        _builder.newLineIfNotEmpty();
+                        _builder.appendImmediate(" + \", \" ", "");
+                      }
+                      _builder.append("+ \"");
+                      String _simpleName_1 = field.getSimpleName();
+                      _builder.append(_simpleName_1, "");
+                      _builder.append(": \" +");
+                      _builder.newLineIfNotEmpty();
+                      {
+                        TypeReference _type = field.getType();
+                        TypeReference _string = context.getString();
+                        boolean _isAssignableFrom = _type.isAssignableFrom(_string);
+                        if (_isAssignableFrom) {
+                          _builder.append("\"\'\" + this.");
+                          String _simpleName_2 = field.getSimpleName();
+                          _builder.append(_simpleName_2, "");
+                          _builder.append(" + \"\'\" ");
+                          _builder.newLineIfNotEmpty();
+                        } else {
+                          _builder.append("this.");
+                          String _simpleName_3 = field.getSimpleName();
+                          _builder.append(_simpleName_3, "");
+                          _builder.append(" ");
+                          _builder.newLineIfNotEmpty();
+                        }
                       }
                     }
                   }
+                  _builder.append("+ \" }\";");
+                  _builder.newLine();
+                  return _builder;
                 }
-                _builder.append("+ \" }\";");
-                _builder.newLine();
-                return _builder;
-              }
-            };
-            it.setBody(_function);
-          }
-        };
-        cls.addMethod("toString", _function_12);
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_13 = new Function1<MutableMethodDeclaration, Boolean>() {
+              };
+              it.setBody(_function);
+            }
+          };
+          cls.addMethod("toString", _function_14);
+        }
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_2 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_15 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "equals"));
           }
         };
-        MutableMethodDeclaration _findFirst = org.eclipse.xtext.xbase.lib.IterableExtensions.findFirst(_declaredMethods, _function_13);
-        boolean _defined = OptExtensions.<Object>defined(_findFirst);
-        boolean _not = (!_defined);
+        Iterable<? extends MutableMethodDeclaration> _filter_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_2, _function_15);
+        boolean _isEmpty_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_2);
+        boolean _not = (!_isEmpty_2);
         if (_not) {
-          final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_16 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _object = context.getObject();
@@ -1016,20 +1038,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("equals", _function_14);
+          cls.addMethod("equals", _function_16);
         }
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods_1 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_15 = new Function1<MutableMethodDeclaration, Boolean>() {
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_3 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_17 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "hashCode"));
           }
         };
-        MutableMethodDeclaration _findFirst_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.findFirst(_declaredMethods_1, _function_15);
-        boolean _defined_1 = OptExtensions.<Object>defined(_findFirst_1);
-        boolean _not_1 = (!_defined_1);
+        Iterable<? extends MutableMethodDeclaration> _filter_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_3, _function_17);
+        boolean _isEmpty_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_3);
+        boolean _not_1 = (!_isEmpty_3);
         if (_not_1) {
-          final Procedure1<MutableMethodDeclaration> _function_16 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_18 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _primitiveInt = context.getPrimitiveInt();
@@ -1087,20 +1109,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("hashCode", _function_16);
+          cls.addMethod("hashCode", _function_18);
         }
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods_2 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_17 = new Function1<MutableMethodDeclaration, Boolean>() {
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_4 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_19 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "clone"));
           }
         };
-        MutableMethodDeclaration _findFirst_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.findFirst(_declaredMethods_2, _function_17);
-        boolean _defined_2 = OptExtensions.<Object>defined(_findFirst_2);
-        boolean _not_2 = (!_defined_2);
+        Iterable<? extends MutableMethodDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_4, _function_19);
+        boolean _isEmpty_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_4);
+        boolean _not_2 = (!_isEmpty_4);
         if (_not_2) {
-          final Procedure1<MutableMethodDeclaration> _function_18 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_20 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               it.setReturnType(clsType);
@@ -1128,17 +1150,17 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("clone", _function_18);
+          cls.addMethod("clone", _function_20);
         }
-        final Function1<MutableFieldDeclaration, Boolean> _function_19 = new Function1<MutableFieldDeclaration, Boolean>() {
+        final Function1<MutableFieldDeclaration, Boolean> _function_21 = new Function1<MutableFieldDeclaration, Boolean>() {
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             String _simpleName = _type.getSimpleName();
             return Boolean.valueOf(_simpleName.startsWith("Map"));
           }
         };
-        Iterable<? extends MutableFieldDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_19);
-        final Procedure1<MutableFieldDeclaration> _function_20 = new Procedure1<MutableFieldDeclaration>() {
+        Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_21);
+        final Procedure1<MutableFieldDeclaration> _function_22 = new Procedure1<MutableFieldDeclaration>() {
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
@@ -1157,16 +1179,16 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             }
           }
         };
-        IterableExtensions.<MutableFieldDeclaration>each(_filter, _function_20);
-        final Function1<MutableFieldDeclaration, Boolean> _function_21 = new Function1<MutableFieldDeclaration, Boolean>() {
+        IterableExtensions.<MutableFieldDeclaration>each(_filter_5, _function_22);
+        final Function1<MutableFieldDeclaration, Boolean> _function_23 = new Function1<MutableFieldDeclaration, Boolean>() {
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             String _simpleName = _type.getSimpleName();
             return Boolean.valueOf(_simpleName.startsWith("List"));
           }
         };
-        Iterable<? extends MutableFieldDeclaration> _filter_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_21);
-        final Procedure1<MutableFieldDeclaration> _function_22 = new Procedure1<MutableFieldDeclaration>() {
+        Iterable<? extends MutableFieldDeclaration> _filter_6 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_23);
+        final Procedure1<MutableFieldDeclaration> _function_24 = new Procedure1<MutableFieldDeclaration>() {
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
@@ -1175,8 +1197,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setType(_newTypeReference);
           }
         };
-        IterableExtensions.<MutableFieldDeclaration>each(_filter_1, _function_22);
-        final Procedure1<MutableMethodDeclaration> _function_23 = new Procedure1<MutableMethodDeclaration>() {
+        IterableExtensions.<MutableFieldDeclaration>each(_filter_6, _function_24);
+        final Procedure1<MutableMethodDeclaration> _function_25 = new Procedure1<MutableMethodDeclaration>() {
           public void apply(final MutableMethodDeclaration it) {
             it.setVisibility(Visibility.PROTECTED);
             it.setDocComment("creates a listener for propagating to changes on a field to the publisher");
@@ -1217,7 +1239,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("newChangeHandler", _function_23);
+        cls.addMethod("newChangeHandler", _function_25);
       }
     }
   }

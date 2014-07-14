@@ -178,7 +178,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				]
 			}
 			
-			// some type checks for maps and listes
+			// maps and lists must be typed
 			
 			for(field : observedFields) {
 				if(field.type.simpleName.startsWith('List'))
@@ -191,26 +191,27 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			
 			// create the validate method
 			
-			cls.addMethod('isValid') [
-				docComment = '''
-					Check if the «cls.simpleName» is valid.
-					Also recursively checks contained entities within the members of «cls.simpleName».
-					@return true if all the fields annotated with @Require have a value.
-				'''
-				primarySourceElement = cls
-				returnType = 'boolean'.newTypeReference
-				body = ['''
-					«FOR field : requiredFields»
-						«IF !field.type.primitive»
-							if(«field.simpleName»==null) return false;
-							«IF field.in(reactiveFields)»
-								if(!«field.simpleName».isValid()) return false;
+			if(cls.declaredMethods.filter[simpleName=='isValid'].empty)
+				cls.addMethod('isValid') [
+					docComment = '''
+						Check if the «cls.simpleName» is valid.
+						Also recursively checks contained entities within the members of «cls.simpleName».
+						@return true if all the fields annotated with @Require have a value.
+					'''
+					primarySourceElement = cls
+					returnType = 'boolean'.newTypeReference
+					body = ['''
+						«FOR field : requiredFields»
+							«IF !field.type.primitive»
+								if(«field.simpleName»==null) return false;
+								«IF field.in(reactiveFields)»
+									if(!«field.simpleName».isValid()) return false;
+								«ENDIF»
 							«ENDIF»
-						«ENDIF»
-					«ENDFOR»
-					return true;
-				''']
-			]
+						«ENDFOR»
+						return true;
+					''']
+				]
 			
 			// create getters and setters
 			
@@ -337,27 +338,27 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			]
 			
 			// create a tostring override
-			
-			cls.addMethod('toString') [
-				// addAnnotation(overrideType.)
-				primarySourceElement = cls
-				returnType = string
-				body = ['''
-					return "«cls.simpleName» { "
-					«FOR field:getSetFields SEPARATOR ' + ", " '»
-						+ "«field.simpleName»: " +
-						«IF field.type.isAssignableFrom(string)»
-							"'" + this.«field.simpleName» + "'" 
-						«ELSE»
-							this.«field.simpleName» 
-						«ENDIF»
-					«ENDFOR»
-					+ " }";
-				''']
-			]
+			if(cls.declaredMethods.filter[simpleName=='toString'].empty)
+				cls.addMethod('toString') [
+					// addAnnotation(overrideType.)
+					primarySourceElement = cls
+					returnType = string
+					body = ['''
+						return "«cls.simpleName» { "
+						«FOR field:getSetFields SEPARATOR ' + ", " '»
+							+ "«field.simpleName»: " +
+							«IF field.type.isAssignableFrom(string)»
+								"'" + this.«field.simpleName» + "'" 
+							«ELSE»
+								this.«field.simpleName» 
+							«ENDIF»
+						«ENDFOR»
+						+ " }";
+					''']
+				]
 			
 			// create equals override
-			if(!cls.declaredMethods.findFirst[simpleName=='equals'].defined)
+			if(!cls.declaredMethods.filter[simpleName=='equals'].empty)
 				cls.addMethod('equals') [
 					//addAnnotation(overrideType.type)
 					primarySourceElement = cls
@@ -385,7 +386,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				]
 			
 			// create hashcode override
-			if(!cls.declaredMethods.findFirst[simpleName=='hashCode'].defined)
+			if(!cls.declaredMethods.filter[simpleName=='hashCode'].empty)
 				cls.addMethod('hashCode') [
 					// addAnnotation(overrideType.type)
 					primarySourceElement = cls
@@ -406,7 +407,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				]
 			
 			// create clone override
-			if(!cls.declaredMethods.findFirst[simpleName=='clone'].defined)
+			if(!cls.declaredMethods.filter[simpleName=='clone'].empty)
 				cls.addMethod('clone') [
 					primarySourceElement = cls
 					returnType = clsType
