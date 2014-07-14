@@ -358,7 +358,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				]
 			
 			// create equals override
-			if(!cls.declaredMethods.filter[simpleName=='equals'].empty)
+			if(cls.declaredMethods.filter[simpleName=='equals'].empty)
 				cls.addMethod('equals') [
 					//addAnnotation(overrideType.type)
 					primarySourceElement = cls
@@ -386,7 +386,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				]
 			
 			// create hashcode override
-			if(!cls.declaredMethods.filter[simpleName=='hashCode'].empty)
+			if(cls.declaredMethods.filter[simpleName=='hashCode'].empty)
 				cls.addMethod('hashCode') [
 					// addAnnotation(overrideType.type)
 					primarySourceElement = cls
@@ -407,7 +407,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				]
 			
 			// create clone override
-			if(!cls.declaredMethods.filter[simpleName=='clone'].empty)
+			if(cls.declaredMethods.filter[simpleName=='clone'].empty)
 				cls.addMethod('clone') [
 					primarySourceElement = cls
 					returnType = clsType

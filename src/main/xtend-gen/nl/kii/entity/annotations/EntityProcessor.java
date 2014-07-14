@@ -935,8 +935,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         Iterable<? extends MutableMethodDeclaration> _filter_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_2, _function_15);
         boolean _isEmpty_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_2);
-        boolean _not = (!_isEmpty_2);
-        if (_not) {
+        if (_isEmpty_2) {
           final Procedure1<MutableMethodDeclaration> _function_16 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
@@ -1049,8 +1048,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         Iterable<? extends MutableMethodDeclaration> _filter_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_3, _function_17);
         boolean _isEmpty_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_3);
-        boolean _not_1 = (!_isEmpty_3);
-        if (_not_1) {
+        if (_isEmpty_3) {
           final Procedure1<MutableMethodDeclaration> _function_18 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
@@ -1120,8 +1118,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         Iterable<? extends MutableMethodDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_4, _function_19);
         boolean _isEmpty_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_4);
-        boolean _not_2 = (!_isEmpty_4);
-        if (_not_2) {
+        if (_isEmpty_4) {
           final Procedure1<MutableMethodDeclaration> _function_20 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
