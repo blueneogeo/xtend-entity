@@ -438,10 +438,52 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 final CompilationStrategy _function = new CompilationStrategy() {
                   public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                     StringConcatenation _builder = new StringConcatenation();
+                    {
+                      boolean _isEntityMap = EntityProcessor.this.isEntityMap(f);
+                      if (_isEntityMap) {
+                        _builder.append("if(");
+                        String _simpleName = f.getSimpleName();
+                        _builder.append(_simpleName, "");
+                        _builder.append("==null) {");
+                        _builder.newLineIfNotEmpty();
+                        _builder.append("\t");
+                        CharSequence _newEntityMap = EntityProcessor.this.newEntityMap(f, "newMap", context);
+                        _builder.append(_newEntityMap, "\t");
+                        _builder.newLineIfNotEmpty();
+                        _builder.append("\t");
+                        String _simpleName_1 = f.getSimpleName();
+                        _builder.append(_simpleName_1, "\t");
+                        _builder.append(" = newMap;");
+                        _builder.newLineIfNotEmpty();
+                        _builder.append("}");
+                        _builder.newLine();
+                      } else {
+                        boolean _isEntityList = EntityProcessor.this.isEntityList(f);
+                        if (_isEntityList) {
+                          _builder.append("if(");
+                          String _simpleName_2 = f.getSimpleName();
+                          _builder.append(_simpleName_2, "");
+                          _builder.append("==null) {");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("\t");
+                          CharSequence _newEntityList = EntityProcessor.this.newEntityList(f, "newList", context);
+                          _builder.append(_newEntityList, "\t");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("\t");
+                          String _simpleName_3 = f.getSimpleName();
+                          _builder.append(_simpleName_3, "\t");
+                          _builder.append(" = newList;");
+                          _builder.newLineIfNotEmpty();
+                          _builder.append("}");
+                          _builder.newLine();
+                        }
+                      }
+                    }
                     _builder.append("return ");
-                    String _simpleName = f.getSimpleName();
-                    _builder.append(_simpleName, "");
+                    String _simpleName_4 = f.getSimpleName();
+                    _builder.append(_simpleName_4, "");
                     _builder.append(";");
+                    _builder.newLineIfNotEmpty();
                     return _builder;
                   }
                 };
@@ -1307,21 +1349,9 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
       if (_isEntityList) {
         _builder.append("// if the list is not already reactive, wrap the list as a reactive list");
         _builder.newLine();
-        TypeReference _type = field.getType();
-        List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
-        final TypeReference typeArg = _actualTypeArguments.get(0);
-        _builder.newLineIfNotEmpty();
-        final TypeReference listType = context.newTypeReference(EntityList.class, typeArg);
-        _builder.newLineIfNotEmpty();
-        String _name = listType.getName();
-        _builder.append(_name, "");
-        _builder.append(" newList = new ");
-        String _name_1 = listType.getName();
-        _builder.append(_name_1, "");
-        _builder.append("(");
-        String _name_2 = typeArg.getName();
-        _builder.append(_name_2, "");
-        _builder.append(".class);");
+        CharSequence _newEntityList = this.newEntityList(field, "newList", context);
+        _builder.append(_newEntityList, "");
+        _builder.append(";");
         _builder.newLineIfNotEmpty();
         _builder.append("if(value != null) newList.addAll(value);");
         _builder.newLine();
@@ -1342,59 +1372,47 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         if (_isEntityMap) {
           _builder.append("// if the map is not already listenable, wrap the map as a listenable");
           _builder.newLine();
-          TypeReference _type_1 = field.getType();
-          List<TypeReference> _actualTypeArguments_1 = _type_1.getActualTypeArguments();
-          final TypeReference typeArg_1 = _actualTypeArguments_1.get(0);
-          _builder.newLineIfNotEmpty();
-          final TypeReference mapType = context.newTypeReference(EntityMap.class, typeArg_1);
-          _builder.newLineIfNotEmpty();
-          String _name_3 = mapType.getName();
-          _builder.append(_name_3, "");
-          _builder.append(" newMap = new ");
-          String _name_4 = mapType.getName();
-          _builder.append(_name_4, "");
-          _builder.append("(");
-          String _simpleName_2 = typeArg_1.getSimpleName();
-          _builder.append(_simpleName_2, "");
-          _builder.append(".class);");
+          CharSequence _newEntityMap = this.newEntityMap(field, "newMap", context);
+          _builder.append(_newEntityMap, "");
+          _builder.append(";");
           _builder.newLineIfNotEmpty();
           _builder.append("if(value != null) newMap.putAll(value);");
           _builder.newLine();
-          String _simpleName_3 = field.getSimpleName();
-          _builder.append(_simpleName_3, "");
+          String _simpleName_2 = field.getSimpleName();
+          _builder.append(_simpleName_2, "");
           _builder.append(" = newMap;");
           _builder.newLineIfNotEmpty();
           _builder.append("this.");
           String _stopObservingFunctionName_1 = this.getStopObservingFunctionName(field);
           _builder.append(_stopObservingFunctionName_1, "");
           _builder.append(" = newMap.onChange(newChangeHandler(\"");
-          String _simpleName_4 = field.getSimpleName();
-          _builder.append(_simpleName_4, "");
+          String _simpleName_3 = field.getSimpleName();
+          _builder.append(_simpleName_3, "");
           _builder.append("\"));");
           _builder.newLineIfNotEmpty();
         } else {
           boolean _isObservable = this.isObservable(field, context);
           if (_isObservable) {
             _builder.append("this.");
-            String _simpleName_5 = field.getSimpleName();
-            _builder.append(_simpleName_5, "");
+            String _simpleName_4 = field.getSimpleName();
+            _builder.append(_simpleName_4, "");
             _builder.append(" = value;");
             _builder.newLineIfNotEmpty();
             _builder.append("this.");
             String _stopObservingFunctionName_2 = this.getStopObservingFunctionName(field);
             _builder.append(_stopObservingFunctionName_2, "");
             _builder.append(" = this.");
+            String _simpleName_5 = field.getSimpleName();
+            _builder.append(_simpleName_5, "");
+            _builder.append(".onChange(newChangeHandler(\"");
             String _simpleName_6 = field.getSimpleName();
             _builder.append(_simpleName_6, "");
-            _builder.append(".onChange(newChangeHandler(\"");
-            String _simpleName_7 = field.getSimpleName();
-            _builder.append(_simpleName_7, "");
             _builder.append("\"));");
             _builder.newLineIfNotEmpty();
           } else {
             _builder.append("this.");
-            String _simpleName_8 = field.getSimpleName();
-            _builder.append(_simpleName_8, "");
+            String _simpleName_7 = field.getSimpleName();
+            _builder.append(_simpleName_7, "");
             _builder.append(" = value;");
             _builder.newLineIfNotEmpty();
           }
@@ -1413,6 +1431,56 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
   
   public String getTypeParamName(final TypeParameterDeclaration type, final int position) {
     return ("typeParam" + Integer.valueOf(position));
+  }
+  
+  public CharSequence newEntityList(final MutableFieldDeclaration field, final String valName, @Extension final TransformationContext context) {
+    CharSequence _xblockexpression = null;
+    {
+      TypeReference _type = field.getType();
+      List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
+      final TypeReference typeArg = _actualTypeArguments.get(0);
+      final TypeReference type = context.newTypeReference(EntityList.class, typeArg);
+      StringConcatenation _builder = new StringConcatenation();
+      _builder.append("final ");
+      String _simpleName = type.getSimpleName();
+      _builder.append(_simpleName, "");
+      _builder.append(" ");
+      _builder.append(valName, "");
+      _builder.append(" = new ");
+      String _name = type.getName();
+      _builder.append(_name, "");
+      _builder.append("(");
+      String _simpleName_1 = typeArg.getSimpleName();
+      _builder.append(_simpleName_1, "");
+      _builder.append(".class);");
+      _xblockexpression = _builder;
+    }
+    return _xblockexpression;
+  }
+  
+  public CharSequence newEntityMap(final MutableFieldDeclaration field, final String valName, @Extension final TransformationContext context) {
+    CharSequence _xblockexpression = null;
+    {
+      TypeReference _type = field.getType();
+      List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
+      final TypeReference typeArg = _actualTypeArguments.get(0);
+      final TypeReference type = context.newTypeReference(EntityMap.class, typeArg);
+      StringConcatenation _builder = new StringConcatenation();
+      _builder.append("final ");
+      String _simpleName = type.getSimpleName();
+      _builder.append(_simpleName, "");
+      _builder.append(" ");
+      _builder.append(valName, "");
+      _builder.append(" = new ");
+      String _name = type.getName();
+      _builder.append(_name, "");
+      _builder.append("(");
+      String _simpleName_1 = typeArg.getSimpleName();
+      _builder.append(_simpleName_1, "");
+      _builder.append(".class);");
+      _xblockexpression = _builder;
+    }
+    return _xblockexpression;
   }
   
   public TypeReference toEntityMapType(final MutableFieldDeclaration field, @Extension final TransformationContext context) {

@@ -226,7 +226,20 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					returnType = typeConversions
 						.get(f.type.simpleName)?.newTypeReference
 						.or(f.type)
-					body = ['''return «f.simpleName»;''']
+					body = ['''
+						«IF f.isEntityMap»
+							if(«f.simpleName»==null) {
+								«f.newEntityMap('newMap', context)»
+								«f.simpleName» = newMap;
+							}
+						«ELSEIF f.isEntityList»
+							if(«f.simpleName»==null) {
+								«f.newEntityList('newList', context)»
+								«f.simpleName» = newList;
+							}
+						«ENDIF»
+						return «f.simpleName»;
+					''']
 				]
 				
 				cls.addMethod('set' + f.simpleName.toFirstUpper) [
@@ -522,17 +535,13 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	def assignFieldValue(MutableFieldDeclaration field, extension TransformationContext context) '''
 		«IF field.isEntityList»
 			// if the list is not already reactive, wrap the list as a reactive list
-			«val typeArg = field.type.actualTypeArguments.get(0)»
-			«val listType = EntityList.newTypeReference(typeArg)»
-			«listType.name» newList = new «listType.name»(«typeArg.name».class);
+			«field.newEntityList('newList', context)»;
 			if(value != null) newList.addAll(value);
 			«field.simpleName» = newList;
 			this.«field.getStopObservingFunctionName» = newList.onChange(newChangeHandler("«field.simpleName»"));
 		«ELSEIF field.entityMap»
 			// if the map is not already listenable, wrap the map as a listenable
-			«val typeArg = field.type.actualTypeArguments.get(0)»
-			«val mapType = EntityMap.newTypeReference(typeArg)»
-			«mapType.name» newMap = new «mapType.name»(«typeArg.simpleName».class);
+			«field.newEntityMap('newMap', context)»;
 			if(value != null) newMap.putAll(value);
 			«field.simpleName» = newMap;
 			this.«field.getStopObservingFunctionName» = newMap.onChange(newChangeHandler("«field.simpleName»"));
@@ -550,6 +559,18 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 	def getTypeParamName(TypeParameterDeclaration type, int position) {
 		'typeParam' + position
+	}
+	
+	def newEntityList(MutableFieldDeclaration field, String valName, extension TransformationContext context) {
+		val typeArg = field.type.actualTypeArguments.get(0)
+		val type = EntityList.newTypeReference(typeArg)
+		'''final «type.simpleName» «valName» = new «type.name»(«typeArg.simpleName».class);'''
+	}
+	
+	def newEntityMap(MutableFieldDeclaration field, String valName, extension TransformationContext context) {
+		val typeArg = field.type.actualTypeArguments.get(0)
+		val type = EntityMap.newTypeReference(typeArg)
+		'''final «type.simpleName» «valName» = new «type.name»(«typeArg.simpleName».class);'''
 	}
 	
 	def toEntityMapType(MutableFieldDeclaration field, extension TransformationContext context) {
