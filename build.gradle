@@ -8,33 +8,12 @@ repositories{
     mavenCentral()
 }
 
-// add provided support:
-
-configurations {
-	provided
-	// provided.extendsFrom(compile)
-	
-	provided.transitive = false
-	
-	// provided.exclude group: 'log4j'
-	// provided.exclude group: 'org.slf4j'
-	
-}
-
-sourceSets {
-    main.compileClasspath += configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
-}
-
-eclipse.classpath.plusConfigurations += configurations.provided
+tasks.jar.dependsOn javadoc
 
 dependencies {
 
     compile 'com.kimengi.util:xtend-tools:+'
     compile 'com.kimengi.util:xtend-async:+'
     
-	provided 'org.eclipse.xtend:org.eclipse.xtend.core:+' // gives dependency missing error
-
 	testCompile "junit:junit:$junitVersion"
 }
