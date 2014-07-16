@@ -1,6 +1,6 @@
 package nl.kii.entity
 
-import java.util.concurrent.atomic.AtomicReference
+import nl.kii.async.annotation.Atomic
 import nl.kii.observe.Publisher
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
@@ -11,7 +11,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 abstract class ReactiveObject implements Reactive, EntityObject {
 	
 	/** we only have a publisher if someone wants to listen */
-	transient protected val _publisher = new AtomicReference<Publisher<Change>>
+	@Atomic transient protected Publisher<Change> publisher
 
 	/**
 	 * apply a change to this reactive object. 
@@ -23,32 +23,23 @@ abstract class ReactiveObject implements Reactive, EntityObject {
 	 * @return a procedure that can be called to unsubscribe the listener
 	 */
 	override =>void onChange(Procedure1<? super Change> listener) {
+		if(publisher == null) publisher = new Publisher<Change>
 		publisher.onChange(listener)
 	}
 
 	/** set if we want the object to publish changes */
 	override setPublishing(boolean publish) {
-		if(hasPublisher)
-			publisher.publishing = publish
+		if(hasPublisher) publisher.publishing = publish
 	}
 	
 	/** check if the object will publish internal changes to listeners */
 	override isPublishing() {
-		if(hasPublisher)
-			publisher.isPublishing
-		else false
+		hasPublisher &&  publisher.isPublishing
 	}
 
-	/** create a publisher on demand */
-	protected def getPublisher() {
-		if(_publisher.get == null) 
-			_publisher.set(new Publisher<Change>)
-		_publisher.get
-	}
-	
 	/** check if a publisher has been created. the publisher is lazily created on demand. */
 	protected def hasPublisher() {
-		_publisher.get != null
+		publisher != null
 	}
 
 }

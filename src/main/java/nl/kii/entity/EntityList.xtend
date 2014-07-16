@@ -4,7 +4,6 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.List
 import java.util.Map
-import java.util.concurrent.atomic.AtomicReference
 import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
 
@@ -20,7 +19,7 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	val Class<E> type
 	val boolean isReactive
 	
-	transient val _publisher = new AtomicReference<Publisher<Change>>
+	transient Publisher<Change> publisher
 	transient var Map<Integer, =>void> subscriptionEnders = newHashMap
 		
 	// CONSTRUCTORS
@@ -47,10 +46,6 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	
 	// MAKE THE LIST LISTENABLE
 
-	def private Publisher<Change> getPublisher() {
-		_publisher.get
-	}
-
 	def private publish(Change change) {
 		publisher?.apply(change)
 	}
@@ -58,7 +53,7 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	// IMPLEMENT REACTIVEOBJECT
 
 	override onChange((Change)=>void listener) {
-		if(_publisher.get == null) _publisher.set(new Publisher)
+		if(publisher == null) publisher = new Publisher
 		publisher.onChange(listener)
 	}
 	
@@ -67,7 +62,7 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	}
 	
 	override isPublishing() {
-		_publisher.get != null && publisher.publishing
+		publisher != null && publisher.publishing
 	}
 	
 	// WRAP ALL METHODS THAT MODIFY THE LIST TO FIRE A CHANGE EVENT

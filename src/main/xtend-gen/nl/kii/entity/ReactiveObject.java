@@ -2,6 +2,7 @@ package nl.kii.entity;
 
 import com.google.common.base.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import nl.kii.async.annotation.Atomic;
 import nl.kii.entity.Change;
 import nl.kii.entity.EntityObject;
 import nl.kii.entity.Reactive;
@@ -18,7 +19,8 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
   /**
    * we only have a publisher if someone wants to listen
    */
-  protected final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
+  @Atomic
+  private final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
   
   /**
    * apply a change to this reactive object.
@@ -30,8 +32,18 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
    * @return a procedure that can be called to unsubscribe the listener
    */
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
-    Publisher<Change> _publisher = this.getPublisher();
-    return _publisher.onChange(listener);
+    Procedure0 _xblockexpression = null;
+    {
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _equals = Objects.equal(_publisher, null);
+      if (_equals) {
+        Publisher<Change> _publisher_1 = new Publisher<Change>();
+        this.setPublisher(_publisher_1);
+      }
+      Publisher<Change> _publisher_2 = this.getPublisher();
+      _xblockexpression = _publisher_2.onChange(listener);
+    }
+    return _xblockexpression;
   }
   
   /**
@@ -49,39 +61,31 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
    * check if the object will publish internal changes to listeners
    */
   public boolean isPublishing() {
-    boolean _xifexpression = false;
+    boolean _and = false;
     boolean _hasPublisher = this.hasPublisher();
-    if (_hasPublisher) {
-      Publisher<Change> _publisher = this.getPublisher();
-      _xifexpression = _publisher.isPublishing();
+    if (!_hasPublisher) {
+      _and = false;
     } else {
-      _xifexpression = false;
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _isPublishing = _publisher.isPublishing();
+      _and = _isPublishing;
     }
-    return _xifexpression;
-  }
-  
-  /**
-   * create a publisher on demand
-   */
-  protected Publisher<Change> getPublisher() {
-    Publisher<Change> _xblockexpression = null;
-    {
-      Publisher<Change> _get = this._publisher.get();
-      boolean _equals = Objects.equal(_get, null);
-      if (_equals) {
-        Publisher<Change> _publisher = new Publisher<Change>();
-        this._publisher.set(_publisher);
-      }
-      _xblockexpression = this._publisher.get();
-    }
-    return _xblockexpression;
+    return _and;
   }
   
   /**
    * check if a publisher has been created. the publisher is lazily created on demand.
    */
   protected boolean hasPublisher() {
-    Publisher<Change> _get = this._publisher.get();
-    return (!Objects.equal(_get, null));
+    Publisher<Change> _publisher = this.getPublisher();
+    return (!Objects.equal(_publisher, null));
+  }
+  
+  protected Publisher<Change> setPublisher(final Publisher<Change> value) {
+    return this._publisher.getAndSet(value);
+  }
+  
+  protected Publisher<Change> getPublisher() {
+    return this._publisher.get();
   }
 }

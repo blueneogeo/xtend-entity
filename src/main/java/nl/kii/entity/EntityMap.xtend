@@ -2,11 +2,12 @@ package nl.kii.entity
 
 import java.util.HashMap
 import java.util.Map
-import java.util.concurrent.atomic.AtomicReference
+import nl.kii.async.annotation.Atomic
 import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
 
 import static nl.kii.entity.ChangeType.*
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 
 class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject {
 	
@@ -16,8 +17,8 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	val Class<V> type
 	val boolean isReactive
 
-	val _publisher = new AtomicReference<Publisher<Change>>
-	var Map<String, =>void> subscriptionEnders = newHashMap
+	@Atomic transient Publisher<Change> publisher
+	@Atomic transient Map<String, =>void> subscriptionEnders = new HashMap<String, Procedure0>()
 	
 	// CONSTRUCTORS
 	
@@ -40,10 +41,6 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	
 	// MAKE THE MAP LISTENABLE
 
-	def private Publisher<Change> getPublisher() {
-		_publisher.get
-	}
-
 	def private publish(Change change) {
 		publisher?.apply(change)
 	}
@@ -51,7 +48,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	// IMPLEMENT REACTIVEOBJECT
 
 	override onChange((Change)=>void listener) {
-		if(_publisher.get == null) _publisher.set(new Publisher)
+		if(publisher == null) publisher = new Publisher
 		publisher.onChange(listener)
 	}
 	
@@ -60,7 +57,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	}
 	
 	override isPublishing() {
-		_publisher.get != null && publisher.publishing
+		publisher != null && publisher.publishing
 	}	
 	
 	// WRAP ALL METHODS THAT MODIFY THE LIST TO FIRE A CHANGE EVENT

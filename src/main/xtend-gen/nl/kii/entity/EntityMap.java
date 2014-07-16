@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import nl.kii.async.annotation.Atomic;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
 import nl.kii.entity.EntityException;
@@ -29,9 +30,11 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   
   private final boolean isReactive;
   
-  private final AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
+  @Atomic
+  private final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
   
-  private Map<String, Procedure0> subscriptionEnders = CollectionLiterals.<String, Procedure0>newHashMap();
+  @Atomic
+  private final transient AtomicReference<Map<String, Procedure0>> _subscriptionEnders = new AtomicReference<Map<String, Procedure0>>(new HashMap<String, Procedure0>());
   
   public EntityMap(final Class<V> type) {
     super();
@@ -50,10 +53,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     this.isReactive = true;
   }
   
-  private Publisher<Change> getPublisher() {
-    return this._publisher.get();
-  }
-  
   private void publish(final Change change) {
     Publisher<Change> _publisher = this.getPublisher();
     if (_publisher!=null) {
@@ -64,14 +63,14 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
-      Publisher<Change> _get = this._publisher.get();
-      boolean _equals = Objects.equal(_get, null);
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _equals = Objects.equal(_publisher, null);
       if (_equals) {
-        Publisher<Change> _publisher = new Publisher<Change>();
-        this._publisher.set(_publisher);
+        Publisher<Change> _publisher_1 = new Publisher<Change>();
+        this.setPublisher(_publisher_1);
       }
-      Publisher<Change> _publisher_1 = this.getPublisher();
-      _xblockexpression = _publisher_1.onChange(listener);
+      Publisher<Change> _publisher_2 = this.getPublisher();
+      _xblockexpression = _publisher_2.onChange(listener);
     }
     return _xblockexpression;
   }
@@ -83,13 +82,13 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   
   public boolean isPublishing() {
     boolean _and = false;
-    Publisher<Change> _get = this._publisher.get();
-    boolean _notEquals = (!Objects.equal(_get, null));
+    Publisher<Change> _publisher = this.getPublisher();
+    boolean _notEquals = (!Objects.equal(_publisher, null));
     if (!_notEquals) {
       _and = false;
     } else {
-      Publisher<Change> _publisher = this.getPublisher();
-      boolean _isPublishing = _publisher.isPublishing();
+      Publisher<Change> _publisher_1 = this.getPublisher();
+      boolean _isPublishing = _publisher_1.isPublishing();
       _and = _isPublishing;
     }
     return _and;
@@ -116,13 +115,15 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   public V put(final String key, final V value) {
     V _xblockexpression = null;
     {
-      Procedure0 _get = this.subscriptionEnders.get(key);
+      Map<String, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+      Procedure0 _get = _subscriptionEnders.get(key);
       if (_get!=null) {
         _get.apply();
       }
       final V previous = super.put(key, value);
       final Procedure0 subscriptionEnder = this.observe(value, key);
-      this.subscriptionEnders.put(key, subscriptionEnder);
+      Map<String, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
+      _subscriptionEnders_1.put(key, subscriptionEnder);
       Change _change = new Change(ChangeType.UPDATE, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(key)), value);
       this.publish(_change);
       _xblockexpression = previous;
@@ -133,7 +134,8 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   public V remove(final Object key) {
     V _xblockexpression = null;
     {
-      Procedure0 _get = this.subscriptionEnders.get(key);
+      Map<String, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+      Procedure0 _get = _subscriptionEnders.get(key);
       if (_get!=null) {
         _get.apply();
       }
@@ -158,6 +160,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   }
   
   public void clear() {
+    Map<String, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
     final Procedure2<String, Procedure0> _function = new Procedure2<String, Procedure0>() {
       public void apply(final String k, final Procedure0 v) {
         if (v!=null) {
@@ -165,8 +168,9 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
         }
       }
     };
-    MapExtensions.<String, Procedure0>forEach(this.subscriptionEnders, _function);
-    this.subscriptionEnders.clear();
+    MapExtensions.<String, Procedure0>forEach(_subscriptionEnders, _function);
+    Map<String, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
+    _subscriptionEnders_1.clear();
     super.clear();
     Change _change = new Change(ChangeType.CLEAR, Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList()), null);
     this.publish(_change);
@@ -341,5 +345,21 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   
   public boolean isValid() {
     return true;
+  }
+  
+  private Publisher<Change> setPublisher(final Publisher<Change> value) {
+    return this._publisher.getAndSet(value);
+  }
+  
+  private Publisher<Change> getPublisher() {
+    return this._publisher.get();
+  }
+  
+  private Map<String, Procedure0> setSubscriptionEnders(final Map<String, Procedure0> value) {
+    return this._subscriptionEnders.getAndSet(value);
+  }
+  
+  private Map<String, Procedure0> getSubscriptionEnders() {
+    return this._subscriptionEnders.get();
   }
 }

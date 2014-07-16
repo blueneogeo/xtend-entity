@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
 import nl.kii.entity.EntityException;
@@ -27,7 +26,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   
   private final boolean isReactive;
   
-  private final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
+  private transient Publisher<Change> publisher;
   
   private transient Map<Integer, Procedure0> subscriptionEnders = CollectionLiterals.<Integer, Procedure0>newHashMap();
   
@@ -53,46 +52,36 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return this.type;
   }
   
-  private Publisher<Change> getPublisher() {
-    return this._publisher.get();
-  }
-  
   private void publish(final Change change) {
-    Publisher<Change> _publisher = this.getPublisher();
-    if (_publisher!=null) {
-      _publisher.apply(change);
+    if (this.publisher!=null) {
+      this.publisher.apply(change);
     }
   }
   
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
-      Publisher<Change> _get = this._publisher.get();
-      boolean _equals = Objects.equal(_get, null);
+      boolean _equals = Objects.equal(this.publisher, null);
       if (_equals) {
         Publisher<Change> _publisher = new Publisher<Change>();
-        this._publisher.set(_publisher);
+        this.publisher = _publisher;
       }
-      Publisher<Change> _publisher_1 = this.getPublisher();
-      _xblockexpression = _publisher_1.onChange(listener);
+      _xblockexpression = this.publisher.onChange(listener);
     }
     return _xblockexpression;
   }
   
   public void setPublishing(final boolean publish) {
-    Publisher<Change> _publisher = this.getPublisher();
-    _publisher.setPublishing(publish);
+    this.publisher.setPublishing(publish);
   }
   
   public boolean isPublishing() {
     boolean _and = false;
-    Publisher<Change> _get = this._publisher.get();
-    boolean _notEquals = (!Objects.equal(_get, null));
+    boolean _notEquals = (!Objects.equal(this.publisher, null));
     if (!_notEquals) {
       _and = false;
     } else {
-      Publisher<Change> _publisher = this.getPublisher();
-      boolean _isPublishing = _publisher.isPublishing();
+      boolean _isPublishing = this.publisher.isPublishing();
       _and = _isPublishing;
     }
     return _and;
@@ -275,21 +264,18 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   public void apply(final Change change) {
     try {
       boolean _and = false;
-      Publisher<Change> _publisher = this.getPublisher();
-      boolean _notEquals = (!Objects.equal(_publisher, null));
+      boolean _notEquals = (!Objects.equal(this.publisher, null));
       if (!_notEquals) {
         _and = false;
       } else {
-        Publisher<Change> _publisher_1 = this.getPublisher();
-        boolean _isPublishing = _publisher_1.isPublishing();
+        boolean _isPublishing = this.publisher.isPublishing();
         boolean _not = (!_isPublishing);
         _and = _not;
       }
       final boolean wasPublishing = _and;
       try {
-        Publisher<Change> _publisher_2 = this.getPublisher();
-        if (_publisher_2!=null) {
-          _publisher_2.setPublishing(false);
+        if (this.publisher!=null) {
+          this.publisher.setPublishing(false);
         }
         List<String> _path = change.getPath();
         final List<String> path = _path;
@@ -432,9 +418,8 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
           }
         }
       } finally {
-        Publisher<Change> _publisher_3 = this.getPublisher();
-        if (_publisher_3!=null) {
-          _publisher_3.setPublishing(wasPublishing);
+        if (this.publisher!=null) {
+          this.publisher.setPublishing(wasPublishing);
         }
       }
     } catch (Throwable _e) {
