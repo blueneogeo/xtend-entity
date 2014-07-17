@@ -72,7 +72,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   public void setPublishing(final boolean publish) {
-    this.publisher.setPublishing(publish);
+    this.publisher.setPublishing(Boolean.valueOf(publish));
   }
   
   public boolean isPublishing() {
@@ -81,8 +81,8 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     if (!_notEquals) {
       _and = false;
     } else {
-      boolean _isPublishing = this.publisher.isPublishing();
-      _and = _isPublishing;
+      Boolean _publishing = this.publisher.getPublishing();
+      _and = (_publishing).booleanValue();
     }
     return _and;
   }
@@ -268,14 +268,14 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
       if (!_notEquals) {
         _and = false;
       } else {
-        boolean _isPublishing = this.publisher.isPublishing();
-        boolean _not = (!_isPublishing);
+        Boolean _publishing = this.publisher.getPublishing();
+        boolean _not = (!(_publishing).booleanValue());
         _and = _not;
       }
       final boolean wasPublishing = _and;
       try {
         if (this.publisher!=null) {
-          this.publisher.setPublishing(false);
+          this.publisher.setPublishing(Boolean.valueOf(false));
         }
         List<String> _path = change.getPath();
         final List<String> path = _path;
@@ -419,7 +419,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
         }
       } finally {
         if (this.publisher!=null) {
-          this.publisher.setPublishing(wasPublishing);
+          this.publisher.setPublishing(Boolean.valueOf(wasPublishing));
         }
       }
     } catch (Throwable _e) {

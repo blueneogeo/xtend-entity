@@ -34,7 +34,7 @@ abstract class ReactiveObject implements Reactive, EntityObject {
 	
 	/** check if the object will publish internal changes to listeners */
 	override isPublishing() {
-		hasPublisher &&  publisher.isPublishing
+		hasPublisher &&  publisher.publishing
 	}
 
 	/** check if a publisher has been created. the publisher is lazily created on demand. */
