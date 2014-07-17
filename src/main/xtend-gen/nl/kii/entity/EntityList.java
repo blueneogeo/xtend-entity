@@ -3,8 +3,11 @@ package nl.kii.entity;
 import com.google.common.base.Objects;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import nl.kii.async.annotation.Atomic;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
 import nl.kii.entity.EntityException;
@@ -26,26 +29,34 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   
   private final boolean isReactive;
   
-  private transient Publisher<Change> publisher;
+  @Atomic
+  private final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
   
-  private transient Map<Integer, Procedure0> subscriptionEnders = CollectionLiterals.<Integer, Procedure0>newHashMap();
+  @Atomic
+  private final transient AtomicReference<Map<Integer, Procedure0>> _subscriptionEnders = new AtomicReference<Map<Integer, Procedure0>>();
   
   public EntityList(final Class<E> type) {
     super();
     this.type = type;
     this.isReactive = true;
+    HashMap<Integer, Procedure0> _newHashMap = CollectionLiterals.<Integer, Procedure0>newHashMap();
+    this.setSubscriptionEnders(_newHashMap);
   }
   
   public EntityList(final Class<E> type, final int size) {
     super(size);
     this.type = type;
     this.isReactive = true;
+    HashMap<Integer, Procedure0> _newHashMap = CollectionLiterals.<Integer, Procedure0>newHashMap();
+    this.setSubscriptionEnders(_newHashMap);
   }
   
   public EntityList(final Class<E> type, final Collection<? extends E> coll) {
     super(coll);
     this.type = type;
     this.isReactive = true;
+    HashMap<Integer, Procedure0> _newHashMap = CollectionLiterals.<Integer, Procedure0>newHashMap();
+    this.setSubscriptionEnders(_newHashMap);
   }
   
   public Class<E> getType() {
@@ -53,35 +64,57 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   private void publish(final Change change) {
-    if (this.publisher!=null) {
-      this.publisher.apply(change);
+    Publisher<Change> _publisher = this.getPublisher();
+    if (_publisher!=null) {
+      _publisher.apply(change);
     }
   }
   
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
-      boolean _equals = Objects.equal(this.publisher, null);
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _equals = Objects.equal(_publisher, null);
       if (_equals) {
-        Publisher<Change> _publisher = new Publisher<Change>();
-        this.publisher = _publisher;
+        Publisher<Change> _publisher_1 = new Publisher<Change>();
+        this.setPublisher(_publisher_1);
       }
-      _xblockexpression = this.publisher.onChange(listener);
+      Publisher<Change> _publisher_2 = this.getPublisher();
+      _xblockexpression = _publisher_2.onChange(listener);
     }
     return _xblockexpression;
   }
   
   public void setPublishing(final boolean publish) {
-    this.publisher.setPublishing(Boolean.valueOf(publish));
+    boolean _and = false;
+    Publisher<Change> _publisher = this.getPublisher();
+    boolean _equals = Objects.equal(_publisher, null);
+    if (!_equals) {
+      _and = false;
+    } else {
+      _and = (!publish);
+    }
+    if (_and) {
+      Publisher<Change> _publisher_1 = new Publisher<Change>();
+      this.setPublisher(_publisher_1);
+    }
+    Publisher<Change> _publisher_2 = this.getPublisher();
+    boolean _notEquals = (!Objects.equal(_publisher_2, null));
+    if (_notEquals) {
+      Publisher<Change> _publisher_3 = this.getPublisher();
+      _publisher_3.setPublishing(Boolean.valueOf(publish));
+    }
   }
   
   public boolean isPublishing() {
     boolean _and = false;
-    boolean _notEquals = (!Objects.equal(this.publisher, null));
+    Publisher<Change> _publisher = this.getPublisher();
+    boolean _notEquals = (!Objects.equal(_publisher, null));
     if (!_notEquals) {
       _and = false;
     } else {
-      Boolean _publishing = this.publisher.getPublishing();
+      Publisher<Change> _publisher_1 = this.getPublisher();
+      Boolean _publishing = _publisher_1.getPublishing();
       _and = (_publishing).booleanValue();
     }
     return _and;
@@ -110,13 +143,15 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   public E set(final int index, final E value) {
     E _xblockexpression = null;
     {
-      Procedure0 _get = this.subscriptionEnders.get(Integer.valueOf(index));
+      Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+      Procedure0 _get = _subscriptionEnders.get(Integer.valueOf(index));
       if (_get!=null) {
         _get.apply();
       }
       final E previous = super.set(index, value);
       final Procedure0 subscriptionEnder = this.observe(value);
-      this.subscriptionEnders.put(Integer.valueOf(index), subscriptionEnder);
+      Map<Integer, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
+      _subscriptionEnders_1.put(Integer.valueOf(index), subscriptionEnder);
       Change _change = new Change(ChangeType.UPDATE, index, value);
       this.publish(_change);
       _xblockexpression = previous;
@@ -133,7 +168,8 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
       }
       final Procedure0 subscriptionEnder = this.observe(element);
       final int index = this.indexOf(element);
-      this.subscriptionEnders.put(Integer.valueOf(index), subscriptionEnder);
+      Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+      _subscriptionEnders.put(Integer.valueOf(index), subscriptionEnder);
       Change _change = new Change(ChangeType.ADD, element);
       this.publish(_change);
       _xblockexpression = true;
@@ -142,13 +178,15 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   public void add(final int index, final E value) {
-    Procedure0 _get = this.subscriptionEnders.get(Integer.valueOf(index));
+    Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+    Procedure0 _get = _subscriptionEnders.get(Integer.valueOf(index));
     if (_get!=null) {
       _get.apply();
     }
     super.add(index, value);
     final Procedure0 subscriptionEnder = this.observe(value);
-    this.subscriptionEnders.put(Integer.valueOf(index), subscriptionEnder);
+    Map<Integer, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
+    _subscriptionEnders_1.put(Integer.valueOf(index), subscriptionEnder);
     Change _change = new Change(ChangeType.UPDATE, index, value);
     this.publish(_change);
   }
@@ -156,7 +194,8 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   public E remove(final int index) {
     E _xblockexpression = null;
     {
-      Procedure0 _get = this.subscriptionEnders.get(Integer.valueOf(index));
+      Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+      Procedure0 _get = _subscriptionEnders.get(Integer.valueOf(index));
       if (_get!=null) {
         _get.apply();
       }
@@ -178,7 +217,8 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
       if ((index < 0)) {
         return false;
       }
-      Procedure0 _get = this.subscriptionEnders.get(Integer.valueOf(index));
+      Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
+      Procedure0 _get = _subscriptionEnders.get(Integer.valueOf(index));
       if (_get!=null) {
         _get.apply();
       }
@@ -194,6 +234,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   public void clear() {
+    Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
     final Procedure2<Integer, Procedure0> _function = new Procedure2<Integer, Procedure0>() {
       public void apply(final Integer k, final Procedure0 v) {
         if (v!=null) {
@@ -201,8 +242,9 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
         }
       }
     };
-    MapExtensions.<Integer, Procedure0>forEach(this.subscriptionEnders, _function);
-    this.subscriptionEnders.clear();
+    MapExtensions.<Integer, Procedure0>forEach(_subscriptionEnders, _function);
+    Map<Integer, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
+    _subscriptionEnders_1.clear();
     super.clear();
     Change _change = new Change(ChangeType.CLEAR);
     this.publish(_change);
@@ -264,18 +306,21 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   public void apply(final Change change) {
     try {
       boolean _and = false;
-      boolean _notEquals = (!Objects.equal(this.publisher, null));
+      Publisher<Change> _publisher = this.getPublisher();
+      boolean _notEquals = (!Objects.equal(_publisher, null));
       if (!_notEquals) {
         _and = false;
       } else {
-        Boolean _publishing = this.publisher.getPublishing();
+        Publisher<Change> _publisher_1 = this.getPublisher();
+        Boolean _publishing = _publisher_1.getPublishing();
         boolean _not = (!(_publishing).booleanValue());
         _and = _not;
       }
       final boolean wasPublishing = _and;
       try {
-        if (this.publisher!=null) {
-          this.publisher.setPublishing(Boolean.valueOf(false));
+        Publisher<Change> _publisher_2 = this.getPublisher();
+        if (_publisher_2!=null) {
+          _publisher_2.setPublishing(Boolean.valueOf(false));
         }
         List<String> _path = change.getPath();
         final List<String> path = _path;
@@ -418,8 +463,9 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
           }
         }
       } finally {
-        if (this.publisher!=null) {
-          this.publisher.setPublishing(Boolean.valueOf(wasPublishing));
+        Publisher<Change> _publisher_3 = this.getPublisher();
+        if (_publisher_3!=null) {
+          _publisher_3.setPublishing(Boolean.valueOf(wasPublishing));
         }
       }
     } catch (Throwable _e) {
@@ -447,5 +493,21 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   
   public boolean isValid() {
     return true;
+  }
+  
+  private Publisher<Change> setPublisher(final Publisher<Change> value) {
+    return this._publisher.getAndSet(value);
+  }
+  
+  private Publisher<Change> getPublisher() {
+    return this._publisher.get();
+  }
+  
+  private Map<Integer, Procedure0> setSubscriptionEnders(final Map<Integer, Procedure0> value) {
+    return this._subscriptionEnders.getAndSet(value);
+  }
+  
+  private Map<Integer, Procedure0> getSubscriptionEnders() {
+    return this._subscriptionEnders.get();
   }
 }

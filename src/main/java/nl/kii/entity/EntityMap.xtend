@@ -7,7 +7,6 @@ import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
 
 import static nl.kii.entity.ChangeType.*
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 
 class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject {
 	
@@ -18,7 +17,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	val boolean isReactive
 
 	@Atomic transient Publisher<Change> publisher
-	@Atomic transient Map<String, =>void> subscriptionEnders = new HashMap<String, Procedure0>()
+	@Atomic transient Map<String, =>void> subscriptionEnders
 	
 	// CONSTRUCTORS
 	
@@ -26,6 +25,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 		super()
 		this.type = type
 		this.isReactive = true
+		this.subscriptionEnders = newHashMap
 	}
 
 	new(Class<V> type, int size) { 
@@ -53,7 +53,8 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	}
 	
 	override setPublishing(boolean publish) {
-		publisher.publishing = publish
+		if(publisher == null && !publish) publisher = new Publisher
+		if(publisher != null) publisher.publishing = publish
 	}
 	
 	override isPublishing() {

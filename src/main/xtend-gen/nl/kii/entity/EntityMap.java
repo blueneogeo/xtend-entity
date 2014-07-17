@@ -34,12 +34,14 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   private final transient AtomicReference<Publisher<Change>> _publisher = new AtomicReference<Publisher<Change>>();
   
   @Atomic
-  private final transient AtomicReference<Map<String, Procedure0>> _subscriptionEnders = new AtomicReference<Map<String, Procedure0>>(new HashMap<String, Procedure0>());
+  private final transient AtomicReference<Map<String, Procedure0>> _subscriptionEnders = new AtomicReference<Map<String, Procedure0>>();
   
   public EntityMap(final Class<V> type) {
     super();
     this.type = type;
     this.isReactive = true;
+    HashMap<String, Procedure0> _newHashMap = CollectionLiterals.<String, Procedure0>newHashMap();
+    this.setSubscriptionEnders(_newHashMap);
   }
   
   public EntityMap(final Class<V> type, final int size) {
@@ -76,8 +78,24 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   }
   
   public void setPublishing(final boolean publish) {
+    boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
-    _publisher.setPublishing(Boolean.valueOf(publish));
+    boolean _equals = Objects.equal(_publisher, null);
+    if (!_equals) {
+      _and = false;
+    } else {
+      _and = (!publish);
+    }
+    if (_and) {
+      Publisher<Change> _publisher_1 = new Publisher<Change>();
+      this.setPublisher(_publisher_1);
+    }
+    Publisher<Change> _publisher_2 = this.getPublisher();
+    boolean _notEquals = (!Objects.equal(_publisher_2, null));
+    if (_notEquals) {
+      Publisher<Change> _publisher_3 = this.getPublisher();
+      _publisher_3.setPublishing(Boolean.valueOf(publish));
+    }
   }
   
   public boolean isPublishing() {

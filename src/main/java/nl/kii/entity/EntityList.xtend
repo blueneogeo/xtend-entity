@@ -4,6 +4,7 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.List
 import java.util.Map
+import nl.kii.async.annotation.Atomic
 import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
 
@@ -19,8 +20,8 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	val Class<E> type
 	val boolean isReactive
 	
-	transient Publisher<Change> publisher
-	transient var Map<Integer, =>void> subscriptionEnders = newHashMap
+	@Atomic transient Publisher<Change> publisher
+	@Atomic transient var Map<Integer, =>void> subscriptionEnders
 		
 	// CONSTRUCTORS
 
@@ -28,18 +29,21 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 		super()
 		this.type = type
 		isReactive = true
+		subscriptionEnders = newHashMap
 	}
 
 	new(Class<E> type, int size) { 
 		super(size)
 		this.type = type
 		isReactive = true
+		subscriptionEnders = newHashMap
 	}
 
 	new(Class<E> type, Collection<? extends E> coll) { 
 		super(coll)
 		this.type = type
 		isReactive = true
+		subscriptionEnders = newHashMap
 	}
 	
 	def getType() { type }
@@ -58,7 +62,8 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	}
 	
 	override setPublishing(boolean publish) {
-		publisher.publishing = publish
+		if(publisher == null && !publish) publisher = new Publisher
+		if(publisher != null) publisher.publishing = publish
 	}
 	
 	override isPublishing() {
