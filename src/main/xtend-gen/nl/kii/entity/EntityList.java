@@ -491,8 +491,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return ((EntityList<E>) _clone);
   }
   
-  public boolean isValid() {
-    return true;
+  public void validate() {
   }
   
   private Publisher<Change> setPublisher(final Publisher<Change> value) {

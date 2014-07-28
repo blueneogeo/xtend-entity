@@ -1,12 +1,14 @@
 package nl.kii.entity;
 
+import nl.kii.entity.EntityException;
+
 /**
  * An EntityObject has getters and setters, default constructors, mandatory fields and a validation method for those fields.
  */
 @SuppressWarnings("all")
 public interface EntityObject extends Cloneable {
   /**
-   * @return true if all fields annotated with @Require have a value
+   * Throws an EntityException with a reason if the object is not valid
    */
-  public abstract boolean isValid();
+  public abstract void validate() throws EntityException;
 }

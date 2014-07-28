@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import nl.kii.entity.Change;
+import nl.kii.entity.EntityException;
 import nl.kii.entity.EntityList;
 import nl.kii.entity.EntityMap;
 import nl.kii.entity.ReactiveObject;
@@ -338,7 +339,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         final Function1<MutableMethodDeclaration, Boolean> _function_10 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
-            return Boolean.valueOf(Objects.equal(_simpleName, "isValid"));
+            return Boolean.valueOf(Objects.equal(_simpleName, "validate"));
           }
         };
         Iterable<? extends MutableMethodDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods, _function_10);
@@ -361,8 +362,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               _builder.newLine();
               it.setDocComment(_builder.toString());
               context.setPrimarySourceElement(it, cls);
-              TypeReference _newTypeReference = context.newTypeReference("boolean");
-              it.setReturnType(_newTypeReference);
+              TypeReference _newTypeReference = context.newTypeReference(EntityException.class);
+              it.setExceptions(_newTypeReference);
               final CompilationStrategy _function = new CompilationStrategy() {
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
@@ -376,15 +377,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                           _builder.append("if(");
                           String _simpleName = field.getSimpleName();
                           _builder.append(_simpleName, "");
-                          _builder.append("==null) return false;");
+                          _builder.append("==null) throw new EntityException(\"");
+                          String _simpleName_1 = cls.getSimpleName();
+                          _builder.append(_simpleName_1, "");
+                          _builder.append(".");
+                          String _simpleName_2 = field.getSimpleName();
+                          _builder.append(_simpleName_2, "");
+                          _builder.append(" may not be empty.\");");
                           _builder.newLineIfNotEmpty();
                           {
                             boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
                             if (_in) {
-                              _builder.append("if(!");
-                              String _simpleName_1 = field.getSimpleName();
-                              _builder.append(_simpleName_1, "");
-                              _builder.append(".isValid()) return false;");
+                              String _simpleName_3 = field.getSimpleName();
+                              _builder.append(_simpleName_3, "");
+                              _builder.append(".validate();");
                               _builder.newLineIfNotEmpty();
                             }
                           }
@@ -392,15 +398,13 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                       }
                     }
                   }
-                  _builder.append("return true;");
-                  _builder.newLine();
                   return _builder;
                 }
               };
               it.setBody(_function);
             }
           };
-          cls.addMethod("isValid", _function_11);
+          cls.addMethod("validate", _function_11);
         }
         for (final MutableFieldDeclaration f : getSetFields) {
           {
@@ -748,6 +752,21 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     _builder.newLineIfNotEmpty();
                   }
                 }
+                _builder.append("\t\t");
+                _builder.append("try {");
+                _builder.newLine();
+                _builder.append("\t\t\t");
+                _builder.append("this.validate();");
+                _builder.newLine();
+                _builder.append("\t\t");
+                _builder.append("} catch(EntityException e) {");
+                _builder.newLine();
+                _builder.append("\t\t\t");
+                _builder.append("throw new IllegalArgumentException(\"incoming change created an invalid entity: \" + change, e);");
+                _builder.newLine();
+                _builder.append("\t\t");
+                _builder.append("}");
+                _builder.newLine();
                 _builder.append("\t");
                 _builder.append("} else if(change.getPath().size() == 1) {");
                 _builder.newLine();

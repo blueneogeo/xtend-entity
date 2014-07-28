@@ -255,8 +255,7 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 		super.clone as EntityList<E>
 	}
 	
-	override isValid() {
-		true
+	override validate() {
 	}
 
 }

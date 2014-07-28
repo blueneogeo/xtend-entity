@@ -361,8 +361,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     return ((EntityMap<V>) _clone);
   }
   
-  public boolean isValid() {
-    return true;
+  public void validate() {
   }
   
   private Publisher<Change> setPublisher(final Publisher<Change> value) {

@@ -24,6 +24,7 @@ import static org.eclipse.xtend.lib.macro.declaration.Visibility.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
 import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
+import nl.kii.entity.EntityException
 
 /**
  * Reactive Objects can be observed for changes and can have change objects applied to them to change them.
@@ -191,28 +192,27 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			
 			// create the validate method
 			
-			if(cls.declaredMethods.filter[simpleName=='isValid'].empty)
-				cls.addMethod('isValid') [
+			if(cls.declaredMethods.filter[simpleName=='validate'].empty)
+				cls.addMethod('validate') [
 					docComment = '''
 						Check if the «cls.simpleName» is valid.
 						Also recursively checks contained entities within the members of «cls.simpleName».
 						@return true if all the fields annotated with @Require have a value.
 					'''
 					primarySourceElement = cls
-					returnType = 'boolean'.newTypeReference
+					exceptions = EntityException.newTypeReference
 					body = ['''
 						«FOR field : requiredFields»
 							«IF !field.type.primitive»
-								if(«field.simpleName»==null) return false;
+								if(«field.simpleName»==null) throw new EntityException("«cls.simpleName».«field.simpleName» may not be empty.");
 								«IF field.in(reactiveFields)»
-									if(!«field.simpleName».isValid()) return false;
+									«field.simpleName».validate();
 								«ENDIF»
 							«ENDIF»
 						«ENDFOR»
-						return true;
 					''']
 				]
-			
+
 			// create getters and setters
 			
 			for(f : getSetFields) {
@@ -312,6 +312,11 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 								«ENDIF»
 									this.set«field.simpleName.toFirstUpper»(value.«field.simpleName»);
 							«ENDFOR»
+							try {
+								this.validate();
+							} catch(EntityException e) {
+								throw new IllegalArgumentException("incoming change created an invalid entity: " + change, e);
+							}
 						} else if(change.getPath().size() == 1) {
 							// change applies directly to a field of this object
 							String field = change.getPath().get(0);

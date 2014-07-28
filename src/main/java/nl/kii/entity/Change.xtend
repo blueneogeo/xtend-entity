@@ -80,8 +80,7 @@ class Change implements EntityObject {
 	
 	// ENTITY IMPLEMENTATION //////////////////////////////////////////////////
 	
-	override isValid() {
-		true
+	override validate() {
 	}
 	
 	override toString() '''«action» «path?.join('.')»«IF value.defined && path?.length > 0» = «ENDIF»«IF value.defined»"«value»"«ENDIF»'''

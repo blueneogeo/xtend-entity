@@ -120,8 +120,7 @@ public class Change implements EntityObject {
     }
   }
   
-  public boolean isValid() {
-    return true;
+  public void validate() {
   }
   
   public String toString() {

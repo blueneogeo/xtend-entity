@@ -166,8 +166,7 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 		super.clone as EntityMap<V>
 	}
 	
-	override isValid() {
-		true
+	override validate() {
 	}
 	
 }

@@ -5,7 +5,7 @@ package nl.kii.entity
  */
 interface EntityObject extends Cloneable {
 	
-	/** @return true if all fields annotated with @Require have a value */
-	def boolean isValid()
+	/** Throws an EntityException with a reason if the object is not valid */
+	def void validate() throws EntityException
 
 }
