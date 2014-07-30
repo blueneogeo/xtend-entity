@@ -335,83 +335,72 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             }
           }
         }
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_10 = new Function1<MutableMethodDeclaration, Boolean>() {
-          public Boolean apply(final MutableMethodDeclaration it) {
-            String _simpleName = it.getSimpleName();
-            return Boolean.valueOf(Objects.equal(_simpleName, "validate"));
-          }
-        };
-        Iterable<? extends MutableMethodDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods, _function_10);
-        boolean _isEmpty = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter);
-        if (_isEmpty) {
-          final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
-            public void apply(final MutableMethodDeclaration it) {
-              StringConcatenation _builder = new StringConcatenation();
-              _builder.append("Check if the ");
-              String _simpleName = cls.getSimpleName();
-              _builder.append(_simpleName, "");
-              _builder.append(" is valid.");
-              _builder.newLineIfNotEmpty();
-              _builder.append("Also recursively checks contained entities within the members of ");
-              String _simpleName_1 = cls.getSimpleName();
-              _builder.append(_simpleName_1, "");
-              _builder.append(".");
-              _builder.newLineIfNotEmpty();
-              _builder.append("@return true if all the fields annotated with @Require have a value.");
-              _builder.newLine();
-              it.setDocComment(_builder.toString());
-              context.setPrimarySourceElement(it, cls);
-              TypeReference _newTypeReference = context.newTypeReference(EntityException.class);
-              it.setExceptions(_newTypeReference);
-              final CompilationStrategy _function = new CompilationStrategy() {
-                public CharSequence compile(final CompilationStrategy.CompilationContext it) {
-                  StringConcatenation _builder = new StringConcatenation();
-                  {
-                    for(final MutableFieldDeclaration field : requiredFields) {
-                      {
-                        TypeReference _type = field.getType();
-                        boolean _isPrimitive = _type.isPrimitive();
-                        boolean _not = (!_isPrimitive);
-                        if (_not) {
-                          _builder.append("if(");
-                          String _simpleName = field.getSimpleName();
-                          _builder.append(_simpleName, "");
-                          _builder.append("==null) throw new EntityException(\"");
-                          String _simpleName_1 = cls.getSimpleName();
-                          _builder.append(_simpleName_1, "");
-                          _builder.append(".");
-                          String _simpleName_2 = field.getSimpleName();
-                          _builder.append(_simpleName_2, "");
-                          _builder.append(" may not be empty.\");");
-                          _builder.newLineIfNotEmpty();
-                          {
-                            boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
-                            if (_in) {
-                              String _simpleName_3 = field.getSimpleName();
-                              _builder.append(_simpleName_3, "");
-                              _builder.append(".validate();");
-                              _builder.newLineIfNotEmpty();
-                            }
+        final Procedure1<MutableMethodDeclaration> _function_10 = new Procedure1<MutableMethodDeclaration>() {
+          public void apply(final MutableMethodDeclaration it) {
+            StringConcatenation _builder = new StringConcatenation();
+            _builder.append("Check if the ");
+            String _simpleName = cls.getSimpleName();
+            _builder.append(_simpleName, "");
+            _builder.append(" is valid.");
+            _builder.newLineIfNotEmpty();
+            _builder.append("Also recursively checks contained entities within the members of ");
+            String _simpleName_1 = cls.getSimpleName();
+            _builder.append(_simpleName_1, "");
+            _builder.append(".");
+            _builder.newLineIfNotEmpty();
+            _builder.append("@return true if all the fields annotated with @Require have a value.");
+            _builder.newLine();
+            it.setDocComment(_builder.toString());
+            context.setPrimarySourceElement(it, cls);
+            TypeReference _newTypeReference = context.newTypeReference(EntityException.class);
+            it.setExceptions(_newTypeReference);
+            final CompilationStrategy _function = new CompilationStrategy() {
+              public CharSequence compile(final CompilationStrategy.CompilationContext it) {
+                StringConcatenation _builder = new StringConcatenation();
+                {
+                  for(final MutableFieldDeclaration field : requiredFields) {
+                    {
+                      TypeReference _type = field.getType();
+                      boolean _isPrimitive = _type.isPrimitive();
+                      boolean _not = (!_isPrimitive);
+                      if (_not) {
+                        _builder.append("if(");
+                        String _simpleName = field.getSimpleName();
+                        _builder.append(_simpleName, "");
+                        _builder.append("==null) throw new EntityException(\"");
+                        String _simpleName_1 = cls.getSimpleName();
+                        _builder.append(_simpleName_1, "");
+                        _builder.append(".");
+                        String _simpleName_2 = field.getSimpleName();
+                        _builder.append(_simpleName_2, "");
+                        _builder.append(" may not be empty.\");");
+                        _builder.newLineIfNotEmpty();
+                        {
+                          boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
+                          if (_in) {
+                            String _simpleName_3 = field.getSimpleName();
+                            _builder.append(_simpleName_3, "");
+                            _builder.append(".validate();");
+                            _builder.newLineIfNotEmpty();
                           }
                         }
                       }
                     }
                   }
-                  return _builder;
                 }
-              };
-              it.setBody(_function);
-            }
-          };
-          cls.addMethod("validate", _function_11);
-        }
+                return _builder;
+              }
+            };
+            it.setBody(_function);
+          }
+        };
+        cls.addMethod("validate", _function_10);
         for (final MutableFieldDeclaration f : getSetFields) {
           {
             String _simpleName = f.getSimpleName();
             String _firstUpper = StringExtensions.toFirstUpper(_simpleName);
             String _plus_1 = ("get" + _firstUpper);
-            final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
+            final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("Get the value of the ");
@@ -494,11 +483,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_1, _function_12);
+            cls.addMethod(_plus_1, _function_11);
             String _simpleName_1 = f.getSimpleName();
             String _firstUpper_1 = StringExtensions.toFirstUpper(_simpleName_1);
             String _plus_2 = ("set" + _firstUpper_1);
-            final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
+            final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("Set the value of the ");
@@ -649,10 +638,10 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_2, _function_13);
+            cls.addMethod(_plus_2, _function_12);
           }
         }
-        final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
+        final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Apply a change to the ");
@@ -920,18 +909,18 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("apply", _function_12);
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods_1 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_13 = new Function1<MutableMethodDeclaration, Boolean>() {
+        cls.addMethod("apply", _function_11);
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_12 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "toString"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_1, _function_13);
-        boolean _isEmpty_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_1);
-        if (_isEmpty_1) {
-          final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
+        Iterable<? extends MutableMethodDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods, _function_12);
+        boolean _isEmpty = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter);
+        if (_isEmpty) {
+          final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _string = context.getString();
@@ -985,19 +974,19 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("toString", _function_14);
+          cls.addMethod("toString", _function_13);
         }
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods_2 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_15 = new Function1<MutableMethodDeclaration, Boolean>() {
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_1 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_14 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "equals"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_2, _function_15);
-        boolean _isEmpty_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_2);
-        if (_isEmpty_2) {
-          final Procedure1<MutableMethodDeclaration> _function_16 = new Procedure1<MutableMethodDeclaration>() {
+        Iterable<? extends MutableMethodDeclaration> _filter_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_1, _function_14);
+        boolean _isEmpty_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_1);
+        if (_isEmpty_1) {
+          final Procedure1<MutableMethodDeclaration> _function_15 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _object = context.getObject();
@@ -1007,7 +996,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               final CompilationStrategy _function = new CompilationStrategy() {
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
-                  _builder.append("if(object instanceof ");
+                  _builder.append("if(object != null && object instanceof ");
                   String _simpleName = cls.getSimpleName();
                   _builder.append(_simpleName, "");
                   _builder.append(") {");
@@ -1036,53 +1025,213 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                           _builder.append(_simpleName_2, "\t\t");
                           _builder.newLineIfNotEmpty();
                         } else {
-                          _builder.append("\t\t");
-                          _builder.append("(");
-                          _builder.newLine();
-                          _builder.append("\t\t");
-                          _builder.append("\t");
-                          _builder.append("(this.");
-                          String _simpleName_3 = field.getSimpleName();
-                          _builder.append(_simpleName_3, "\t\t\t");
-                          _builder.append(" == null && ((");
-                          String _simpleName_4 = cls.getSimpleName();
-                          _builder.append(_simpleName_4, "\t\t\t");
-                          _builder.append(") object).");
-                          String _simpleName_5 = field.getSimpleName();
-                          _builder.append(_simpleName_5, "\t\t\t");
-                          _builder.append(" == null) ||");
-                          _builder.newLineIfNotEmpty();
-                          _builder.append("\t\t");
-                          _builder.append("\t");
-                          _builder.append("(");
-                          _builder.newLine();
-                          _builder.append("\t\t");
-                          _builder.append("\t\t");
-                          _builder.append("this.");
-                          String _simpleName_6 = field.getSimpleName();
-                          _builder.append(_simpleName_6, "\t\t\t\t");
-                          _builder.append(" != null && ");
-                          _builder.newLineIfNotEmpty();
-                          _builder.append("\t\t");
-                          _builder.append("\t\t");
-                          _builder.append("this.");
-                          String _simpleName_7 = field.getSimpleName();
-                          _builder.append(_simpleName_7, "\t\t\t\t");
-                          _builder.append(".equals(((");
-                          String _simpleName_8 = cls.getSimpleName();
-                          _builder.append(_simpleName_8, "\t\t\t\t");
-                          _builder.append(") object).");
-                          String _simpleName_9 = field.getSimpleName();
-                          _builder.append(_simpleName_9, "\t\t\t\t");
-                          _builder.append(")");
-                          _builder.newLineIfNotEmpty();
-                          _builder.append("\t\t");
-                          _builder.append("\t");
-                          _builder.append(") ");
-                          _builder.newLine();
-                          _builder.append("\t\t");
-                          _builder.append(")");
-                          _builder.newLine();
+                          boolean _or = false;
+                          TypeReference _type_1 = field.getType();
+                          TypeReference _newTypeReference = context.newTypeReference(Map.class);
+                          boolean _extendsType = EntityProcessor.this.<Object>extendsType(_type_1, _newTypeReference);
+                          if (_extendsType) {
+                            _or = true;
+                          } else {
+                            TypeReference _type_2 = field.getType();
+                            TypeReference _newTypeReference_1 = context.newTypeReference(List.class);
+                            boolean _extendsType_1 = EntityProcessor.this.<Object>extendsType(_type_2, _newTypeReference_1);
+                            _or = _extendsType_1;
+                          }
+                          if (_or) {
+                            _builder.append("\t\t");
+                            _builder.append("// consider an empty ");
+                            TypeReference _type_3 = field.getType();
+                            String _simpleName_3 = _type_3.getSimpleName();
+                            _builder.append(_simpleName_3, "\t\t");
+                            _builder.append(" the same as a null. one of the below must be true:");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("// both are null");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("(this.");
+                            String _simpleName_4 = field.getSimpleName();
+                            _builder.append(_simpleName_4, "\t\t\t");
+                            _builder.append(" == null && ((");
+                            String _simpleName_5 = cls.getSimpleName();
+                            _builder.append(_simpleName_5, "\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_6 = field.getSimpleName();
+                            _builder.append(_simpleName_6, "\t\t\t");
+                            _builder.append(" == null) ||");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("// or the this.");
+                            String _simpleName_7 = field.getSimpleName();
+                            _builder.append(_simpleName_7, "\t\t\t");
+                            _builder.append(" is not null but empty, and object.");
+                            String _simpleName_8 = field.getSimpleName();
+                            _builder.append(_simpleName_8, "\t\t\t");
+                            _builder.append(" is null ");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_9 = field.getSimpleName();
+                            _builder.append(_simpleName_9, "\t\t\t\t");
+                            _builder.append(" != null && this.");
+                            String _simpleName_10 = field.getSimpleName();
+                            _builder.append(_simpleName_10, "\t\t\t\t");
+                            _builder.append(".isEmpty() &&");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("((");
+                            String _simpleName_11 = cls.getSimpleName();
+                            _builder.append(_simpleName_11, "\t\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_12 = field.getSimpleName();
+                            _builder.append(_simpleName_12, "\t\t\t\t");
+                            _builder.append(" == null");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append(") ||");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("// or the this.");
+                            String _simpleName_13 = field.getSimpleName();
+                            _builder.append(_simpleName_13, "\t\t\t");
+                            _builder.append(" is null, and object.");
+                            String _simpleName_14 = field.getSimpleName();
+                            _builder.append(_simpleName_14, "\t\t\t");
+                            _builder.append(" is not null but empty ");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_15 = field.getSimpleName();
+                            _builder.append(_simpleName_15, "\t\t\t\t");
+                            _builder.append(" == null &&");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("((");
+                            String _simpleName_16 = cls.getSimpleName();
+                            _builder.append(_simpleName_16, "\t\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_17 = field.getSimpleName();
+                            _builder.append(_simpleName_17, "\t\t\t\t");
+                            _builder.append(" != null &&");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("((");
+                            String _simpleName_18 = cls.getSimpleName();
+                            _builder.append(_simpleName_18, "\t\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_19 = field.getSimpleName();
+                            _builder.append(_simpleName_19, "\t\t\t\t");
+                            _builder.append(".isEmpty()");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append(") ||");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("// or both are not null");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_20 = field.getSimpleName();
+                            _builder.append(_simpleName_20, "\t\t\t\t");
+                            _builder.append(" != null && ");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_21 = field.getSimpleName();
+                            _builder.append(_simpleName_21, "\t\t\t\t");
+                            _builder.append(".equals(((");
+                            String _simpleName_22 = cls.getSimpleName();
+                            _builder.append(_simpleName_22, "\t\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_23 = field.getSimpleName();
+                            _builder.append(_simpleName_23, "\t\t\t\t");
+                            _builder.append(")");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append(") ");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append(")");
+                            _builder.newLine();
+                          } else {
+                            _builder.append("\t\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("(this.");
+                            String _simpleName_24 = field.getSimpleName();
+                            _builder.append(_simpleName_24, "\t\t\t");
+                            _builder.append(" == null && ((");
+                            String _simpleName_25 = cls.getSimpleName();
+                            _builder.append(_simpleName_25, "\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_26 = field.getSimpleName();
+                            _builder.append(_simpleName_26, "\t\t\t");
+                            _builder.append(" == null) ||");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_27 = field.getSimpleName();
+                            _builder.append(_simpleName_27, "\t\t\t\t");
+                            _builder.append(" != null && ");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_28 = field.getSimpleName();
+                            _builder.append(_simpleName_28, "\t\t\t\t");
+                            _builder.append(".equals(((");
+                            String _simpleName_29 = cls.getSimpleName();
+                            _builder.append(_simpleName_29, "\t\t\t\t");
+                            _builder.append(") object).");
+                            String _simpleName_30 = field.getSimpleName();
+                            _builder.append(_simpleName_30, "\t\t\t\t");
+                            _builder.append(")");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t\t");
+                            _builder.append("\t");
+                            _builder.append(") ");
+                            _builder.newLine();
+                            _builder.append("\t\t");
+                            _builder.append(")");
+                            _builder.newLine();
+                          }
                         }
                       }
                     }
@@ -1098,19 +1247,19 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("equals", _function_16);
+          cls.addMethod("equals", _function_15);
         }
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods_3 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_17 = new Function1<MutableMethodDeclaration, Boolean>() {
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_2 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_16 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "hashCode"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_3, _function_17);
-        boolean _isEmpty_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_3);
-        if (_isEmpty_3) {
-          final Procedure1<MutableMethodDeclaration> _function_18 = new Procedure1<MutableMethodDeclaration>() {
+        Iterable<? extends MutableMethodDeclaration> _filter_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_2, _function_16);
+        boolean _isEmpty_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_2);
+        if (_isEmpty_2) {
+          final Procedure1<MutableMethodDeclaration> _function_17 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _primitiveInt = context.getPrimitiveInt();
@@ -1139,23 +1288,74 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                           _builder.append(" + \"\").hashCode()");
                           _builder.newLineIfNotEmpty();
                         } else {
-                          _builder.append("\t");
-                          _builder.append("((this.");
-                          String _simpleName_1 = field.getSimpleName();
-                          _builder.append(_simpleName_1, "\t");
-                          _builder.append(" != null) ?");
-                          _builder.newLineIfNotEmpty();
-                          _builder.append("\t");
-                          _builder.append("\t");
-                          _builder.append("(this.");
-                          String _simpleName_2 = field.getSimpleName();
-                          _builder.append(_simpleName_2, "\t\t");
-                          _builder.append(" + \"\").hashCode()");
-                          _builder.newLineIfNotEmpty();
-                          _builder.append("\t");
-                          _builder.append("\t");
-                          _builder.append(": 0)");
-                          _builder.newLine();
+                          boolean _or = false;
+                          TypeReference _type_1 = field.getType();
+                          TypeReference _newTypeReference = context.newTypeReference(Map.class);
+                          boolean _extendsType = EntityProcessor.this.<Object>extendsType(_type_1, _newTypeReference);
+                          if (_extendsType) {
+                            _or = true;
+                          } else {
+                            TypeReference _type_2 = field.getType();
+                            TypeReference _newTypeReference_1 = context.newTypeReference(List.class);
+                            boolean _extendsType_1 = EntityProcessor.this.<Object>extendsType(_type_2, _newTypeReference_1);
+                            _or = _extendsType_1;
+                          }
+                          if (_or) {
+                            _builder.append("\t");
+                            _builder.append("((this.");
+                            String _simpleName_1 = field.getSimpleName();
+                            _builder.append(_simpleName_1, "\t");
+                            _builder.append(" != null) ?");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t");
+                            _builder.append("\t");
+                            _builder.append("(");
+                            _builder.newLine();
+                            _builder.append("\t");
+                            _builder.append("\t\t");
+                            _builder.append("this.");
+                            String _simpleName_2 = field.getSimpleName();
+                            _builder.append(_simpleName_2, "\t\t\t");
+                            _builder.append(".isEmpty() ?");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t");
+                            _builder.append("\t\t\t");
+                            _builder.append("\"null\".hashCode()");
+                            _builder.newLine();
+                            _builder.append("\t");
+                            _builder.append("\t\t\t");
+                            _builder.append(": (this.");
+                            String _simpleName_3 = field.getSimpleName();
+                            _builder.append(_simpleName_3, "\t\t\t\t");
+                            _builder.append(" + \"\").hashCode()");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t");
+                            _builder.append("\t");
+                            _builder.append(")");
+                            _builder.newLine();
+                            _builder.append("\t");
+                            _builder.append("\t");
+                            _builder.append(": 0)");
+                            _builder.newLine();
+                          } else {
+                            _builder.append("\t");
+                            _builder.append("((this.");
+                            String _simpleName_4 = field.getSimpleName();
+                            _builder.append(_simpleName_4, "\t");
+                            _builder.append(" != null) ?");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t");
+                            _builder.append("\t");
+                            _builder.append("(this.");
+                            String _simpleName_5 = field.getSimpleName();
+                            _builder.append(_simpleName_5, "\t\t");
+                            _builder.append(" + \"\").hashCode()");
+                            _builder.newLineIfNotEmpty();
+                            _builder.append("\t");
+                            _builder.append("\t");
+                            _builder.append(": 0)");
+                            _builder.newLine();
+                          }
                         }
                       }
                     }
@@ -1168,19 +1368,19 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("hashCode", _function_18);
+          cls.addMethod("hashCode", _function_17);
         }
-        Iterable<? extends MutableMethodDeclaration> _declaredMethods_4 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_19 = new Function1<MutableMethodDeclaration, Boolean>() {
+        Iterable<? extends MutableMethodDeclaration> _declaredMethods_3 = cls.getDeclaredMethods();
+        final Function1<MutableMethodDeclaration, Boolean> _function_18 = new Function1<MutableMethodDeclaration, Boolean>() {
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "clone"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_4, _function_19);
-        boolean _isEmpty_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_4);
-        if (_isEmpty_4) {
-          final Procedure1<MutableMethodDeclaration> _function_20 = new Procedure1<MutableMethodDeclaration>() {
+        Iterable<? extends MutableMethodDeclaration> _filter_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_3, _function_18);
+        boolean _isEmpty_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_3);
+        if (_isEmpty_3) {
+          final Procedure1<MutableMethodDeclaration> _function_19 = new Procedure1<MutableMethodDeclaration>() {
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               it.setReturnType(clsType);
@@ -1208,17 +1408,17 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("clone", _function_20);
+          cls.addMethod("clone", _function_19);
         }
-        final Function1<MutableFieldDeclaration, Boolean> _function_21 = new Function1<MutableFieldDeclaration, Boolean>() {
+        final Function1<MutableFieldDeclaration, Boolean> _function_20 = new Function1<MutableFieldDeclaration, Boolean>() {
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             String _simpleName = _type.getSimpleName();
             return Boolean.valueOf(_simpleName.startsWith("Map"));
           }
         };
-        Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_21);
-        final Procedure1<MutableFieldDeclaration> _function_22 = new Procedure1<MutableFieldDeclaration>() {
+        Iterable<? extends MutableFieldDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_20);
+        final Procedure1<MutableFieldDeclaration> _function_21 = new Procedure1<MutableFieldDeclaration>() {
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
@@ -1237,16 +1437,16 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             }
           }
         };
-        IterableExtensions.<MutableFieldDeclaration>each(_filter_5, _function_22);
-        final Function1<MutableFieldDeclaration, Boolean> _function_23 = new Function1<MutableFieldDeclaration, Boolean>() {
+        IterableExtensions.<MutableFieldDeclaration>each(_filter_4, _function_21);
+        final Function1<MutableFieldDeclaration, Boolean> _function_22 = new Function1<MutableFieldDeclaration, Boolean>() {
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             String _simpleName = _type.getSimpleName();
             return Boolean.valueOf(_simpleName.startsWith("List"));
           }
         };
-        Iterable<? extends MutableFieldDeclaration> _filter_6 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_23);
-        final Procedure1<MutableFieldDeclaration> _function_24 = new Procedure1<MutableFieldDeclaration>() {
+        Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_22);
+        final Procedure1<MutableFieldDeclaration> _function_23 = new Procedure1<MutableFieldDeclaration>() {
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
@@ -1255,8 +1455,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setType(_newTypeReference);
           }
         };
-        IterableExtensions.<MutableFieldDeclaration>each(_filter_6, _function_24);
-        final Procedure1<MutableMethodDeclaration> _function_25 = new Procedure1<MutableMethodDeclaration>() {
+        IterableExtensions.<MutableFieldDeclaration>each(_filter_5, _function_23);
+        final Procedure1<MutableMethodDeclaration> _function_24 = new Procedure1<MutableMethodDeclaration>() {
           public void apply(final MutableMethodDeclaration it) {
             it.setVisibility(Visibility.PROTECTED);
             it.setDocComment("creates a listener for propagating to changes on a field to the publisher");
@@ -1297,7 +1497,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("newChangeHandler", _function_25);
+        cls.addMethod("newChangeHandler", _function_24);
       }
     }
   }

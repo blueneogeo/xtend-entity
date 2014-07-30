@@ -192,26 +192,25 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			
 			// create the validate method
 			
-			if(cls.declaredMethods.filter[simpleName=='validate'].empty)
-				cls.addMethod('validate') [
-					docComment = '''
-						Check if the «cls.simpleName» is valid.
-						Also recursively checks contained entities within the members of «cls.simpleName».
-						@return true if all the fields annotated with @Require have a value.
-					'''
-					primarySourceElement = cls
-					exceptions = EntityException.newTypeReference
-					body = ['''
-						«FOR field : requiredFields»
-							«IF !field.type.primitive»
-								if(«field.simpleName»==null) throw new EntityException("«cls.simpleName».«field.simpleName» may not be empty.");
-								«IF field.in(reactiveFields)»
-									«field.simpleName».validate();
-								«ENDIF»
+			cls.addMethod('validate') [
+				docComment = '''
+					Check if the «cls.simpleName» is valid.
+					Also recursively checks contained entities within the members of «cls.simpleName».
+					@return true if all the fields annotated with @Require have a value.
+				'''
+				primarySourceElement = cls
+				exceptions = EntityException.newTypeReference
+				body = ['''
+					«FOR field : requiredFields»
+						«IF !field.type.primitive»
+							if(«field.simpleName»==null) throw new EntityException("«cls.simpleName».«field.simpleName» may not be empty.");
+							«IF field.in(reactiveFields)»
+								«field.simpleName».validate();
 							«ENDIF»
-						«ENDFOR»
-					''']
-				]
+						«ENDIF»
+					«ENDFOR»
+				''']
+			]
 
 			// create getters and setters
 			
@@ -383,11 +382,33 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					addParameter('object', object)
 					returnType = primitiveBoolean
 					body = ['''
-						if(object instanceof «cls.simpleName») {
+						if(object != null && object instanceof «cls.simpleName») {
 							return (
 								«FOR field : getSetFields SEPARATOR ' && '»
 									«IF field.type.primitive»
 										this.«field.simpleName» == «field.simpleName»
+									«ELSEIF field.type.extendsType(Map.newTypeReference) || field.type.extendsType(List.newTypeReference)»
+										// consider an empty «field.type.simpleName» the same as a null. one of the below must be true:
+										(
+											// both are null
+											(this.«field.simpleName» == null && ((«cls.simpleName») object).«field.simpleName» == null) ||
+											// or the this.«field.simpleName» is not null but empty, and object.«field.simpleName» is null 
+											(
+												this.«field.simpleName» != null && this.«field.simpleName».isEmpty() &&
+												((«cls.simpleName») object).«field.simpleName» == null
+											) ||
+											// or the this.«field.simpleName» is null, and object.«field.simpleName» is not null but empty 
+											(
+												this.«field.simpleName» == null &&
+												((«cls.simpleName») object).«field.simpleName» != null &&
+												((«cls.simpleName») object).«field.simpleName».isEmpty()
+											) ||
+											// or both are not null
+											(
+												this.«field.simpleName» != null && 
+												this.«field.simpleName».equals(((«cls.simpleName») object).«field.simpleName»)
+											) 
+										)
 									«ELSE»
 										(
 											(this.«field.simpleName» == null && ((«cls.simpleName») object).«field.simpleName» == null) ||
@@ -414,6 +435,14 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 							«FOR field : getSetFields SEPARATOR ' + '»
 								«IF field.type.primitive»
 									(this.«field.simpleName» + "").hashCode()
+								«ELSEIF field.type.extendsType(Map.newTypeReference) || field.type.extendsType(List.newTypeReference)»
+									((this.«field.simpleName» != null) ?
+										(
+											this.«field.simpleName».isEmpty() ?
+												"null".hashCode()
+												: (this.«field.simpleName» + "").hashCode()
+										)
+										: 0)
 								«ELSE»
 									((this.«field.simpleName» != null) ?
 										(this.«field.simpleName» + "").hashCode()

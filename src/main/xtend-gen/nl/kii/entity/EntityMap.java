@@ -364,6 +364,14 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   public void validate() {
   }
   
+  public boolean equals(final Object o) {
+    return super.equals(o);
+  }
+  
+  public int hashCode() {
+    return super.hashCode();
+  }
+  
   private Publisher<Change> setPublisher(final Publisher<Change> value) {
     return this._publisher.getAndSet(value);
   }

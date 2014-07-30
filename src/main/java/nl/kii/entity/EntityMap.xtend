@@ -169,4 +169,12 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	override validate() {
 	}
 	
+	override equals(Object o) {
+		super.equals(o)
+	}
+	
+	override hashCode() {
+		super.hashCode()
+	}
+	
 }
