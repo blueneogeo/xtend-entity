@@ -10,3 +10,11 @@
 /.TestProblem.java._trace
 /.EntityMatcher.java._trace
 /.Matcher.java._trace
+/Change.java
+/ChangeType.java
+/EntityException.java
+/EntityList.java
+/EntityMap.java
+/EntityObject.java
+/Reactive.java
+/ReactiveObject.java
