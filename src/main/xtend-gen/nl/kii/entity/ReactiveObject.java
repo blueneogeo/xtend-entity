@@ -53,7 +53,7 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
     boolean _hasPublisher = this.hasPublisher();
     if (_hasPublisher) {
       Publisher<Change> _publisher = this.getPublisher();
-      _publisher.setPublishing(Boolean.valueOf(publish));
+      _publisher.setPublishing(publish);
     }
   }
   
@@ -67,8 +67,8 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
       _and = false;
     } else {
       Publisher<Change> _publisher = this.getPublisher();
-      Boolean _publishing = _publisher.getPublishing();
-      _and = (_publishing).booleanValue();
+      boolean _isPublishing = _publisher.isPublishing();
+      _and = _isPublishing;
     }
     return _and;
   }
