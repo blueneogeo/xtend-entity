@@ -166,47 +166,32 @@ public class Change implements EntityObject {
     if (!_matched) {
       if (o instanceof Change) {
         _matched=true;
-        boolean _xblockexpression = false;
-        {
-          if ((((Change)o).id != this.id)) {
-            return false;
-          }
-          boolean _notEquals = (!Objects.equal(((Change)o).action, this.action));
-          if (_notEquals) {
-            return false;
-          }
-          boolean _or = false;
-          boolean _and = false;
-          boolean _equals = Objects.equal(((Change)o).path, null);
-          if (!_equals) {
-            _and = false;
-          } else {
-            boolean _equals_1 = Objects.equal(this.path, null);
-            _and = _equals_1;
-          }
-          if (_and) {
-            _or = true;
-          } else {
-            List<String> _path = ((Change)o).getPath();
-            List<String> _path_1 = this.getPath();
-            boolean _equals_2 = Objects.equal(_path, _path_1);
-            _or = _equals_2;
-          }
-          boolean _not = (!_or);
-          if (_not) {
-            return false;
-          }
-          boolean _notEquals_1 = (!Objects.equal(((Change)o).value, this.value));
-          if (_notEquals_1) {
-            return false;
-          }
-          _xblockexpression = true;
+        boolean _and = false;
+        boolean _and_1 = false;
+        boolean _and_2 = false;
+        if (!(((Change)o).id == this.id)) {
+          _and_2 = false;
+        } else {
+          boolean _equals = Objects.equal(((Change)o).action, this.action);
+          _and_2 = _equals;
         }
-        _switchResult = _xblockexpression;
+        if (!_and_2) {
+          _and_1 = false;
+        } else {
+          boolean _equals_1 = Objects.equal(((Change)o).path, this.path);
+          _and_1 = _equals_1;
+        }
+        if (!_and_1) {
+          _and = false;
+        } else {
+          boolean _equals_2 = Objects.equal(((Change)o).value, this.value);
+          _and = _equals_2;
+        }
+        _switchResult = _and;
       }
     }
     if (!_matched) {
-      _switchResult = false;
+      _switchResult = true;
     }
     return _switchResult;
   }

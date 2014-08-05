@@ -87,14 +87,8 @@ class Change implements EntityObject {
 	
 	override equals(Object o) {
 		switch o {
-			Change: {
-				 if(o.id != id) return false
-				 if(o.action != action) return false
-				 if(!((o.path == null && path == null) || o.getPath == getPath)) return false
-				 if(o.value != value) return false
-				true
-			}
-			default: false
+			Change: o.id == id && o.action == action && o.path == path && o.value == value
+			default: true
 		}
 	}
 	
