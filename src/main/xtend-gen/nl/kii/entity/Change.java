@@ -169,7 +169,7 @@ public class Change implements EntityObject {
         boolean _and = false;
         boolean _and_1 = false;
         boolean _and_2 = false;
-        if (!(((Change)o).id == this.id)) {
+        if (!((this.id > 0) || (((Change)o).id == this.id))) {
           _and_2 = false;
         } else {
           boolean _equals = Objects.equal(((Change)o).action, this.action);
@@ -178,20 +178,29 @@ public class Change implements EntityObject {
         if (!_and_2) {
           _and_1 = false;
         } else {
+          boolean _or = false;
           boolean _equals_1 = Objects.equal(((Change)o).path, this.path);
-          _and_1 = _equals_1;
+          if (_equals_1) {
+            _or = true;
+          } else {
+            List<String> _path = ((Change)o).getPath();
+            List<String> _path_1 = this.getPath();
+            boolean _equals_2 = Objects.equal(_path, _path_1);
+            _or = _equals_2;
+          }
+          _and_1 = _or;
         }
         if (!_and_1) {
           _and = false;
         } else {
-          boolean _equals_2 = Objects.equal(((Change)o).value, this.value);
-          _and = _equals_2;
+          boolean _equals_3 = Objects.equal(((Change)o).value, this.value);
+          _and = _equals_3;
         }
         _switchResult = _and;
       }
     }
     if (!_matched) {
-      _switchResult = true;
+      _switchResult = false;
     }
     return _switchResult;
   }

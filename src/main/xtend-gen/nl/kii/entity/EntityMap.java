@@ -94,7 +94,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     boolean _notEquals = (!Objects.equal(_publisher_2, null));
     if (_notEquals) {
       Publisher<Change> _publisher_3 = this.getPublisher();
-      _publisher_3.setPublishing(publish);
+      _publisher_3.setPublishing(Boolean.valueOf(publish));
     }
   }
   
@@ -106,8 +106,8 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
       _and = false;
     } else {
       Publisher<Change> _publisher_1 = this.getPublisher();
-      boolean _isPublishing = _publisher_1.isPublishing();
-      _and = _isPublishing;
+      Boolean _publishing = _publisher_1.getPublishing();
+      _and = (_publishing).booleanValue();
     }
     return _and;
   }
@@ -203,15 +203,15 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
         _and = false;
       } else {
         Publisher<Change> _publisher_1 = this.getPublisher();
-        boolean _isPublishing = _publisher_1.isPublishing();
-        boolean _not = (!_isPublishing);
+        Boolean _publishing = _publisher_1.getPublishing();
+        boolean _not = (!(_publishing).booleanValue());
         _and = _not;
       }
       final boolean wasPublishing = _and;
       try {
         Publisher<Change> _publisher_2 = this.getPublisher();
         if (_publisher_2!=null) {
-          _publisher_2.setPublishing(false);
+          _publisher_2.setPublishing(Boolean.valueOf(false));
         }
         List<String> _path = change.getPath();
         final List<String> path = _path;
@@ -348,7 +348,7 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
       } finally {
         Publisher<Change> _publisher_3 = this.getPublisher();
         if (_publisher_3!=null) {
-          _publisher_3.setPublishing(wasPublishing);
+          _publisher_3.setPublishing(Boolean.valueOf(wasPublishing));
         }
       }
     } catch (Throwable _e) {
