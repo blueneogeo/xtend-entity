@@ -1,6 +1,6 @@
 package nl.kii.entity.annotations;
 
-import nl.kii.entity.annotations.EntityProcessor;
+import nl.kii.entity.processors.EntityProcessor;
 import org.eclipse.xtend.lib.macro.Active;
 
 /**

@@ -1,4 +1,4 @@
-package nl.kii.entity.annotations;
+package nl.kii.entity.processors;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
