@@ -27,6 +27,7 @@ import static org.eclipse.xtend.lib.macro.declaration.Visibility.*
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import nl.kii.entity.EntityObject
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -159,6 +160,56 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					if(field.type.actualTypeArguments.empty)
 						field.addError('Reactive classes may not have untyped Maps')
 			}
+			
+			// create the getType method
+			
+			cls.addMethod('getType') [
+				docComment = '''
+					Gets the type of any field path into the object. Also navigates inner maps and lists.
+					This lets you get past erasure, and look into the wrapped types of objects at runtime.
+					<p>
+					The path is made up of a strings, each the name of a field. An empty path will give the
+					type of this object, while a single string will give the type of that field inside this
+					class. More strings will navigate recursively into that type. 
+					<p>
+					For instance, if you have an entity with a field users that is a Map<String, User>, 
+					and each user has a name field of type String, then you could get the type of that name 
+					field by asking the entity:
+					<pre>Entity.getType('users', 'john', 'name') // returns String</pre>
+				'''
+				primarySourceElement = cls
+				static = true
+				addParameter('path', List.newTypeReference(string))
+				returnType = Class.newTypeReference
+				exceptions = EntityException.newTypeReference
+				body = ['''
+					if(path == null || path.size() == 0) return «clsType.nameWithoutGenerics».class;
+					String fieldName = path.get(0);
+					«FOR field : getSetFields»
+						if(fieldName.equals("«field.simpleName»")) {
+							if(path.size() == 1) {
+									if(path.size() == 1) return «field.type.nameWithoutGenerics».class;
+							} else {
+								«IF field.type.extendsType(EntityList.newTypeReference) || field.type.extendsType(EntityMap.newTypeReference)»
+									«val containedType = field.type.actualTypeArguments.get(0)»
+									if(path.size() == 2) return «containedType».class;
+									else 
+									«IF containedType.extendsType(EntityObject.newTypeReference)»
+										return «containedType».getType(path.subList(2, path.size()-1));
+									«ELSE»
+										throw new EntityException("path " + path + " does not match structure of «containedType.simpleName»");
+									«ENDIF»
+								«ELSEIF field.type.extendsType(EntityObject.newTypeReference)»
+									return «field.type.simpleName».getType(path.subList(1, path.size()-1));
+								«ELSE»
+									throw new EntityException("path " + path + " does not match structure of «field.type.simpleName»"); 
+								«ENDIF»
+							} 
+						}
+					«ENDFOR»
+					throw new EntityException("could not match path " + path + " on entity «clsType.simpleName»");
+				''']
+			]
 			
 			// create the validate method
 			
@@ -609,6 +660,10 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			list.add(param.getTypeParamName(count + 1))
 		]
 		list
+	}
+	
+	def getNameWithoutGenerics(TypeReference ref) {
+		ref.name.replaceAll('<.+>', '')
 	}
 	
 }
