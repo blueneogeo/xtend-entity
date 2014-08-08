@@ -392,7 +392,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                     _builder.append("if(path.size() == 1) {");
                     _builder.newLine();
                     _builder.append("\t\t\t");
-                    _builder.append("if(path.size() == 1) return ");
+                    _builder.append("return ");
                     TypeReference _type = field.getType();
                     String _nameWithoutGenerics_1 = EntityProcessor.this.getNameWithoutGenerics(_type);
                     _builder.append(_nameWithoutGenerics_1, "\t\t\t");
@@ -435,7 +435,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                             _builder.append("\t\t");
                             _builder.append("return ");
                             _builder.append(containedType, "\t\t");
-                            _builder.append(".getType(path.subList(2, path.size()-1));");
+                            _builder.append(".getType(path.subList(2, path.size()));");
                             _builder.newLineIfNotEmpty();
                           } else {
                             _builder.append("\t\t");
@@ -456,7 +456,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                           TypeReference _type_5 = field.getType();
                           String _simpleName_2 = _type_5.getSimpleName();
                           _builder.append(_simpleName_2, "\t\t");
-                          _builder.append(".getType(path.subList(1, path.size()-1));");
+                          _builder.append(".getType(path.subList(1, path.size()));");
                           _builder.newLineIfNotEmpty();
                         } else {
                           _builder.append("\t\t");

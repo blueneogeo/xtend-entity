@@ -188,19 +188,19 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 					«FOR field : getSetFields»
 						if(fieldName.equals("«field.simpleName»")) {
 							if(path.size() == 1) {
-									if(path.size() == 1) return «field.type.nameWithoutGenerics».class;
+									return «field.type.nameWithoutGenerics».class;
 							} else {
 								«IF field.type.extendsType(EntityList.newTypeReference) || field.type.extendsType(EntityMap.newTypeReference)»
 									«val containedType = field.type.actualTypeArguments.get(0)»
 									if(path.size() == 2) return «containedType».class;
 									else 
 									«IF containedType.extendsType(EntityObject.newTypeReference)»
-										return «containedType».getType(path.subList(2, path.size()-1));
+										return «containedType».getType(path.subList(2, path.size()));
 									«ELSE»
 										throw new EntityException("path " + path + " does not match structure of «containedType.simpleName»");
 									«ENDIF»
 								«ELSEIF field.type.extendsType(EntityObject.newTypeReference)»
-									return «field.type.simpleName».getType(path.subList(1, path.size()-1));
+									return «field.type.simpleName».getType(path.subList(1, path.size()));
 								«ELSE»
 									throw new EntityException("path " + path + " does not match structure of «field.type.simpleName»"); 
 								«ENDIF»
