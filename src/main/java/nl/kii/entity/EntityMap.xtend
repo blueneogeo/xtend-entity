@@ -7,6 +7,7 @@ import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
 
 import static nl.kii.entity.ChangeType.*
+import java.util.List
 
 class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject {
 	
@@ -175,6 +176,18 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 	
 	override hashCode() {
 		super.hashCode()
+	}
+	
+	override getInstanceType(List<String> path) throws EntityException {
+		switch it : path {
+			case null, case length == 0: EntityList
+			case length == 1: type
+			default: {
+				if(EntityObject.isAssignableFrom(type)) {
+					(type.newInstance as EntityObject).getInstanceType(path.tail.toList)
+				} else throw new EntityException('EntityList cannot apply path ' + path.tail + ' to type ' + type)
+			}
+		}
 	}
 	
 }

@@ -257,6 +257,18 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	
 	override validate() {
 	}
+	
+	override getInstanceType(List<String> path) throws EntityException {
+		switch it : path {
+			case null, case length == 0: EntityList
+			case length == 1: type
+			default: {
+				if(EntityObject.isAssignableFrom(type)) {
+					(type.newInstance as EntityObject).getInstanceType(path.tail.toList)
+				} else throw new EntityException('EntityList cannot apply path ' + path.tail + ' to type ' + type)
+			}
+		}
+	}
 
 }
 	

@@ -104,4 +104,8 @@ class Change implements EntityObject {
 		new Change(id, action, path?.clone, value)
 	}
 	
+	override getInstanceType(List<String> path) throws EntityException {
+		throw new EntityException('unsupported')
+	}
+	
 }

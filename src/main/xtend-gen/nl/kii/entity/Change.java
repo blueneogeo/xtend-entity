@@ -229,4 +229,8 @@ public class Change implements EntityObject {
     }
     return new Change(this.id, this.action, (List<String>)Conversions.doWrapArray(_clone), this.value);
   }
+  
+  public Class<?> getInstanceType(final List<String> path) throws EntityException {
+    throw new EntityException("unsupported");
+  }
 }

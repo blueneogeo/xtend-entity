@@ -161,11 +161,22 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						field.addError('Reactive classes may not have untyped Maps')
 			}
 			
-			// create the getType method
+			// create the getType methods
+			
+			cls.addMethod('getInstanceType') [
+				docComment = '''Gives the instance access to the getType method.'''
+				primarySourceElement = cls
+				addParameter('path', List.newTypeReference(string))
+				returnType = Class.newTypeReference
+				exceptions = EntityException.newTypeReference
+				body = ['''
+					return getType(path);
+				''']
+			]
 			
 			cls.addMethod('getType') [
 				docComment = '''
-					Gets the type of any field path into the object. Also navigates inner maps and lists.
+					Gets the class of any field path into the object. Also navigates inner maps and lists.
 					This lets you get past erasure, and look into the wrapped types of objects at runtime.
 					<p>
 					The path is made up of a strings, each the name of a field. An empty path will give the

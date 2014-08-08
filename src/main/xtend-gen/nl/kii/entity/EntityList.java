@@ -16,6 +16,7 @@ import nl.kii.entity.Reactive;
 import nl.kii.observe.Observable;
 import nl.kii.observe.Publisher;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.MapExtensions;
@@ -492,6 +493,57 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   public void validate() {
+  }
+  
+  public Class<?> getInstanceType(final List<String> path) throws EntityException {
+    try {
+      Class<?> _switchResult = null;
+      final List<String> it = path;
+      boolean _matched = false;
+      if (!_matched) {
+        if (Objects.equal(it, null)) {
+          _matched=true;
+        }
+        if (!_matched) {
+          int _length = ((Object[])Conversions.unwrapArray(it, Object.class)).length;
+          boolean _equals = (_length == 0);
+          if (_equals) {
+            _matched=true;
+          }
+        }
+        if (_matched) {
+          _switchResult = EntityList.class;
+        }
+      }
+      if (!_matched) {
+        int _length_1 = ((Object[])Conversions.unwrapArray(it, Object.class)).length;
+        boolean _equals_1 = (_length_1 == 1);
+        if (_equals_1) {
+          _matched=true;
+          _switchResult = this.type;
+        }
+      }
+      if (!_matched) {
+        Class<?> _xifexpression = null;
+        boolean _isAssignableFrom = EntityObject.class.isAssignableFrom(this.type);
+        if (_isAssignableFrom) {
+          E _newInstance = this.type.newInstance();
+          Iterable<String> _tail = IterableExtensions.<String>tail(path);
+          List<String> _list = IterableExtensions.<String>toList(_tail);
+          _xifexpression = ((EntityObject) _newInstance).getInstanceType(_list);
+        } else {
+          Iterable<String> _tail_1 = IterableExtensions.<String>tail(path);
+          String _plus = ("EntityList cannot apply path " + _tail_1);
+          String _plus_1 = (_plus + " to type ");
+          String _plus_2 = (_plus_1 + this.type);
+          throw new EntityException(_plus_2);
+        }
+        _switchResult = _xifexpression;
+      }
+      return _switchResult;
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
+    }
   }
   
   private Publisher<Change> setPublisher(final Publisher<Change> value) {
