@@ -40,6 +40,8 @@ class EntityMap<V> extends HashMap<String, V> implements Reactive, EntityObject 
 		this.isReactive = true
 	}
 	
+	def getType() { type }
+	
 	// MAKE THE MAP LISTENABLE
 
 	def private publish(Change change) {

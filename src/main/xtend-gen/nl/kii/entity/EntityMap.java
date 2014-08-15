@@ -57,6 +57,10 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     this.isReactive = true;
   }
   
+  public Class<V> getType() {
+    return this.type;
+  }
+  
   private void publish(final Change change) {
     Publisher<Change> _publisher = this.getPublisher();
     if (_publisher!=null) {
