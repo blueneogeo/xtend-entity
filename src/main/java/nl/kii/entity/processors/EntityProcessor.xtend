@@ -300,8 +300,10 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityMapType(context).name»)this.«f.simpleName»).clone()));
 								«ELSEIF f.isEntityList»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
-								«ELSE»
+								«ELSEIF f.type.extendsType(Cloneable.newTypeReference)»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName».clone()));
+								«ELSE»
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName»));
 								«ENDIF»
 							}
 						«ENDIF»
@@ -336,7 +338,11 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 							if(!(change.getValue() instanceof «clsType.name»)) 
 								throw new IllegalArgumentException("incoming change has a value of the wrong type: " + change + ", expected " + this.getClass().getName());
 							// assign the all fields directly from the value of the change
-							«clsType.name» value = ((«clsType.name»)change.getValue()).clone();
+							«IF clsType.extendsType(Cloneable.newTypeReference)»
+								«clsType.name» value = ((«clsType.name»)change.getValue()).clone();
+							«ELSE»
+								«clsType.name» value = ((«clsType.name»)change.getValue());
+							«ENDIF»
 							«FOR field : observedFields»
 								«IF !field.type.primitive»
 									if(value.«field.simpleName» != null) 

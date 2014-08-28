@@ -793,15 +793,30 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                                 _builder.append(").clone()));");
                                 _builder.newLineIfNotEmpty();
                               } else {
-                                _builder.append("\t");
-                                _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
-                                String _simpleName_6 = f.getSimpleName();
-                                _builder.append(_simpleName_6, "\t");
-                                _builder.append("\", this.");
-                                String _simpleName_7 = f.getSimpleName();
-                                _builder.append(_simpleName_7, "\t");
-                                _builder.append(".clone()));");
-                                _builder.newLineIfNotEmpty();
+                                TypeReference _type_3 = f.getType();
+                                TypeReference _newTypeReference_1 = context.newTypeReference(Cloneable.class);
+                                boolean _extendsType = EntityProcessor.this.<Object>extendsType(_type_3, _newTypeReference_1);
+                                if (_extendsType) {
+                                  _builder.append("\t");
+                                  _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
+                                  String _simpleName_6 = f.getSimpleName();
+                                  _builder.append(_simpleName_6, "\t");
+                                  _builder.append("\", this.");
+                                  String _simpleName_7 = f.getSimpleName();
+                                  _builder.append(_simpleName_7, "\t");
+                                  _builder.append(".clone()));");
+                                  _builder.newLineIfNotEmpty();
+                                } else {
+                                  _builder.append("\t");
+                                  _builder.append("getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, \"");
+                                  String _simpleName_8 = f.getSimpleName();
+                                  _builder.append(_simpleName_8, "\t");
+                                  _builder.append("\", this.");
+                                  String _simpleName_9 = f.getSimpleName();
+                                  _builder.append(_simpleName_9, "\t");
+                                  _builder.append("));");
+                                  _builder.newLineIfNotEmpty();
+                                }
                               }
                             }
                           }
@@ -883,14 +898,29 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.append("\t\t");
                 _builder.append("// assign the all fields directly from the value of the change");
                 _builder.newLine();
-                _builder.append("\t\t");
-                String _name_1 = clsType.getName();
-                _builder.append(_name_1, "\t\t");
-                _builder.append(" value = ((");
-                String _name_2 = clsType.getName();
-                _builder.append(_name_2, "\t\t");
-                _builder.append(")change.getValue()).clone();");
-                _builder.newLineIfNotEmpty();
+                {
+                  TypeReference _newTypeReference = context.newTypeReference(Cloneable.class);
+                  boolean _extendsType = EntityProcessor.this.<Object>extendsType(clsType, _newTypeReference);
+                  if (_extendsType) {
+                    _builder.append("\t\t");
+                    String _name_1 = clsType.getName();
+                    _builder.append(_name_1, "\t\t");
+                    _builder.append(" value = ((");
+                    String _name_2 = clsType.getName();
+                    _builder.append(_name_2, "\t\t");
+                    _builder.append(")change.getValue()).clone();");
+                    _builder.newLineIfNotEmpty();
+                  } else {
+                    _builder.append("\t\t");
+                    String _name_3 = clsType.getName();
+                    _builder.append(_name_3, "\t\t");
+                    _builder.append(" value = ((");
+                    String _name_4 = clsType.getName();
+                    _builder.append(_name_4, "\t\t");
+                    _builder.append(")change.getValue());");
+                    _builder.newLineIfNotEmpty();
+                  }
+                }
                 {
                   for(final MutableFieldDeclaration field : observedFields) {
                     {
