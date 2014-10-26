@@ -532,7 +532,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 			reactiveFields
 				.filter [ type.simpleName.startsWith('Map') ]
-				.each [
+				.forEach [
 					val key = type.actualTypeArguments.get(0)
 					val value = type.actualTypeArguments.get(1)
 					if(!key.extendsType(string)) {
@@ -547,7 +547,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 			reactiveFields
 				.filter [ type.simpleName.startsWith('List') ]
-				.each [
+				.forEach [
 					val typeArg = type.actualTypeArguments.get(0)
 					type = EntityList.newTypeReference(typeArg) 
 				]

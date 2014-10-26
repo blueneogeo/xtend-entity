@@ -1645,7 +1645,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             }
           }
         };
-        IterableExtensions.<MutableFieldDeclaration>each(_filter_4, _function_23);
+        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_4, _function_23);
         final Function1<MutableFieldDeclaration, Boolean> _function_24 = new Function1<MutableFieldDeclaration, Boolean>() {
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
@@ -1663,7 +1663,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setType(_newTypeReference);
           }
         };
-        IterableExtensions.<MutableFieldDeclaration>each(_filter_5, _function_25);
+        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_5, _function_25);
         final Procedure1<MutableMethodDeclaration> _function_26 = new Procedure1<MutableMethodDeclaration>() {
           public void apply(final MutableMethodDeclaration it) {
             it.setVisibility(Visibility.PROTECTED);
