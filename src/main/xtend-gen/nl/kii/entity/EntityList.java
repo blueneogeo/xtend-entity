@@ -546,19 +546,27 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     }
   }
   
-  private Publisher<Change> setPublisher(final Publisher<Change> value) {
-    return this._publisher.getAndSet(value);
+  private void setPublisher(final Publisher<Change> value) {
+    this._publisher.set(value);
   }
   
   private Publisher<Change> getPublisher() {
     return this._publisher.get();
   }
   
-  private Map<Integer, Procedure0> setSubscriptionEnders(final Map<Integer, Procedure0> value) {
-    return this._subscriptionEnders.getAndSet(value);
+  private Publisher<Change> getAndSetPublisher(final Publisher<Change> value) {
+    return this._publisher.getAndSet(value);
+  }
+  
+  private void setSubscriptionEnders(final Map<Integer, Procedure0> value) {
+    this._subscriptionEnders.set(value);
   }
   
   private Map<Integer, Procedure0> getSubscriptionEnders() {
     return this._subscriptionEnders.get();
+  }
+  
+  private Map<Integer, Procedure0> getAndSetSubscriptionEnders(final Map<Integer, Procedure0> value) {
+    return this._subscriptionEnders.getAndSet(value);
   }
 }

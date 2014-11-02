@@ -81,11 +81,15 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
     return (!Objects.equal(_publisher, null));
   }
   
-  protected Publisher<Change> setPublisher(final Publisher<Change> value) {
-    return this._publisher.getAndSet(value);
+  protected void setPublisher(final Publisher<Change> value) {
+    this._publisher.set(value);
   }
   
   protected Publisher<Change> getPublisher() {
     return this._publisher.get();
+  }
+  
+  protected Publisher<Change> getAndSetPublisher(final Publisher<Change> value) {
+    return this._publisher.getAndSet(value);
   }
 }
