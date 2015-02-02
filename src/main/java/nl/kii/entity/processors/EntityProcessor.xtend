@@ -250,7 +250,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 				cls.addMethod('get' + f.simpleName.toFirstUpper) [
 					docComment = '''
-						Get the value of the «cls.simpleName» entity property «f.simpleName».
+						«IF f.docComment.defined»«f.docComment»«ELSE»Get the value of the «cls.simpleName» entity property «f.simpleName».«ENDIF»
 						@return the found «f.simpleName» or null if not set.
 					'''
 					primarySourceElement = f
