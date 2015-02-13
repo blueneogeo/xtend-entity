@@ -602,13 +602,22 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               @Override
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
-                _builder.append("Get the value of the ");
-                String _simpleName = cls.getSimpleName();
-                _builder.append(_simpleName, "");
-                _builder.append(" entity property ");
-                String _simpleName_1 = f.getSimpleName();
-                _builder.append(_simpleName_1, "");
-                _builder.append(".");
+                {
+                  String _docComment = f.getDocComment();
+                  boolean _defined = OptExtensions.<Object>defined(_docComment);
+                  if (_defined) {
+                    String _docComment_1 = f.getDocComment();
+                    _builder.append(_docComment_1, "");
+                  } else {
+                    _builder.append("Get the value of the ");
+                    String _simpleName = cls.getSimpleName();
+                    _builder.append(_simpleName, "");
+                    _builder.append(" entity property ");
+                    String _simpleName_1 = f.getSimpleName();
+                    _builder.append(_simpleName_1, "");
+                    _builder.append(".");
+                  }
+                }
                 _builder.newLineIfNotEmpty();
                 _builder.append("@return the found ");
                 String _simpleName_2 = f.getSimpleName();
