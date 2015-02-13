@@ -25,12 +25,14 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
   /**
    * apply a change to this reactive object.
    */
+  @Override
   public abstract void apply(final Change p);
   
   /**
    * subscribe a listener for changes in the object
    * @return a procedure that can be called to unsubscribe the listener
    */
+  @Override
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
@@ -49,6 +51,7 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
   /**
    * set if we want the object to publish changes
    */
+  @Override
   public void setPublishing(final boolean publish) {
     boolean _hasPublisher = this.hasPublisher();
     if (_hasPublisher) {
@@ -60,6 +63,7 @@ public abstract class ReactiveObject implements Reactive, EntityObject {
   /**
    * check if the object will publish internal changes to listeners
    */
+  @Override
   public boolean isPublishing() {
     boolean _and = false;
     boolean _hasPublisher = this.hasPublisher();
