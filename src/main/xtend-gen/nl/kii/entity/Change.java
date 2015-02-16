@@ -120,11 +120,9 @@ public class Change implements EntityObject {
     }
   }
   
-  @Override
   public void validate() {
   }
   
-  @Override
   public String toString() {
     StringConcatenation _builder = new StringConcatenation();
     _builder.append(this.action, "");
@@ -162,7 +160,6 @@ public class Change implements EntityObject {
     return _builder.toString();
   }
   
-  @Override
   public boolean equals(final Object o) {
     boolean _switchResult = false;
     boolean _matched = false;
@@ -208,7 +205,6 @@ public class Change implements EntityObject {
     return _switchResult;
   }
   
-  @Override
   public int hashCode() {
     int _hashCode = Long.valueOf(this.id).hashCode();
     int _hashCode_1 = this.action.hashCode();
@@ -226,7 +222,6 @@ public class Change implements EntityObject {
     return (_multiply_2 * 37);
   }
   
-  @Override
   public Change clone() {
     String[] _clone = null;
     if (((String[])Conversions.unwrapArray(this.path, String.class))!=null) {
@@ -235,7 +230,6 @@ public class Change implements EntityObject {
     return new Change(this.id, this.action, (List<String>)Conversions.doWrapArray(_clone), this.value);
   }
   
-  @Override
   public Class<?> getInstanceType(final List<String> path) throws EntityException {
     throw new EntityException("unsupported");
   }

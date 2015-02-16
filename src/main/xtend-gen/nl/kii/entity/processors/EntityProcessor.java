@@ -51,7 +51,6 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
  */
 @SuppressWarnings("all")
 public class EntityProcessor implements TransformationParticipant<MutableClassDeclaration> {
-  @Override
   public void doTransform(final List<? extends MutableClassDeclaration> classes, @Extension final TransformationContext context) {
     TypeReference _newTypeReference = context.newTypeReference(Change.class);
     final TypeReference changeHandlerType = context.newTypeReference(Procedure1.class, _newTypeReference);
@@ -74,7 +73,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         cls.setImplementedInterfaces(_plus);
         Iterable<? extends MutableFieldDeclaration> _declaredFields = cls.getDeclaredFields();
         final Function1<MutableFieldDeclaration, Boolean> _function = new Function1<MutableFieldDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             boolean _and = false;
             boolean _and_1 = false;
@@ -109,7 +107,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         final Iterable<? extends MutableFieldDeclaration> getSetFields = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredFields, _function);
         final Function1<MutableFieldDeclaration, Boolean> _function_1 = new Function1<MutableFieldDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _newTypeReference = context.newTypeReference(Require.class);
             Type _type = _newTypeReference.getType();
@@ -119,7 +116,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         final Iterable<? extends MutableFieldDeclaration> requiredFields = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(getSetFields, _function_1);
         final Function1<MutableFieldDeclaration, Boolean> _function_2 = new Function1<MutableFieldDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _newTypeReference = context.newTypeReference(Ignore.class);
             Type _type = _newTypeReference.getType();
@@ -129,7 +125,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         final Iterable<? extends MutableFieldDeclaration> observedFields = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(getSetFields, _function_2);
         final Function1<MutableFieldDeclaration, Boolean> _function_3 = new Function1<MutableFieldDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             return Boolean.valueOf(EntityProcessor.this.isReactive(it, context));
           }
@@ -145,7 +140,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         _builder.newLine();
         _builder.append("<p>Detected reactive entity fields: ");
         final Function1<MutableFieldDeclaration, String> _function_4 = new Function1<MutableFieldDeclaration, String>() {
-          @Override
           public String apply(final MutableFieldDeclaration it) {
             return it.getSimpleName();
           }
@@ -155,7 +149,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         _builder.newLineIfNotEmpty();
         _builder.append("<p>Observing fields: ");
         final Function1<MutableFieldDeclaration, String> _function_5 = new Function1<MutableFieldDeclaration, String>() {
-          @Override
           public String apply(final MutableFieldDeclaration it) {
             return it.getSimpleName();
           }
@@ -168,7 +161,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         for (final MutableFieldDeclaration field : reactiveFields) {
           String _stopObservingFunctionName = this.getStopObservingFunctionName(field);
           final Procedure1<MutableFieldDeclaration> _function_6 = new Procedure1<MutableFieldDeclaration>() {
-            @Override
             public void apply(final MutableFieldDeclaration it) {
               it.setType(stopObservingType);
               context.setPrimarySourceElement(it, field);
@@ -179,7 +171,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           cls.addField(_stopObservingFunctionName, _function_6);
         }
         final Procedure1<MutableConstructorDeclaration> _function_7 = new Procedure1<MutableConstructorDeclaration>() {
-          @Override
           public void apply(final MutableConstructorDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Create an empty constructor for builders, eg:");
@@ -215,7 +206,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             context.setPrimarySourceElement(it, cls);
             EntityProcessor.this.addClassTypeParameters(it, cls, context);
             final CompilationStrategy _function = new CompilationStrategy() {
-              @Override
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 return "";
               }
@@ -228,7 +218,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         boolean _greaterThan = (_length > 0);
         if (_greaterThan) {
           final Procedure1<MutableConstructorDeclaration> _function_8 = new Procedure1<MutableConstructorDeclaration>() {
-            @Override
             public void apply(final MutableConstructorDeclaration it) {
               StringConcatenation _builder = new StringConcatenation();
               _builder.append("Create a new ");
@@ -244,7 +233,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.addParameter(_simpleName_1, _type);
               }
               final CompilationStrategy _function = new CompilationStrategy() {
-                @Override
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
                   _builder.append("this.setPublishing(false);");
@@ -280,7 +268,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         boolean _greaterThan_1 = (_length_1 > _length_2);
         if (_greaterThan_1) {
           final Procedure1<MutableConstructorDeclaration> _function_9 = new Procedure1<MutableConstructorDeclaration>() {
-            @Override
             public void apply(final MutableConstructorDeclaration it) {
               StringConcatenation _builder = new StringConcatenation();
               _builder.append("Create a constructor for all fields (except for those annotated with @Ignore).");
@@ -293,7 +280,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.addParameter(_simpleName, _type);
               }
               final CompilationStrategy _function = new CompilationStrategy() {
-                @Override
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
                   _builder.append("this.setPublishing(false);");
@@ -351,7 +337,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           }
         }
         final Procedure1<MutableMethodDeclaration> _function_10 = new Procedure1<MutableMethodDeclaration>() {
-          @Override
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Gives the instance access to the getType method.");
@@ -365,7 +350,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             TypeReference _newTypeReference_2 = context.newTypeReference(EntityException.class);
             it.setExceptions(_newTypeReference_2);
             final CompilationStrategy _function = new CompilationStrategy() {
-              @Override
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("return getType(path);");
@@ -378,7 +362,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         cls.addMethod("getInstanceType", _function_10);
         final Procedure1<MutableMethodDeclaration> _function_11 = new Procedure1<MutableMethodDeclaration>() {
-          @Override
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Gets the class of any field path into the object. Also navigates inner maps and lists.");
@@ -414,7 +397,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             TypeReference _newTypeReference_2 = context.newTypeReference(EntityException.class);
             it.setExceptions(_newTypeReference_2);
             final CompilationStrategy _function = new CompilationStrategy() {
-              @Override
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("if(path == null || path.size() == 0) return ");
@@ -532,7 +514,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         cls.addMethod("getType", _function_11);
         final Procedure1<MutableMethodDeclaration> _function_12 = new Procedure1<MutableMethodDeclaration>() {
-          @Override
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Check if the ");
@@ -552,7 +533,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             TypeReference _newTypeReference = context.newTypeReference(EntityException.class);
             it.setExceptions(_newTypeReference);
             final CompilationStrategy _function = new CompilationStrategy() {
-              @Override
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 StringConcatenation _builder = new StringConcatenation();
                 {
@@ -599,7 +579,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             String _firstUpper = StringExtensions.toFirstUpper(_simpleName);
             String _plus_1 = ("get" + _firstUpper);
             final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
-              @Override
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
                 {
@@ -637,7 +616,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 TypeReference _or = OptExtensions.<TypeReference>or(_newTypeReference, _type_1);
                 it.setReturnType(_or);
                 final CompilationStrategy _function = new CompilationStrategy() {
-                  @Override
                   public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                     StringConcatenation _builder = new StringConcatenation();
                     {
@@ -697,7 +675,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             String _firstUpper_1 = StringExtensions.toFirstUpper(_simpleName_1);
             String _plus_2 = ("set" + _firstUpper_1);
             final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
-              @Override
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("Set the value of the ");
@@ -723,7 +700,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 final TypeReference setterType = OptExtensions.<TypeReference>or(_newTypeReference, _type_1);
                 it.addParameter("value", setterType);
                 final CompilationStrategy _function = new CompilationStrategy() {
-                  @Override
                   public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                     StringConcatenation _builder = new StringConcatenation();
                     {
@@ -768,7 +744,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                           } else {
                             Collection<Class<? extends Object>> _values = typeConversions.values();
                             final Function1<Class<? extends Object>, TypeReference> _function = new Function1<Class<? extends Object>, TypeReference>() {
-                              @Override
                               public TypeReference apply(final Class<? extends Object> it) {
                                 return context.newTypeReference(it);
                               }
@@ -869,7 +844,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           }
         }
         final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
-          @Override
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
             _builder.append("Apply a change to the ");
@@ -894,7 +868,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.addParameter("change", _newTypeReference);
             context.setPrimarySourceElement(it, cls);
             final CompilationStrategy _function = new CompilationStrategy() {
-              @Override
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("boolean wasPublishing = this.isPublishing();");
@@ -1156,7 +1129,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         cls.addMethod("apply", _function_13);
         Iterable<? extends MutableMethodDeclaration> _declaredMethods = cls.getDeclaredMethods();
         final Function1<MutableMethodDeclaration, Boolean> _function_14 = new Function1<MutableMethodDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "toString"));
@@ -1166,13 +1138,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         boolean _isEmpty = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter);
         if (_isEmpty) {
           final Procedure1<MutableMethodDeclaration> _function_15 = new Procedure1<MutableMethodDeclaration>() {
-            @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _string = context.getString();
               it.setReturnType(_string);
               final CompilationStrategy _function = new CompilationStrategy() {
-                @Override
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
                   _builder.append("return \"");
@@ -1225,7 +1195,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         }
         Iterable<? extends MutableMethodDeclaration> _declaredMethods_1 = cls.getDeclaredMethods();
         final Function1<MutableMethodDeclaration, Boolean> _function_16 = new Function1<MutableMethodDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "equals"));
@@ -1235,7 +1204,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         boolean _isEmpty_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_1);
         if (_isEmpty_1) {
           final Procedure1<MutableMethodDeclaration> _function_17 = new Procedure1<MutableMethodDeclaration>() {
-            @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _object = context.getObject();
@@ -1243,7 +1211,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               TypeReference _primitiveBoolean = context.getPrimitiveBoolean();
               it.setReturnType(_primitiveBoolean);
               final CompilationStrategy _function = new CompilationStrategy() {
-                @Override
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
                   _builder.append("if(object != null && object instanceof ");
@@ -1501,7 +1468,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         }
         Iterable<? extends MutableMethodDeclaration> _declaredMethods_2 = cls.getDeclaredMethods();
         final Function1<MutableMethodDeclaration, Boolean> _function_18 = new Function1<MutableMethodDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "hashCode"));
@@ -1511,13 +1477,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         boolean _isEmpty_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_2);
         if (_isEmpty_2) {
           final Procedure1<MutableMethodDeclaration> _function_19 = new Procedure1<MutableMethodDeclaration>() {
-            @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               TypeReference _primitiveInt = context.getPrimitiveInt();
               it.setReturnType(_primitiveInt);
               final CompilationStrategy _function = new CompilationStrategy() {
-                @Override
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
                   _builder.append("return (");
@@ -1625,7 +1589,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         }
         Iterable<? extends MutableMethodDeclaration> _declaredMethods_3 = cls.getDeclaredMethods();
         final Function1<MutableMethodDeclaration, Boolean> _function_20 = new Function1<MutableMethodDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "clone"));
@@ -1635,12 +1598,10 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         boolean _isEmpty_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_3);
         if (_isEmpty_3) {
           final Procedure1<MutableMethodDeclaration> _function_21 = new Procedure1<MutableMethodDeclaration>() {
-            @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
               it.setReturnType(clsType);
               final CompilationStrategy _function = new CompilationStrategy() {
-                @Override
                 public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                   StringConcatenation _builder = new StringConcatenation();
                   _builder.append("try {");
@@ -1667,7 +1628,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           cls.addMethod("clone", _function_21);
         }
         final Function1<MutableFieldDeclaration, Boolean> _function_22 = new Function1<MutableFieldDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             String _simpleName = _type.getSimpleName();
@@ -1676,7 +1636,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         Iterable<? extends MutableFieldDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_22);
         final Procedure1<MutableFieldDeclaration> _function_23 = new Procedure1<MutableFieldDeclaration>() {
-          @Override
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
@@ -1697,7 +1656,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_4, _function_23);
         final Function1<MutableFieldDeclaration, Boolean> _function_24 = new Function1<MutableFieldDeclaration, Boolean>() {
-          @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             String _simpleName = _type.getSimpleName();
@@ -1706,7 +1664,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_24);
         final Procedure1<MutableFieldDeclaration> _function_25 = new Procedure1<MutableFieldDeclaration>() {
-          @Override
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
@@ -1717,7 +1674,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
         };
         org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_5, _function_25);
         final Procedure1<MutableMethodDeclaration> _function_26 = new Procedure1<MutableMethodDeclaration>() {
-          @Override
           public void apply(final MutableMethodDeclaration it) {
             it.setVisibility(Visibility.PROTECTED);
             it.setDocComment("creates a listener for propagating to changes on a field to the publisher");
@@ -1726,7 +1682,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             context.setPrimarySourceElement(it, cls);
             it.setReturnType(changeHandlerType);
             final CompilationStrategy _function = new CompilationStrategy() {
-              @Override
               public CharSequence compile(final CompilationStrategy.CompilationContext it) {
                 StringConcatenation _builder = new StringConcatenation();
                 _builder.append("final ");
@@ -1981,7 +1936,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
   public void addClassTypeParameters(final MutableExecutableDeclaration constructor, final ClassDeclaration cls, @Extension final TransformationContext context) {
     Iterable<? extends TypeParameterDeclaration> _typeParameters = cls.getTypeParameters();
     final Procedure2<TypeParameterDeclaration, Integer> _function = new Procedure2<TypeParameterDeclaration, Integer>() {
-      @Override
       public void apply(final TypeParameterDeclaration param, final Integer count) {
         String _typeParamName = EntityProcessor.this.getTypeParamName(param, ((count).intValue() + 1));
         TypeReference _newTypeReference = context.newTypeReference(param);
@@ -1998,7 +1952,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
       final List<String> list = CollectionLiterals.<String>newLinkedList();
       Iterable<? extends TypeParameterDeclaration> _typeParameters = cls.getTypeParameters();
       final Procedure2<TypeParameterDeclaration, Integer> _function = new Procedure2<TypeParameterDeclaration, Integer>() {
-        @Override
         public void apply(final TypeParameterDeclaration param, final Integer count) {
           final String name = EntityProcessor.this.getTypeParamName(param, ((count).intValue() + 1));
           StringConcatenation _builder = new StringConcatenation();
@@ -2022,7 +1975,6 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
       final List<String> list = CollectionLiterals.<String>newLinkedList();
       Iterable<? extends TypeParameterDeclaration> _typeParameters = cls.getTypeParameters();
       final Procedure2<TypeParameterDeclaration, Integer> _function = new Procedure2<TypeParameterDeclaration, Integer>() {
-        @Override
         public void apply(final TypeParameterDeclaration param, final Integer count) {
           String _typeParamName = EntityProcessor.this.getTypeParamName(param, ((count).intValue() + 1));
           list.add(_typeParamName);

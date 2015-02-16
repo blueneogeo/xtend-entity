@@ -68,7 +68,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     }
   }
   
-  @Override
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
@@ -84,7 +83,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     return _xblockexpression;
   }
   
-  @Override
   public void setPublishing(final boolean publish) {
     boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
@@ -106,7 +104,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     }
   }
   
-  @Override
   public boolean isPublishing() {
     boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
@@ -128,7 +125,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
       if (element instanceof Observable) {
         _matched=true;
         final Procedure1<Change> _function = new Procedure1<Change>() {
-          @Override
           public void apply(final Change change) {
             Change _addPath = change.addPath(key);
             EntityMap.this.publish(_addPath);
@@ -140,7 +136,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     return _switchResult;
   }
   
-  @Override
   public V put(final String key, final V value) {
     V _xblockexpression = null;
     {
@@ -160,7 +155,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     return _xblockexpression;
   }
   
-  @Override
   public V remove(final Object key) {
     V _xblockexpression = null;
     {
@@ -181,7 +175,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     return _xblockexpression;
   }
   
-  @Override
   public void putAll(final Map<? extends String, ? extends V> m) {
     Set<? extends String> _keySet = m.keySet();
     for (final String key : _keySet) {
@@ -190,11 +183,9 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     }
   }
   
-  @Override
   public void clear() {
     Map<String, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
     final Procedure2<String, Procedure0> _function = new Procedure2<String, Procedure0>() {
-      @Override
       public void apply(final String k, final Procedure0 v) {
         if (v!=null) {
           v.apply();
@@ -209,7 +200,6 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     this.publish(_change);
   }
   
-  @Override
   public void apply(final Change change) {
     try {
       boolean _and = false;
@@ -372,27 +362,22 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
     }
   }
   
-  @Override
   public EntityMap<V> clone() {
     Object _clone = super.clone();
     return ((EntityMap<V>) _clone);
   }
   
-  @Override
   public void validate() {
   }
   
-  @Override
   public boolean equals(final Object o) {
     return super.equals(o);
   }
   
-  @Override
   public int hashCode() {
     return super.hashCode();
   }
   
-  @Override
   public Class<?> getInstanceType(final List<String> path) throws EntityException {
     try {
       Class<?> _switchResult = null;
