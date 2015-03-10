@@ -276,8 +276,8 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				
 				cls.addMethod('set' + f.simpleName.toFirstUpper) [
 					docComment = '''
-						Set the value of the «cls.simpleName» entity property «f.simpleName».<p>
-						This will trigger a change event for the observers.
+						«IF f.docComment.defined»«f.docComment»«ELSE»Set the value of the «cls.simpleName» entity property «f.simpleName».«ENDIF»
+						<p>This will trigger a change event for the observers.
 					'''
 					deprecated = f.deprecated
 					primarySourceElement = f
