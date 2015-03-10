@@ -604,6 +604,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.append(" or null if not set.");
                 _builder.newLineIfNotEmpty();
                 it.setDocComment(_builder.toString());
+                boolean _isDeprecated = f.isDeprecated();
+                it.setDeprecated(_isDeprecated);
                 context.setPrimarySourceElement(it, f);
                 TypeReference _type = f.getType();
                 String _simpleName_3 = _type.getSimpleName();
@@ -688,6 +690,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.append("This will trigger a change event for the observers.");
                 _builder.newLine();
                 it.setDocComment(_builder.toString());
+                boolean _isDeprecated = f.isDeprecated();
+                it.setDeprecated(_isDeprecated);
                 context.setPrimarySourceElement(it, f);
                 TypeReference _type = f.getType();
                 String _simpleName_2 = _type.getSimpleName();
