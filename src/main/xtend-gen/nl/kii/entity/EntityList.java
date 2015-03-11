@@ -71,6 +71,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     }
   }
   
+  @Override
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
@@ -86,6 +87,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _xblockexpression;
   }
   
+  @Override
   public void setPublishing(final boolean publish) {
     boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
@@ -107,6 +109,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     }
   }
   
+  @Override
   public boolean isPublishing() {
     boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
@@ -128,6 +131,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
       if (element instanceof Observable) {
         _matched=true;
         final Procedure1<Change> _function = new Procedure1<Change>() {
+          @Override
           public void apply(final Change change) {
             int _indexOf = EntityList.this.indexOf(element);
             final String path = Integer.valueOf(_indexOf).toString();
@@ -141,6 +145,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _switchResult;
   }
   
+  @Override
   public E set(final int index, final E value) {
     E _xblockexpression = null;
     {
@@ -160,6 +165,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _xblockexpression;
   }
   
+  @Override
   public boolean add(final E element) {
     boolean _xblockexpression = false;
     {
@@ -178,6 +184,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _xblockexpression;
   }
   
+  @Override
   public void add(final int index, final E value) {
     Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
     Procedure0 _get = _subscriptionEnders.get(Integer.valueOf(index));
@@ -192,6 +199,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     this.publish(_change);
   }
   
+  @Override
   public E remove(final int index) {
     E _xblockexpression = null;
     {
@@ -211,6 +219,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _xblockexpression;
   }
   
+  @Override
   public boolean remove(final Object o) {
     boolean _xblockexpression = false;
     {
@@ -234,9 +243,11 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _xblockexpression;
   }
   
+  @Override
   public void clear() {
     Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
     final Procedure2<Integer, Procedure0> _function = new Procedure2<Integer, Procedure0>() {
+      @Override
       public void apply(final Integer k, final Procedure0 v) {
         if (v!=null) {
           v.apply();
@@ -251,6 +262,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     this.publish(_change);
   }
   
+  @Override
   public boolean addAll(final Collection<? extends E> c) {
     boolean _xblockexpression = false;
     {
@@ -262,6 +274,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     return _xblockexpression;
   }
   
+  @Override
   public boolean removeAll(final Collection<?> c) {
     boolean _xblockexpression = false;
     {
@@ -274,11 +287,13 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   @Deprecated
+  @Override
   public boolean addAll(final int index, final Collection<? extends E> c) {
     throw new UnsupportedOperationException();
   }
   
   @Deprecated
+  @Override
   public boolean retainAll(final Collection<?> c) {
     throw new UnsupportedOperationException();
   }
@@ -304,6 +319,7 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     }
   }
   
+  @Override
   public void apply(final Change change) {
     try {
       boolean _and = false;
@@ -487,14 +503,17 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
     }
   }
   
+  @Override
   public EntityList<E> clone() {
     Object _clone = super.clone();
     return ((EntityList<E>) _clone);
   }
   
+  @Override
   public void validate() {
   }
   
+  @Override
   public Class<?> getInstanceType(final List<String> path) throws EntityException {
     try {
       Class<?> _switchResult = null;
