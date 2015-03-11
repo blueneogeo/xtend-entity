@@ -535,7 +535,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           @Override
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
-            _builder.append("Check if the ");
+            _builder.append("Only returns true if ");
             String _simpleName = cls.getSimpleName();
             _builder.append(_simpleName, "");
             _builder.append(" is valid.");
@@ -546,6 +546,51 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             _builder.append(".");
             _builder.newLineIfNotEmpty();
             _builder.append("@return true if all the fields annotated with @Require have a value.");
+            _builder.newLine();
+            {
+              for(final MutableFieldDeclaration field : requiredFields) {
+                {
+                  TypeReference _type = field.getType();
+                  boolean _isPrimitive = _type.isPrimitive();
+                  boolean _not = (!_isPrimitive);
+                  if (_not) {
+                    _builder.append("if(");
+                    String _simpleName_2 = field.getSimpleName();
+                    _builder.append(_simpleName_2, "");
+                    _builder.append("==null) return false;");
+                    _builder.newLineIfNotEmpty();
+                    {
+                      boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
+                      if (_in) {
+                        _builder.append("if(!");
+                        String _simpleName_3 = field.getSimpleName();
+                        _builder.append(_simpleName_3, "");
+                        _builder.append(".isValid()) return false;");
+                        _builder.newLineIfNotEmpty();
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            _builder.append("return true;");
+            _builder.newLine();
+            it.setDocComment(_builder.toString());
+          }
+        };
+        cls.addMethod("isValid", _function_12);
+        final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
+          @Override
+          public void apply(final MutableMethodDeclaration it) {
+            StringConcatenation _builder = new StringConcatenation();
+            _builder.append("Check if the ");
+            String _simpleName = cls.getSimpleName();
+            _builder.append(_simpleName, "");
+            _builder.append(" is valid.");
+            _builder.newLineIfNotEmpty();
+            _builder.append("Use this method if you need a descriptive error for what did not match.");
+            _builder.newLine();
+            _builder.append("@throws an exception if not all the fields annotated with @Require have a value.");
             _builder.newLine();
             it.setDocComment(_builder.toString());
             context.setPrimarySourceElement(it, cls);
@@ -592,13 +637,13 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("validate", _function_12);
+        cls.addMethod("validate", _function_13);
         for (final MutableFieldDeclaration f : getSetFields) {
           {
             String _simpleName = f.getSimpleName();
             String _firstUpper = StringExtensions.toFirstUpper(_simpleName);
             String _plus_1 = ("get" + _firstUpper);
-            final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
+            final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
               @Override
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
@@ -694,11 +739,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_1, _function_13);
+            cls.addMethod(_plus_1, _function_14);
             String _simpleName_1 = f.getSimpleName();
             String _firstUpper_1 = StringExtensions.toFirstUpper(_simpleName_1);
             String _plus_2 = ("set" + _firstUpper_1);
-            final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
+            final Procedure1<MutableMethodDeclaration> _function_15 = new Procedure1<MutableMethodDeclaration>() {
               @Override
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
@@ -878,10 +923,10 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 it.setBody(_function);
               }
             };
-            cls.addMethod(_plus_2, _function_14);
+            cls.addMethod(_plus_2, _function_15);
           }
         }
-        final Procedure1<MutableMethodDeclaration> _function_13 = new Procedure1<MutableMethodDeclaration>() {
+        final Procedure1<MutableMethodDeclaration> _function_14 = new Procedure1<MutableMethodDeclaration>() {
           @Override
           public void apply(final MutableMethodDeclaration it) {
             StringConcatenation _builder = new StringConcatenation();
@@ -1166,19 +1211,19 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("apply", _function_13);
+        cls.addMethod("apply", _function_14);
         Iterable<? extends MutableMethodDeclaration> _declaredMethods = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_14 = new Function1<MutableMethodDeclaration, Boolean>() {
+        final Function1<MutableMethodDeclaration, Boolean> _function_15 = new Function1<MutableMethodDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "toString"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods, _function_14);
+        Iterable<? extends MutableMethodDeclaration> _filter = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods, _function_15);
         boolean _isEmpty = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter);
         if (_isEmpty) {
-          final Procedure1<MutableMethodDeclaration> _function_15 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_16 = new Procedure1<MutableMethodDeclaration>() {
             @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
@@ -1234,20 +1279,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("toString", _function_15);
+          cls.addMethod("toString", _function_16);
         }
         Iterable<? extends MutableMethodDeclaration> _declaredMethods_1 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_16 = new Function1<MutableMethodDeclaration, Boolean>() {
+        final Function1<MutableMethodDeclaration, Boolean> _function_17 = new Function1<MutableMethodDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "equals"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_1, _function_16);
+        Iterable<? extends MutableMethodDeclaration> _filter_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_1, _function_17);
         boolean _isEmpty_1 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_1);
         if (_isEmpty_1) {
-          final Procedure1<MutableMethodDeclaration> _function_17 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_18 = new Procedure1<MutableMethodDeclaration>() {
             @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
@@ -1510,20 +1555,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("equals", _function_17);
+          cls.addMethod("equals", _function_18);
         }
         Iterable<? extends MutableMethodDeclaration> _declaredMethods_2 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_18 = new Function1<MutableMethodDeclaration, Boolean>() {
+        final Function1<MutableMethodDeclaration, Boolean> _function_19 = new Function1<MutableMethodDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "hashCode"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_2, _function_18);
+        Iterable<? extends MutableMethodDeclaration> _filter_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_2, _function_19);
         boolean _isEmpty_2 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_2);
         if (_isEmpty_2) {
-          final Procedure1<MutableMethodDeclaration> _function_19 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_20 = new Procedure1<MutableMethodDeclaration>() {
             @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
@@ -1634,20 +1679,20 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("hashCode", _function_19);
+          cls.addMethod("hashCode", _function_20);
         }
         Iterable<? extends MutableMethodDeclaration> _declaredMethods_3 = cls.getDeclaredMethods();
-        final Function1<MutableMethodDeclaration, Boolean> _function_20 = new Function1<MutableMethodDeclaration, Boolean>() {
+        final Function1<MutableMethodDeclaration, Boolean> _function_21 = new Function1<MutableMethodDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableMethodDeclaration it) {
             String _simpleName = it.getSimpleName();
             return Boolean.valueOf(Objects.equal(_simpleName, "clone"));
           }
         };
-        Iterable<? extends MutableMethodDeclaration> _filter_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_3, _function_20);
+        Iterable<? extends MutableMethodDeclaration> _filter_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(_declaredMethods_3, _function_21);
         boolean _isEmpty_3 = org.eclipse.xtext.xbase.lib.IterableExtensions.isEmpty(_filter_3);
         if (_isEmpty_3) {
-          final Procedure1<MutableMethodDeclaration> _function_21 = new Procedure1<MutableMethodDeclaration>() {
+          final Procedure1<MutableMethodDeclaration> _function_22 = new Procedure1<MutableMethodDeclaration>() {
             @Override
             public void apply(final MutableMethodDeclaration it) {
               context.setPrimarySourceElement(it, cls);
@@ -1677,9 +1722,9 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               it.setBody(_function);
             }
           };
-          cls.addMethod("clone", _function_21);
+          cls.addMethod("clone", _function_22);
         }
-        final Function1<MutableFieldDeclaration, Boolean> _function_22 = new Function1<MutableFieldDeclaration, Boolean>() {
+        final Function1<MutableFieldDeclaration, Boolean> _function_23 = new Function1<MutableFieldDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
@@ -1687,8 +1732,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             return Boolean.valueOf(_simpleName.startsWith("Map"));
           }
         };
-        Iterable<? extends MutableFieldDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_22);
-        final Procedure1<MutableFieldDeclaration> _function_23 = new Procedure1<MutableFieldDeclaration>() {
+        Iterable<? extends MutableFieldDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_23);
+        final Procedure1<MutableFieldDeclaration> _function_24 = new Procedure1<MutableFieldDeclaration>() {
           @Override
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
@@ -1708,8 +1753,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             }
           }
         };
-        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_4, _function_23);
-        final Function1<MutableFieldDeclaration, Boolean> _function_24 = new Function1<MutableFieldDeclaration, Boolean>() {
+        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_4, _function_24);
+        final Function1<MutableFieldDeclaration, Boolean> _function_25 = new Function1<MutableFieldDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
@@ -1717,8 +1762,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             return Boolean.valueOf(_simpleName.startsWith("List"));
           }
         };
-        Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_24);
-        final Procedure1<MutableFieldDeclaration> _function_25 = new Procedure1<MutableFieldDeclaration>() {
+        Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_25);
+        final Procedure1<MutableFieldDeclaration> _function_26 = new Procedure1<MutableFieldDeclaration>() {
           @Override
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
@@ -1728,8 +1773,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setType(_newTypeReference);
           }
         };
-        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_5, _function_25);
-        final Procedure1<MutableMethodDeclaration> _function_26 = new Procedure1<MutableMethodDeclaration>() {
+        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_5, _function_26);
+        final Procedure1<MutableMethodDeclaration> _function_27 = new Procedure1<MutableMethodDeclaration>() {
           @Override
           public void apply(final MutableMethodDeclaration it) {
             it.setVisibility(Visibility.PROTECTED);
@@ -1772,7 +1817,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setBody(_function);
           }
         };
-        cls.addMethod("newChangeHandler", _function_26);
+        cls.addMethod("newChangeHandler", _function_27);
       }
     }
   }

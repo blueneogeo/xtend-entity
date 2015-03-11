@@ -224,11 +224,28 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			
 			// create the validate method
 			
+			cls.addMethod('isValid') [
+				docComment = '''
+					Only returns true if «cls.simpleName» is valid.
+					Also recursively checks contained entities within the members of «cls.simpleName».
+					@return true if all the fields annotated with @Require have a value.
+					«FOR field : requiredFields»
+						«IF !field.type.primitive»
+							if(«field.simpleName»==null) return false;
+							«IF field.in(reactiveFields)»
+								if(!«field.simpleName».isValid()) return false;
+							«ENDIF»
+						«ENDIF»
+					«ENDFOR»
+					return true;
+				'''
+			]
+			
 			cls.addMethod('validate') [
 				docComment = '''
 					Check if the «cls.simpleName» is valid.
-					Also recursively checks contained entities within the members of «cls.simpleName».
-					@return true if all the fields annotated with @Require have a value.
+					Use this method if you need a descriptive error for what did not match.
+					@throws an exception if not all the fields annotated with @Require have a value.
 				'''
 				primarySourceElement = cls
 				exceptions = EntityException.newTypeReference
