@@ -625,6 +625,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
                 _builder.append(" or null if not set.");
                 _builder.newLineIfNotEmpty();
                 it.setDocComment(_builder.toString());
+                boolean _isDeprecated = f.isDeprecated();
+                it.setDeprecated(_isDeprecated);
                 context.setPrimarySourceElement(it, f);
                 TypeReference _type = f.getType();
                 String _simpleName_3 = _type.getSimpleName();
@@ -700,17 +702,28 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
               @Override
               public void apply(final MutableMethodDeclaration it) {
                 StringConcatenation _builder = new StringConcatenation();
-                _builder.append("Set the value of the ");
-                String _simpleName = cls.getSimpleName();
-                _builder.append(_simpleName, "");
-                _builder.append(" entity property ");
-                String _simpleName_1 = f.getSimpleName();
-                _builder.append(_simpleName_1, "");
-                _builder.append(".<p>");
+                {
+                  String _docComment = f.getDocComment();
+                  boolean _defined = OptExtensions.<Object>defined(_docComment);
+                  if (_defined) {
+                    String _docComment_1 = f.getDocComment();
+                    _builder.append(_docComment_1, "");
+                  } else {
+                    _builder.append("Set the value of the ");
+                    String _simpleName = cls.getSimpleName();
+                    _builder.append(_simpleName, "");
+                    _builder.append(" entity property ");
+                    String _simpleName_1 = f.getSimpleName();
+                    _builder.append(_simpleName_1, "");
+                    _builder.append(".");
+                  }
+                }
                 _builder.newLineIfNotEmpty();
-                _builder.append("This will trigger a change event for the observers.");
+                _builder.append("<p>This will trigger a change event for the observers.");
                 _builder.newLine();
                 it.setDocComment(_builder.toString());
+                boolean _isDeprecated = f.isDeprecated();
+                it.setDeprecated(_isDeprecated);
                 context.setPrimarySourceElement(it, f);
                 TypeReference _type = f.getType();
                 String _simpleName_2 = _type.getSimpleName();

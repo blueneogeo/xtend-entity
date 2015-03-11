@@ -253,6 +253,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						«IF f.docComment.defined»«f.docComment»«ELSE»Get the value of the «cls.simpleName» entity property «f.simpleName».«ENDIF»
 						@return the found «f.simpleName» or null if not set.
 					'''
+					deprecated = f.deprecated
 					primarySourceElement = f
 					returnType = typeConversions
 						.get(f.type.simpleName)?.newTypeReference
@@ -275,9 +276,10 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				
 				cls.addMethod('set' + f.simpleName.toFirstUpper) [
 					docComment = '''
-						Set the value of the «cls.simpleName» entity property «f.simpleName».<p>
-						This will trigger a change event for the observers.
+						«IF f.docComment.defined»«f.docComment»«ELSE»Set the value of the «cls.simpleName» entity property «f.simpleName».«ENDIF»
+						<p>This will trigger a change event for the observers.
 					'''
+					deprecated = f.deprecated
 					primarySourceElement = f
 					val setterType = typeConversions
 						.get(f.type.simpleName)?.newTypeReference
