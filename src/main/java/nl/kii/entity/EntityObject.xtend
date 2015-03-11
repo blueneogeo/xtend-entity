@@ -14,8 +14,13 @@ interface EntityObject extends Cloneable {
 	def Class<?> getInstanceType(List<String> path) throws EntityException
 	
 	/** 
-	 * Throws an EntityException with a reason if the object is not valid
+	 * Throws an EntityException with a reason if the object data is not valid
 	 */
 	def void validate() throws EntityException
+	
+	/**
+	 * only returns true if the object data is valid
+	 */
+	def boolean isValid()
 
 }

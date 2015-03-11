@@ -547,35 +547,47 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             _builder.newLineIfNotEmpty();
             _builder.append("@return true if all the fields annotated with @Require have a value.");
             _builder.newLine();
-            {
-              for(final MutableFieldDeclaration field : requiredFields) {
+            it.setDocComment(_builder.toString());
+            context.setPrimarySourceElement(it, cls);
+            TypeReference _newTypeReference = context.newTypeReference(boolean.class);
+            it.setReturnType(_newTypeReference);
+            final CompilationStrategy _function = new CompilationStrategy() {
+              @Override
+              public CharSequence compile(final CompilationStrategy.CompilationContext it) {
+                StringConcatenation _builder = new StringConcatenation();
                 {
-                  TypeReference _type = field.getType();
-                  boolean _isPrimitive = _type.isPrimitive();
-                  boolean _not = (!_isPrimitive);
-                  if (_not) {
-                    _builder.append("if(");
-                    String _simpleName_2 = field.getSimpleName();
-                    _builder.append(_simpleName_2, "");
-                    _builder.append("==null) return false;");
-                    _builder.newLineIfNotEmpty();
+                  for(final MutableFieldDeclaration field : requiredFields) {
                     {
-                      boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
-                      if (_in) {
-                        _builder.append("if(!");
-                        String _simpleName_3 = field.getSimpleName();
-                        _builder.append(_simpleName_3, "");
-                        _builder.append(".isValid()) return false;");
+                      TypeReference _type = field.getType();
+                      boolean _isPrimitive = _type.isPrimitive();
+                      boolean _not = (!_isPrimitive);
+                      if (_not) {
+                        _builder.append("if(");
+                        String _simpleName = field.getSimpleName();
+                        _builder.append(_simpleName, "");
+                        _builder.append("==null) return false;");
                         _builder.newLineIfNotEmpty();
+                        {
+                          boolean _in = IterableExtensions.<MutableFieldDeclaration>in(field, reactiveFields);
+                          if (_in) {
+                            _builder.append("\t");
+                            _builder.append("if(!");
+                            String _simpleName_1 = field.getSimpleName();
+                            _builder.append(_simpleName_1, "\t");
+                            _builder.append(".isValid()) return false;");
+                            _builder.newLineIfNotEmpty();
+                          }
+                        }
                       }
                     }
                   }
                 }
+                _builder.append("return true;");
+                _builder.newLine();
+                return _builder;
               }
-            }
-            _builder.append("return true;");
-            _builder.newLine();
-            it.setDocComment(_builder.toString());
+            };
+            it.setBody(_function);
           }
         };
         cls.addMethod("isValid", _function_12);

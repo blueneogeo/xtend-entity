@@ -15,7 +15,12 @@ public interface EntityObject extends Cloneable {
   public abstract Class<?> getInstanceType(final List<String> path) throws EntityException;
   
   /**
-   * Throws an EntityException with a reason if the object is not valid
+   * Throws an EntityException with a reason if the object data is not valid
    */
   public abstract void validate() throws EntityException;
+  
+  /**
+   * only returns true if the object data is valid
+   */
+  public abstract boolean isValid();
 }

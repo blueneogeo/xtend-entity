@@ -514,6 +514,11 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   }
   
   @Override
+  public boolean isValid() {
+    return true;
+  }
+  
+  @Override
   public Class<?> getInstanceType(final List<String> path) throws EntityException {
     try {
       Class<?> _switchResult = null;

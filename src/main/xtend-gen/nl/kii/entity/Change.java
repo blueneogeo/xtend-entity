@@ -125,6 +125,11 @@ public class Change implements EntityObject {
   }
   
   @Override
+  public boolean isValid() {
+    return true;
+  }
+  
+  @Override
   public String toString() {
     StringConcatenation _builder = new StringConcatenation();
     _builder.append(this.action, "");

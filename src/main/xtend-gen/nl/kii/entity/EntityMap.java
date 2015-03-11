@@ -383,6 +383,11 @@ public class EntityMap<V extends Object> extends HashMap<String, V> implements R
   }
   
   @Override
+  public boolean isValid() {
+    return true;
+  }
+  
+  @Override
   public boolean equals(final Object o) {
     return super.equals(o);
   }

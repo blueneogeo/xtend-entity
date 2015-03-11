@@ -258,6 +258,10 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	override validate() {
 	}
 	
+	override isValid() {
+		true
+	}
+	
 	override getInstanceType(List<String> path) throws EntityException {
 		switch it : path {
 			case null, case length == 0: EntityList
