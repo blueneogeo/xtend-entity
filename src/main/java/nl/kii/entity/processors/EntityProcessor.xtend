@@ -642,7 +642,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			this.«field.getStopObservingFunctionName» = newMap.onChange(newChangeHandler("«field.simpleName»"));
 		«ELSEIF field.isObservable(context)»
 			this.«field.simpleName» = value;
-			this.«field.getStopObservingFunctionName» = this.«field.simpleName».onChange(newChangeHandler("«field.simpleName»"));
+			if(value != null) this.«field.getStopObservingFunctionName» = this.«field.simpleName».onChange(newChangeHandler("«field.simpleName»"));
 		«ELSE»
 			this.«field.simpleName» = value;
 		«ENDIF»

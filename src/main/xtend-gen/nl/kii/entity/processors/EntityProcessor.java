@@ -1949,7 +1949,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             _builder.append(_simpleName_4, "");
             _builder.append(" = value;");
             _builder.newLineIfNotEmpty();
-            _builder.append("this.");
+            _builder.append("if(value != null) this.");
             String _stopObservingFunctionName_2 = this.getStopObservingFunctionName(field);
             _builder.append(_stopObservingFunctionName_2, "");
             _builder.append(" = this.");
