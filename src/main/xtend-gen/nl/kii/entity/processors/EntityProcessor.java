@@ -1750,19 +1750,12 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           public void apply(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
-            final TypeReference key = _actualTypeArguments.get(0);
+            final TypeReference key = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>head(_actualTypeArguments);
             TypeReference _type_1 = it.getType();
             List<TypeReference> _actualTypeArguments_1 = _type_1.getActualTypeArguments();
-            final TypeReference value = _actualTypeArguments_1.get(1);
-            TypeReference _string = context.getString();
-            boolean _extendsType = EntityProcessor.this.<Object>extendsType(key, _string);
-            boolean _not = (!_extendsType);
-            if (_not) {
-              context.addError(it, "Maps in EntityObjects may only have String as their key");
-            } else {
-              TypeReference _newTypeReference = context.newTypeReference(EntityMap.class, value);
-              it.setType(_newTypeReference);
-            }
+            final TypeReference value = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>last(_actualTypeArguments_1);
+            TypeReference _newTypeReference = context.newTypeReference(EntityMap.class, key, value);
+            it.setType(_newTypeReference);
           }
         };
         org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_4, _function_24);
@@ -1989,8 +1982,8 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
     {
       TypeReference _type = field.getType();
       List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
-      final TypeReference typeArg = _actualTypeArguments.get(0);
-      final TypeReference type = context.newTypeReference(EntityList.class, typeArg);
+      final TypeReference valueType = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>head(_actualTypeArguments);
+      final TypeReference type = context.newTypeReference(EntityList.class, valueType);
       StringConcatenation _builder = new StringConcatenation();
       _builder.append("final ");
       String _simpleName = type.getSimpleName();
@@ -2001,7 +1994,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
       String _name = type.getName();
       _builder.append(_name, "");
       _builder.append("(");
-      String _simpleName_1 = typeArg.getSimpleName();
+      String _simpleName_1 = valueType.getSimpleName();
       _builder.append(_simpleName_1, "");
       _builder.append(".class);");
       _xblockexpression = _builder;
@@ -2014,8 +2007,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
     {
       TypeReference _type = field.getType();
       List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
-      final TypeReference typeArg = _actualTypeArguments.get(0);
-      final TypeReference type = context.newTypeReference(EntityMap.class, typeArg);
+      final TypeReference keyType = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>head(_actualTypeArguments);
+      TypeReference _type_1 = field.getType();
+      List<TypeReference> _actualTypeArguments_1 = _type_1.getActualTypeArguments();
+      final TypeReference valueType = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>last(_actualTypeArguments_1);
+      final TypeReference type = context.newTypeReference(EntityMap.class, keyType, valueType);
       StringConcatenation _builder = new StringConcatenation();
       _builder.append("final ");
       String _simpleName = type.getSimpleName();
@@ -2026,8 +2022,11 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
       String _name = type.getName();
       _builder.append(_name, "");
       _builder.append("(");
-      String _simpleName_1 = typeArg.getSimpleName();
+      String _simpleName_1 = keyType.getSimpleName();
       _builder.append(_simpleName_1, "");
+      _builder.append(".class, ");
+      String _simpleName_2 = valueType.getSimpleName();
+      _builder.append(_simpleName_2, "");
       _builder.append(".class);");
       _xblockexpression = _builder;
     }
@@ -2035,17 +2034,24 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
   }
   
   public TypeReference toEntityMapType(final MutableFieldDeclaration field, @Extension final TransformationContext context) {
-    TypeReference _type = field.getType();
-    List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
-    TypeReference _get = _actualTypeArguments.get(0);
-    return context.newTypeReference(EntityMap.class, _get);
+    TypeReference _xblockexpression = null;
+    {
+      TypeReference _type = field.getType();
+      List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
+      final TypeReference keyType = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>head(_actualTypeArguments);
+      TypeReference _type_1 = field.getType();
+      List<TypeReference> _actualTypeArguments_1 = _type_1.getActualTypeArguments();
+      final TypeReference valueType = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>last(_actualTypeArguments_1);
+      _xblockexpression = context.newTypeReference(EntityMap.class, keyType, valueType);
+    }
+    return _xblockexpression;
   }
   
   public TypeReference toEntityListType(final MutableFieldDeclaration field, @Extension final TransformationContext context) {
     TypeReference _type = field.getType();
     List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
-    TypeReference _get = _actualTypeArguments.get(0);
-    return context.newTypeReference(EntityList.class, _get);
+    TypeReference _head = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>head(_actualTypeArguments);
+    return context.newTypeReference(EntityList.class, _head);
   }
   
   public void addClassTypeParameters(final MutableExecutableDeclaration constructor, final ClassDeclaration cls, @Extension final TransformationContext context) {

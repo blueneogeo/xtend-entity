@@ -556,14 +556,9 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			reactiveFields
 				.filter [ type.simpleName.startsWith('Map') ]
 				.forEach [
-					val key = type.actualTypeArguments.get(0)
-					val value = type.actualTypeArguments.get(1)
-					if(!key.extendsType(string)) {
-						addError('Maps in EntityObjects may only have String as their key')
-					} else {
-						type = EntityMap.newTypeReference(value)
-					}
-
+					val key = type.actualTypeArguments.head
+					val value = type.actualTypeArguments.last
+					type = EntityMap.newTypeReference(key, value)
 				]
 
 			// convert lists to entitylists
@@ -657,23 +652,26 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	}
 	
 	def newEntityList(MutableFieldDeclaration field, String valName, extension TransformationContext context) {
-		val typeArg = field.type.actualTypeArguments.get(0)
-		val type = EntityList.newTypeReference(typeArg)
-		'''final «type.simpleName» «valName» = new «type.name»(«typeArg.simpleName».class);'''
+		val valueType = field.type.actualTypeArguments.head
+		val type = EntityList.newTypeReference(valueType)
+		'''final «type.simpleName» «valName» = new «type.name»(«valueType.simpleName».class);'''
 	}
 	
 	def newEntityMap(MutableFieldDeclaration field, String valName, extension TransformationContext context) {
-		val typeArg = field.type.actualTypeArguments.get(0)
-		val type = EntityMap.newTypeReference(typeArg)
-		'''final «type.simpleName» «valName» = new «type.name»(«typeArg.simpleName».class);'''
+		val keyType = field.type.actualTypeArguments.head
+		val valueType = field.type.actualTypeArguments.last
+		val type = EntityMap.newTypeReference(keyType, valueType)
+		'''final «type.simpleName» «valName» = new «type.name»(«keyType.simpleName».class, «valueType.simpleName».class);'''
 	}
 	
 	def toEntityMapType(MutableFieldDeclaration field, extension TransformationContext context) {
-		EntityMap.newTypeReference(field.type.actualTypeArguments.get(0))
+		val keyType = field.type.actualTypeArguments.head
+		val valueType = field.type.actualTypeArguments.last
+		EntityMap.newTypeReference(keyType, valueType)
 	}
 	
 	def toEntityListType(MutableFieldDeclaration field, extension TransformationContext context) {
-		EntityList.newTypeReference(field.type.actualTypeArguments.get(0))
+		EntityList.newTypeReference(field.type.actualTypeArguments.head)
 	}
 	
 	def addClassTypeParameters(MutableExecutableDeclaration constructor, ClassDeclaration cls, extension TransformationContext context) {

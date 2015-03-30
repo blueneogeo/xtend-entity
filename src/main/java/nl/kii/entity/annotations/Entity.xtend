@@ -23,8 +23,9 @@ import org.eclipse.xtend.lib.macro.Active
 	<h3>The must obey the following rules:</h3>
 	<p>
 	<li>Supported member types are Boolean, Integer, Long, Float, Double, Date, String and other ReactiveObjects,
-	as well as List<T> and Map<String, T>, where T is one of the above types
-	<li>Fields that start with _ in the name or that are protected/package/friendly level will not be converted into getters and setters
+		as well as List<T> and Map<String, T>, where T is one of the above types
+	<li>Fields that start with _ in the name or that are protected/package/friendly level or voletile or static
+		will not be converted into getters and setters
 	<p>
 	<h3>Internals</h3>
 	<p>
@@ -34,5 +35,3 @@ import org.eclipse.xtend.lib.macro.Active
  */
 @Active(EntityProcessor)
 annotation Entity { }
-
-
