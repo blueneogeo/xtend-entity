@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
 class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	
 	/** Using the standard Javascript date format */
-	public static val DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("E MMM dd yyyy HH:mm:ss 'GMT'Z (z)")
+	public static val DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z")
 	
 	public enum SupportedTypes {
 		String, Integer, Long, Float, Double, Boolean, Date

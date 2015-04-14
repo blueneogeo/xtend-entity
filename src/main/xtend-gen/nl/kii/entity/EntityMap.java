@@ -51,7 +51,7 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
   /**
    * Using the standard Javascript date format
    */
-  public final static DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("E MMM dd yyyy HH:mm:ss \'GMT\'Z (z)");
+  public final static DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
   
   private final Class<K> keyType;
   
@@ -102,7 +102,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     }
   }
   
-  @Override
   public Procedure0 onChange(final Procedure1<? super Change> listener) {
     Procedure0 _xblockexpression = null;
     {
@@ -118,7 +117,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     return _xblockexpression;
   }
   
-  @Override
   public void setPublishing(final boolean publish) {
     boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
@@ -140,7 +138,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     }
   }
   
-  @Override
   public boolean isPublishing() {
     boolean _and = false;
     Publisher<Change> _publisher = this.getPublisher();
@@ -162,7 +159,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
       if (element instanceof Observable) {
         _matched=true;
         final Procedure1<Change> _function = new Procedure1<Change>() {
-          @Override
           public void apply(final Change change) {
             String _pathString = EntityMap.this.toPathString(key);
             Change _addPath = change.addPath(_pathString);
@@ -175,7 +171,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     return _switchResult;
   }
   
-  @Override
   public V put(final K key, final V value) {
     V _xblockexpression = null;
     {
@@ -196,7 +191,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     return _xblockexpression;
   }
   
-  @Override
   public V remove(final Object key) {
     try {
       V _xblockexpression = null;
@@ -234,7 +228,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     }
   }
   
-  @Override
   public void putAll(final Map<? extends K, ? extends V> m) {
     Set<? extends K> _keySet = m.keySet();
     for (final K key : _keySet) {
@@ -243,11 +236,9 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     }
   }
   
-  @Override
   public void clear() {
     Map<K, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
     final Procedure2<K, Procedure0> _function = new Procedure2<K, Procedure0>() {
-      @Override
       public void apply(final K k, final Procedure0 v) {
         if (v!=null) {
           v.apply();
@@ -262,7 +253,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     this.publish(_change);
   }
   
-  @Override
   public void apply(final Change change) {
     try {
       boolean _and = false;
@@ -458,32 +448,26 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     }
   }
   
-  @Override
   public EntityMap<K, V> clone() {
     Object _clone = super.clone();
     return ((EntityMap<K, V>) _clone);
   }
   
-  @Override
   public void validate() {
   }
   
-  @Override
   public boolean isValid() {
     return true;
   }
   
-  @Override
   public boolean equals(final Object o) {
     return super.equals(o);
   }
   
-  @Override
   public int hashCode() {
     return super.hashCode();
   }
   
-  @Override
   public Class<?> getInstanceType(final List<String> path) throws EntityException {
     try {
       Class<?> _switchResult = null;
@@ -639,7 +623,6 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
     }
   }
   
-  @Override
   public String toString() {
     StringConcatenation _builder = new StringConcatenation();
     _builder.append("EntityMap<");
