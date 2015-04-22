@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import nl.kii.entity.Change;
 import nl.kii.entity.EntityException;
 import nl.kii.entity.EntityList;
@@ -1745,9 +1746,9 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           }
         };
         Iterable<? extends MutableFieldDeclaration> _filter_4 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_23);
-        final Procedure1<MutableFieldDeclaration> _function_24 = new Procedure1<MutableFieldDeclaration>() {
+        final Consumer<MutableFieldDeclaration> _function_24 = new Consumer<MutableFieldDeclaration>() {
           @Override
-          public void apply(final MutableFieldDeclaration it) {
+          public void accept(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
             final TypeReference key = org.eclipse.xtext.xbase.lib.IterableExtensions.<TypeReference>head(_actualTypeArguments);
@@ -1758,7 +1759,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setType(_newTypeReference);
           }
         };
-        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_4, _function_24);
+        _filter_4.forEach(_function_24);
         final Function1<MutableFieldDeclaration, Boolean> _function_25 = new Function1<MutableFieldDeclaration, Boolean>() {
           @Override
           public Boolean apply(final MutableFieldDeclaration it) {
@@ -1768,9 +1769,9 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
           }
         };
         Iterable<? extends MutableFieldDeclaration> _filter_5 = org.eclipse.xtext.xbase.lib.IterableExtensions.filter(reactiveFields, _function_25);
-        final Procedure1<MutableFieldDeclaration> _function_26 = new Procedure1<MutableFieldDeclaration>() {
+        final Consumer<MutableFieldDeclaration> _function_26 = new Consumer<MutableFieldDeclaration>() {
           @Override
-          public void apply(final MutableFieldDeclaration it) {
+          public void accept(final MutableFieldDeclaration it) {
             TypeReference _type = it.getType();
             List<TypeReference> _actualTypeArguments = _type.getActualTypeArguments();
             final TypeReference typeArg = _actualTypeArguments.get(0);
@@ -1778,7 +1779,7 @@ public class EntityProcessor implements TransformationParticipant<MutableClassDe
             it.setType(_newTypeReference);
           }
         };
-        org.eclipse.xtext.xbase.lib.IterableExtensions.forEach(_filter_5, _function_26);
+        _filter_5.forEach(_function_26);
         final Procedure1<MutableMethodDeclaration> _function_27 = new Procedure1<MutableMethodDeclaration>() {
           @Override
           public void apply(final MutableMethodDeclaration it) {

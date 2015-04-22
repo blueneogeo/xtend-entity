@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import nl.kii.async.annotation.Atomic;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
@@ -25,10 +26,8 @@ import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
-import org.eclipse.xtext.xbase.lib.MapExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 
 @SuppressWarnings("all")
 public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V> implements Reactive, EntityObject {
@@ -246,15 +245,15 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
   @Override
   public void clear() {
     Map<K, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
-    final Procedure2<K, Procedure0> _function = new Procedure2<K, Procedure0>() {
+    final BiConsumer<K, Procedure0> _function = new BiConsumer<K, Procedure0>() {
       @Override
-      public void apply(final K k, final Procedure0 v) {
+      public void accept(final K k, final Procedure0 v) {
         if (v!=null) {
           v.apply();
         }
       }
     };
-    MapExtensions.<K, Procedure0>forEach(_subscriptionEnders, _function);
+    _subscriptionEnders.forEach(_function);
     Map<K, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
     _subscriptionEnders_1.clear();
     super.clear();

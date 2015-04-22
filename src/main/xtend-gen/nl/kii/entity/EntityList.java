@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import nl.kii.async.annotation.Atomic;
 import nl.kii.entity.Change;
 import nl.kii.entity.ChangeType;
@@ -19,10 +20,8 @@ import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
-import org.eclipse.xtext.xbase.lib.MapExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 
 @SuppressWarnings("all")
 public class EntityList<E extends Object> extends ArrayList<E> implements Reactive, EntityObject {
@@ -246,15 +245,15 @@ public class EntityList<E extends Object> extends ArrayList<E> implements Reacti
   @Override
   public void clear() {
     Map<Integer, Procedure0> _subscriptionEnders = this.getSubscriptionEnders();
-    final Procedure2<Integer, Procedure0> _function = new Procedure2<Integer, Procedure0>() {
+    final BiConsumer<Integer, Procedure0> _function = new BiConsumer<Integer, Procedure0>() {
       @Override
-      public void apply(final Integer k, final Procedure0 v) {
+      public void accept(final Integer k, final Procedure0 v) {
         if (v!=null) {
           v.apply();
         }
       }
     };
-    MapExtensions.<Integer, Procedure0>forEach(_subscriptionEnders, _function);
+    _subscriptionEnders.forEach(_function);
     Map<Integer, Procedure0> _subscriptionEnders_1 = this.getSubscriptionEnders();
     _subscriptionEnders_1.clear();
     super.clear();
