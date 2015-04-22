@@ -50,7 +50,7 @@ public class EntityMap<K extends Object, V extends Object> extends HashMap<K, V>
   /**
    * Using the standard Javascript date format
    */
-  public final static DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("E MMM dd yyyy HH:mm:ss \'GMT\'Z (z)");
+  public final static DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
   
   private final Class<K> keyType;
   
