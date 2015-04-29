@@ -1,19 +1,28 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.xtend:xtend-gradle-plugin:0.4.+"
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'org.xtend.xtend'
 apply plugin: 'maven'
-apply from: 'gradle/xtend.gradle'
 
-repositories{
-	mavenLocal()
+repositories {
+    mavenLocal()
     mavenCentral()
+} 
+ 
+dependencies {
+    compile project(':xtend-tools')
+	compile project(':xtend-async')
+    testCompile 'junit:junit:4.+'  	
 }
 
 tasks.jar.dependsOn javadoc
-
-dependencies {
-
-    compile 'com.kimengi.util:xtend-tools:+'
-    compile 'com.kimengi.util:xtend-async:+'
-    
-	testCompile "junit:junit:$junitVersion"
-}
