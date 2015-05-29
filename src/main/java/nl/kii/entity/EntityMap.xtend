@@ -1,16 +1,18 @@
 package nl.kii.entity
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.HashMap
 import java.util.Map
 import nl.kii.async.annotation.Atomic
 import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
+import nl.kii.util.AssertionException
 
 import static nl.kii.entity.ChangeType.*
-import java.util.List
-import java.util.Date
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+
+import static extension nl.kii.util.IterableExtensions.*
 
 class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	
@@ -195,13 +197,6 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 		super.clone as EntityMap<K, V>
 	}
 	
-	override validate() {
-	}
-	
-	override isValid() {
-		true
-	}
-	
 	override equals(Object o) {
 		super.equals(o)
 	}
@@ -210,14 +205,14 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 		super.hashCode()
 	}
 	
-	override getInstanceType(List<String> path) throws EntityException {
+	override getInstanceType(String... path) {
 		switch it : path {
 			case null, case length == 0: EntityList
 			case length == 1: type
 			default: {
 				if(EntityObject.isAssignableFrom(type)) {
 					(type.newInstance as EntityObject).getInstanceType(path.tail.toList)
-				} else throw new EntityException('EntityList cannot apply path ' + path.tail + ' to type ' + type)
+				} else throw new NoSuchFieldException('EntityList cannot apply path ' + path.tail + ' to type ' + type)
 			}
 		}
 	}
@@ -258,5 +253,17 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	}
 	
 	override toString() '''EntityMap<«keyType.simpleName»,«type.simpleName»>(size: «size»)'''
+	
+	override getFields() {
+		this.keySet.map[toString].list
+	}
+	
+	override getValue(String key) {
+		super.get(key)
+	}
+	
+	override isValid() { true }
+	
+	override validate() throws AssertionException {	}
 	
 }

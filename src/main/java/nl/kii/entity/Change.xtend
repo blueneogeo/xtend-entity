@@ -4,6 +4,7 @@ import java.util.List
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import nl.kii.util.AssertionException
 
 enum ChangeType {
 	ADD, 
@@ -80,13 +81,6 @@ class Change implements EntityObject {
 	
 	// ENTITY IMPLEMENTATION //////////////////////////////////////////////////
 	
-	override validate() {
-	}
-	
-	override isValid() {
-		true
-	}
-	
 	override toString() '''«action» «path?.join('.')»«IF value.defined && path?.length > 0» = «ENDIF»«IF value.defined»"«value»"«ENDIF»'''
 	
 	override equals(Object o) {
@@ -108,8 +102,28 @@ class Change implements EntityObject {
 		new Change(id, action, path?.clone, value)
 	}
 	
-	override getInstanceType(List<String> path) throws EntityException {
-		throw new EntityException('unsupported')
+	override getInstanceType(String... path) throws NoSuchFieldException {
+		throw new NoSuchFieldException('getInstanceType is unsupported for Change class')
 	}
+	
+	override getFields() {
+		#['id', 'action', 'value', 'path']
+	}
+	
+	override getValue(String key) {
+		switch key {
+			case 'id': id
+			case 'action': action
+			case 'value': value
+			case 'path': path
+			default: throw new NoSuchFieldException(key)
+		}
+	}
+	
+	override isValid() {
+		true
+	}
+	
+	override validate() throws AssertionException {	}
 	
 }

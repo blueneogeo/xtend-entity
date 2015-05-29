@@ -1,16 +1,18 @@
 package nl.kii.entity.processors
 
+import java.util.LinkedList
 import java.util.List
 import java.util.Map
 import nl.kii.entity.Change
-import nl.kii.entity.EntityException
 import nl.kii.entity.EntityList
 import nl.kii.entity.EntityMap
+import nl.kii.entity.EntityObject
 import nl.kii.entity.ReactiveObject
 import nl.kii.entity.annotations.Entity
 import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.observe.Observable
+import nl.kii.util.AssertionException
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.TransformationParticipant
 import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
@@ -27,7 +29,6 @@ import static org.eclipse.xtend.lib.macro.declaration.Visibility.*
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import nl.kii.entity.EntityObject
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -162,18 +163,19 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			}
 			
 			// create the getType methods
-			
+
 			cls.addMethod('getInstanceType') [
 				docComment = '''Gives the instance access to the getType method.'''
 				primarySourceElement = cls
-				addParameter('path', List.newTypeReference(string))
+				varArgs = true
+				addParameter('path', newArrayTypeReference(string))
 				returnType = Class.newTypeReference
-				exceptions = EntityException.newTypeReference
+				exceptions = NoSuchFieldException.newTypeReference
 				body = ['''
 					return getType(path);
 				''']
 			]
-			
+						
 			cls.addMethod('getType') [
 				docComment = '''
 					Gets the class of any field path into the object. Also navigates inner maps and lists.
@@ -190,35 +192,36 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				'''
 				primarySourceElement = cls
 				static = true
-				addParameter('path', List.newTypeReference(string))
+				varArgs = true
+				addParameter('path', newArrayTypeReference(string))
 				returnType = Class.newTypeReference
-				exceptions = EntityException.newTypeReference
+				exceptions = NoSuchFieldException.newTypeReference
 				body = ['''
-					if(path == null || path.size() == 0) return «clsType.nameWithoutGenerics».class;
-					String fieldName = path.get(0);
+					if(path == null || path.length == 0) return «clsType.nameWithoutGenerics».class;
+					String fieldName = path[0];
 					«FOR field : getSetFields»
 						if(fieldName.equals("«field.simpleName»")) {
-							if(path.size() == 1) {
+							if(path.length == 1) {
 									return «field.type.nameWithoutGenerics».class;
 							} else {
 								«IF field.type.extendsType(EntityList.newTypeReference) || field.type.extendsType(EntityMap.newTypeReference)»
 									«val containedType = field.type.actualTypeArguments.get(0)»
-									if(path.size() == 2) return «containedType».class;
+									if(path.length == 2) return «containedType».class;
 									else 
 									«IF containedType.extendsType(EntityObject.newTypeReference)»
-										return «containedType».getType(path.subList(2, path.size()));
+										return «containedType».getType(java.util.Arrays.copyOfRange(path, 2, path.length));
 									«ELSE»
-										throw new EntityException("path " + path + " does not match structure of «containedType.simpleName»");
+										throw new NoSuchFieldException("path " + path + " does not match structure of «containedType.simpleName»");
 									«ENDIF»
 								«ELSEIF field.type.extendsType(EntityObject.newTypeReference)»
-									return «field.type.simpleName».getType(path.subList(1, path.size()));
+									return «field.type.simpleName».getType(java.util.Arrays.copyOfRange(path, 1, path.length));
 								«ELSE»
-									throw new EntityException("path " + path + " does not match structure of «field.type.simpleName»"); 
+									throw new NoSuchFieldException("path " + path + " does not match structure of «field.type.simpleName»"); 
 								«ENDIF»
 							} 
 						}
 					«ENDFOR»
-					throw new EntityException("could not match path " + path + " on entity «clsType.simpleName»");
+					throw new NoSuchFieldException("could not match path " + path + " on entity «clsType.simpleName»");
 				''']
 			]
 			
@@ -249,19 +252,51 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				docComment = '''
 					Check if the «cls.simpleName» is valid.
 					Use this method if you need a descriptive error for what did not match.
-					@throws an exception if not all the fields annotated with @Require have a value.
+					@throws an AssertionException if not all the fields annotated with @Require have a value.
 				'''
 				primarySourceElement = cls
-				exceptions = EntityException.newTypeReference
+				exceptions = AssertionException.newTypeReference
 				body = ['''
 					«FOR field : requiredFields»
 						«IF !field.type.primitive»
-							if(«field.simpleName»==null) throw new EntityException("«cls.simpleName».«field.simpleName» may not be empty.");
+							if(«field.simpleName»==null) throw new AssertionException("«cls.simpleName».«field.simpleName» may not be empty.");
 							«IF field.in(reactiveFields)»
 								«field.simpleName».validate();
 							«ENDIF»
 						«ENDIF»
 					«ENDFOR»
+				''']
+			]
+			
+			cls.addMethod('getFields') [
+				docComment = '''
+					Get all keys/properties in this entity.
+				'''
+				primarySourceElement = cls
+				returnType = List.newTypeReference(string)
+				val newList = LinkedList.newTypeReference(string)
+				body = ['''
+					List<String> _keys = new «newList.name»();
+					«FOR field : getSetFields»
+						_keys.add("«field.simpleName»");
+					«ENDFOR»
+					return _keys;
+				''']
+			]
+			
+			cls.addMethod('getValue') [
+				docComment = '''
+					Get the value for a given key/field in this entity.
+				'''
+				primarySourceElement = cls
+				addParameter('name', string)
+				returnType = Object.newTypeReference
+				exceptions = NoSuchFieldException.newTypeReference
+				body = ['''
+					«FOR field : getSetFields»
+						if(name.equals("«field.simpleName»")) return «field.simpleName»;
+					«ENDFOR»
+					throw new NoSuchFieldException("«cls.simpleName» has no field " + name);
 				''']
 			]
 
@@ -374,7 +409,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 							«ENDFOR»
 							try {
 								this.validate();
-							} catch(EntityException e) {
+							} catch(AssertionException e) {
 								throw new IllegalArgumentException("incoming change created an invalid entity: " + change, e);
 							}
 						} else if(change.getPath().size() == 1) {

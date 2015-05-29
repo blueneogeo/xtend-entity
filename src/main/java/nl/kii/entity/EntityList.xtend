@@ -1,5 +1,7 @@
 package nl.kii.entity
 
+import static extension nl.kii.util.IterableExtensions.*
+
 import java.util.ArrayList
 import java.util.Collection
 import java.util.List
@@ -11,6 +13,7 @@ import nl.kii.observe.Publisher
 import static nl.kii.entity.ChangeType.*
 
 import static extension java.lang.Integer.*
+import nl.kii.util.AssertionException
 
 class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 
@@ -255,24 +258,32 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 		super.clone as EntityList<E>
 	}
 	
-	override validate() {
-	}
-	
-	override isValid() {
-		true
-	}
-	
-	override getInstanceType(List<String> path) throws EntityException {
+	override getInstanceType(String... path) {
 		switch it : path {
 			case null, case length == 0: EntityList
 			case length == 1: type
 			default: {
 				if(EntityObject.isAssignableFrom(type)) {
 					(type.newInstance as EntityObject).getInstanceType(path.tail.toList)
-				} else throw new EntityException('EntityList cannot apply path ' + path.tail + ' to type ' + type)
+				} else throw new NoSuchFieldException('EntityList cannot apply path ' + path.tail + ' to type ' + type)
 			}
 		}
 	}
+	
+	override getFields() {
+		(0..this.size).map[toString].list
+	}
+	
+	override getValue(String key) {
+		val i = Integer.parseInt(key)
+		this.get(i)
+	}
+	
+	override isValid() {
+		true
+	}
+	
+	override validate() throws AssertionException { }
 
 }
 	
