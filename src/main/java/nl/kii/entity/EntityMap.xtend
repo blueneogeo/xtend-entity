@@ -266,4 +266,12 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	
 	override validate() throws AssertionException {	}
 	
+	override setValue(String field, Object value) throws NoSuchFieldException {
+		try {
+			this.put(field as Object as K, value as V)
+		} catch (ClassCastException e) {
+			throw new NoSuchFieldException('EntityMap<'+ keyType.simpleName + ', ' + type.simpleName + '> cannot be set with a key of type String and a value of type ' + value.class.simpleName)
+		}
+	}
+	
 }

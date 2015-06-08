@@ -291,10 +291,37 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				primarySourceElement = cls
 				addParameter('name', string)
 				returnType = Object.newTypeReference
-				exceptions = NoSuchFieldException.newTypeReference
+				exceptions = #[NoSuchFieldException.newTypeReference, IllegalArgumentException.newTypeReference ]
 				body = ['''
 					«FOR field : getSetFields»
-						if(name.equals("«field.simpleName»")) return «field.simpleName»;
+						if(name.equals("«field.simpleName»")) return this.«field.simpleName»;
+					«ENDFOR»
+					throw new NoSuchFieldException("«cls.simpleName» has no field " + name);
+				''']
+			]
+
+			cls.addMethod('setValue') [
+				docComment = '''
+					Set the value for a given key/field in this entity.
+					Allowed fields are: «FOR field : getSetFields SEPARATOR ', '»«field.simpleName»(«field.type.simpleName»)«ENDFOR»
+				'''
+				primarySourceElement = cls
+				addParameter('name', string)
+				addParameter('value', object)
+				exceptions = #[NoSuchFieldException.newTypeReference, IllegalArgumentException.newTypeReference]
+				body = ['''
+					«FOR field : getSetFields»
+						if(name.equals("«field.simpleName»")) {
+							if(value == null) {
+								«IF field.type.isPrimitive»
+									throw new IllegalArgumentException("While performing setValue, «cls.simpleName».«field.simpleName» is a primitive («field.type.simpleName») and cannot be set to null");
+								«ELSE»
+									this.«field.simpleName» = null;
+								«ENDIF»
+							} else if(getType(name).isAssignableFrom(value.getClass())) {
+								this.«field.simpleName» = («field.type.simpleName»)value;
+							} else throw new IllegalArgumentException("While performing setValue, «cls.simpleName».«field.simpleName» is a «field.type.simpleName» but got a " + value.getClass().getName());
+						} else	
 					«ENDFOR»
 					throw new NoSuchFieldException("«cls.simpleName» has no field " + name);
 				''']

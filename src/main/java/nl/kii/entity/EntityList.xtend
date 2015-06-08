@@ -284,6 +284,16 @@ class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 	}
 	
 	override validate() throws AssertionException { }
+	
+	override setValue(String field, Object value) throws NoSuchFieldException {
+		try {
+			this.add(Integer.parseInt(field), value as E)
+		} catch (NumberFormatException e) {
+			throw new NoSuchFieldException('EntityList.setValue should have a number as the field')
+		} catch (ClassCastException e) {
+			throw new NoSuchFieldException('EntityList.setValue cannot be set with a value of type ' + value.class.simpleName)
+		}
+	}
 
 }
 	

@@ -120,6 +120,10 @@ class Change implements EntityObject {
 		}
 	}
 	
+	override setValue(String key, Object value) throws NoSuchFieldException {
+		throw new EntityException('cannot modify a change, changes are stateless')
+	}
+	
 	override isValid() {
 		true
 	}

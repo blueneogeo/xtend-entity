@@ -20,6 +20,9 @@ interface EntityObject extends Cloneable {
 	/** Returns the value for the field */
 	def Object getValue(String field) throws NoSuchFieldException
 
+	/** Sets the value for the field */
+	def void setValue(String field, Object value) throws NoSuchFieldException
+
 	/**
 	 * Get the type of the property given the passed path, allowing you to bypass Java erasure.
 	 * @throws NoSuchFieldException with a reason if the path is not valid.
