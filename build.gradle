@@ -39,6 +39,11 @@ subprojects {
         testCompile.extendsFrom provided
     }
 
+    dependencies {
+        compile "org.eclipse.xtend:org.eclipse.xtend.lib:${xtendVersion}"
+	    compile "org.eclipse.xtext:org.eclipse.xtext.xbase.lib:${xtendVersion}"
+    }
+
     repositories {
         mavenCentral()
         mavenLocal()
@@ -71,7 +76,9 @@ subprojects {
     }
 
     tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
+        if (JavaVersion.current().isJava8Compatible()) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
     }
 
 }
@@ -80,8 +87,6 @@ subprojects {
 
 project( 'annotations' ) {
     dependencies {
-        compile "org.eclipse.xtend:org.eclipse.xtend.lib:$xtendVersion"
-        compile "org.eclipse.xtext:org.eclipse.xtext.xbase.lib:$xtendVersion"
         compile 'com.kimengi.util:xtend-async:+'
     }
     publishing {
