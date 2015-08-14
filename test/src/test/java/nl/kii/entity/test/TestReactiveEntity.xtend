@@ -140,5 +140,32 @@ class TestReactiveEntity {
 		assertEquals(#{'Chris'->new User('Chris')}, r.relations)
 		// also notice how we can use equals, based purely on content!
 	}
+	
+	@Test
+	def void testNullSettingWhenPublishing() {
+		val it = new User('Chris')
+		println(it)
+		assertEquals(name, 'Chris')
+			
+		onChange [ 
+			switch path.head {
+				case 'name': {
+					println('name value has been changed to: ' + value)
+					assertEquals(value, null)
+				}
+				case 'birthday': {
+					println('birthday value has been changed to: ' + value)
+					assertEquals(value, null)
+				}
+			}
+		]
+		
+		// String
+		name = null
+		
+		// Date
+		birthday = null
+	}
+	
 }
 

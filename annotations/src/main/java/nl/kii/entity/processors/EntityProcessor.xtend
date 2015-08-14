@@ -386,7 +386,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 								«ELSEIF f.isEntityList»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
 								«ELSEIF f.type.extendsType(Cloneable.newTypeReference)»
-									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName».clone()));
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName» != null ? this.«f.simpleName».clone() : null));
 								«ELSE»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName»));
 								«ENDIF»
