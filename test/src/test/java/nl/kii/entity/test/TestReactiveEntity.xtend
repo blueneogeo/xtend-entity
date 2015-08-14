@@ -145,17 +145,16 @@ class TestReactiveEntity {
 	@Test
 	def void testNullSettingWhenPublishing() {
 		val it = new User('Chris') => [ birthday = new Date ]
-		println(it)
-		assertEquals(name, 'Chris')
+		//println(it)
 			
 		onChange [ 
 			switch path.head {
 				case 'name': {
-					println('name value has been changed to: ' + value)
+					//println('name value has been changed to: ' + value)
 					assertEquals(value, null)
 				}
 				case 'birthday': {
-					println('birthday value has been changed to: ' + value)
+					//println('birthday value has been changed to: ' + value)
 					assertEquals(value, null)
 				}
 			}
@@ -169,26 +168,38 @@ class TestReactiveEntity {
 	}
 	
 	@Test
-	def void testNewValuesOnly() {
-		val it = new User('Epoch') => [ birthday = new Date(0) ]
-		println(it)
+	def void testPublishNewValuesOnly() {
+		val it = new User('Epoch') => [ 
+			birthday = new Date(0) 
+			registered = new Date(3000)
+			sports = #[ 'baseball', 'soccer' ]
+		]
+		//println(it)
 		
 		onChange [ 
 			switch path.head {
 				case 'name': {
 					fail('name value has been set, but not changed, so no Change should\'ve been published')
 				}
+				case 'registered': {
+					fail('registered value has been set, but not changed, so no Change should\'ve been published')
+				}
 				case 'birthday': {
-					println('birthday value has been changed to: ' + value)
+					//println('birthday value has been changed to: ' + value)
+				}
+				case 'sports': {
+					//println('sports value has been changed to: ' + value)
 				}
 			}
 		]
 
 		// value set that is a new value
 		birthday = new Date(1000)
+		sports = #[ 'baseball', 'soccer', 'chess' ]
 		
 		// value set that is the same as the previous
 		name = 'Epoch'
+		registered = new Date(3000)		
 		
 	}	
 	

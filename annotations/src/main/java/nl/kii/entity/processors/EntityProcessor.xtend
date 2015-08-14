@@ -374,13 +374,19 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 							if(this.«f.simpleName» != null && this.«f.stopObservingFunctionName» != null)
 								«f.stopObservingFunctionName».apply();
 						«ENDIF»
-						// hold on to previous value for change comparison
-						«f.type» previous = this.«f.simpleName»;
+						// check if the value is new
+						boolean isNewValue = «
+							IF f.type.primitive
+								»this.«f.simpleName» != value«
+							ELSE
+								»(this.«f.simpleName» != null) ? !this.«f.simpleName».equals(value) : this.«f.simpleName» != value«
+							ENDIF»;
+						
 						// start observing the new value for changes
 						«f.assignFieldValue(context)»
 						«IF f.in(observedFields)»
 							// if we are publishing, publish the change we've made, and only if the value is new 
-							if(this.isPublishing() && value != previous) {
+							if(this.isPublishing() && isNewValue) {
 								«IF f.type.primitive || typeConversions.values.map[newTypeReference].toList.contains(f.type)|| f.type.isAssignableFrom(String.newTypeReference)»
 									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", value));
 								«ELSEIF f.isEntityMap»

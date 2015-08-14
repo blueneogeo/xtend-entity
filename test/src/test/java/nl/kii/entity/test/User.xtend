@@ -1,8 +1,9 @@
 package nl.kii.entity.test
 
+import java.util.Date
+import java.util.List
 import nl.kii.entity.annotations.Entity
 import nl.kii.entity.annotations.Require
-import java.util.Date
 
 @Entity
 class User {
@@ -12,4 +13,6 @@ class User {
 	int age
 
 	Date birthday
+	Date registered
+	List<String> sports
 }
