@@ -1,5 +1,6 @@
 package nl.kii.entity.test
 
+import java.util.Date
 import nl.kii.entity.Change
 import nl.kii.entity.EntityList
 import nl.kii.util.AssertionException
@@ -143,7 +144,7 @@ class TestReactiveEntity {
 	
 	@Test
 	def void testNullSettingWhenPublishing() {
-		val it = new User('Chris')
+		val it = new User('Chris') => [ birthday = new Date ]
 		println(it)
 		assertEquals(name, 'Chris')
 			
@@ -163,9 +164,33 @@ class TestReactiveEntity {
 		// String
 		name = null
 		
-		// Date
+		// Date (which will be cloned)
 		birthday = null
 	}
+	
+	@Test
+	def void testNewValuesOnly() {
+		val it = new User('Epoch') => [ birthday = new Date(0) ]
+		println(it)
+		
+		onChange [ 
+			switch path.head {
+				case 'name': {
+					fail('name value has been set, but not changed, so no Change should\'ve been published')
+				}
+				case 'birthday': {
+					println('birthday value has been changed to: ' + value)
+				}
+			}
+		]
+
+		// value set that is a new value
+		birthday = new Date(1000)
+		
+		// value set that is the same as the previous
+		name = 'Epoch'
+		
+	}	
 	
 }
 
