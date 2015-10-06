@@ -319,7 +319,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 									this.«field.simpleName» = null;
 								«ENDIF»
 							} else if(getType(name).isAssignableFrom(value.getClass())) {
-								this.«field.simpleName» = («field.type.simpleName»)value;
+								this.«field.simpleName» = («field.type.name»)value;
 							} else throw new IllegalArgumentException("While performing setValue, «cls.simpleName».«field.simpleName» is a «field.type.simpleName» but got a " + value.getClass().getName());
 						} else	
 					«ENDFOR»
@@ -454,7 +454,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 							if(field.equals("«field.simpleName»")) {
 								switch(change.getAction()) {
 									case UPDATE:
-										this.set«field.simpleName.toFirstUpper»((«field.type.simpleName»)change.getValue());
+										this.set«field.simpleName.toFirstUpper»((«field.type.name»)change.getValue());
 										// this.«field.simpleName» = («field.type.simpleName»)change.getValue();
 										break;
 									case CLEAR:
@@ -649,7 +649,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 				primarySourceElement = cls
 				returnType = changeHandlerType
 				body = ['''
-					final «clsType.simpleName» entity = this;
+					final «clsType.name» entity = this;
 					return new Procedure1<Change>() {
 						public void apply(Change change) {
 							//only propagate a change if we can publish
@@ -695,7 +695,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	def assignFieldValue(MutableFieldDeclaration field, extension TransformationContext context) '''
 		«IF field.isEntityList»
 			// if the list is not already reactive, wrap the list as a reactive list
-			«field.newEntityList('newList', context)»;
+			«field.newEntityList('newList', context)»
 			if(value != null) newList.addAll(value);
 			«field.simpleName» = newList;
 			this.«field.getStopObservingFunctionName» = newList.onChange(newChangeHandler("«field.simpleName»"));
@@ -724,14 +724,14 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	def newEntityList(MutableFieldDeclaration field, String valName, extension TransformationContext context) {
 		val valueType = field.type.actualTypeArguments.head
 		val type = EntityList.newTypeReference(valueType)
-		'''final «type.simpleName» «valName» = new «type.name»(«valueType.simpleName».class);'''
+		'''final «type.name» «valName» = new «type.name»(«valueType.name».class);'''
 	}
 	
 	def newEntityMap(MutableFieldDeclaration field, String valName, extension TransformationContext context) {
 		val keyType = field.type.actualTypeArguments.head
 		val valueType = field.type.actualTypeArguments.last
 		val type = EntityMap.newTypeReference(keyType, valueType)
-		'''final «type.simpleName» «valName» = new «type.name»(«keyType.simpleName».class, «valueType.simpleName».class);'''
+		'''final «type.name» «valName» = new «type.name»(«keyType.name».class, «valueType.name».class);'''
 	}
 	
 	def toEntityMapType(MutableFieldDeclaration field, extension TransformationContext context) {
@@ -771,7 +771,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 	}
 	
 	def getNameWithoutGenerics(TypeReference ref) {
-		ref.name.replaceAll('<.+>', '')
+		ref.name.replaceAll('<.+>', '').replaceAll('\\$', '.')
 	}
 	
 }
