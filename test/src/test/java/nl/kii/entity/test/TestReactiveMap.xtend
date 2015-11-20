@@ -14,6 +14,16 @@ import static extension nl.kii.stream.StreamExtensions.*
 class TestReactiveMap {
 	
 	@Test
+	def void hasCorrectSizeForCopyConstructor() {
+		val map = #{
+			'hello' -> 1,
+			'world' -> 2
+		}
+		val entityMap = new EntityMap(String, Integer, map)
+		assertEquals(map.size, entityMap.size)
+	}
+	
+	@Test
 	def void supportsChangesOfFullContent() {
 		val map = new EntityMap(String, Integer)
 		
@@ -106,6 +116,7 @@ class TestReactiveMap {
 			assertArrayEquals(expected, it)
 		]
 		assertEquals(#{'a'->1, 'c'->3, 'd'->4}, map)
+		assertEquals(3, map.size)
 	}
 	
 	@Test

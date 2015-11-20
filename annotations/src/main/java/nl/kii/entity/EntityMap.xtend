@@ -50,14 +50,14 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 		this.isReactive = true
 	}
 
-	new(Class<K> keyType, Class<V> type, Map<? extends String, ? extends V> m) {
+	new(Class<K> keyType, Class<V> type, Map<? extends K, ? extends V> m) {
+		super(m)
 		this.type = type
 		this.keyType = keyType
 		this.isReactive = true
 	}
 	
 	private def isSupportedType(Class<K> type) {
-		
 	}
 	
 	def getType() { type }

@@ -13,6 +13,14 @@ import static extension nl.kii.stream.StreamExtensions.*
 class TestReactiveList {
 	
 	@Test
+	def void hasCorrectSizeForCopyConstructor() {
+		val list = #[ 'hello', 'world' ]
+		val entityList = new EntityList(String, list)
+		assertEquals(list.size, entityList.size)
+	}
+	
+	
+	@Test
 	def void supportsChangesOfFullContent() {
 		val list = new EntityList<Integer>(Integer)
 		
