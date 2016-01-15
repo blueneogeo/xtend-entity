@@ -17,7 +17,7 @@ import static extension nl.kii.util.IterableExtensions.*
 class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	
 	/** Using the standard Javascript date format */
-	public static val DateFormat KEY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z")
+	public static val KEY_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS Z"
 	
 	public enum SupportedTypes {
 		String, Integer, Long, Float, Double, Boolean, Date
@@ -224,7 +224,7 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	 */
 	def toPathString(K key) {
 		switch keyType {
-			case Date: KEY_DATE_FORMAT.format(key as Date)
+			case Date: new SimpleDateFormat(KEY_DATE_FORMAT).format(key as Date)
 			default: key.toString
 		}
 	}
@@ -243,7 +243,7 @@ class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 				case Double: Double.parseDouble(s)
 				case Long: Long.parseLong(s)
 				case Boolean: Boolean.parseBoolean(s)
-				case Date: KEY_DATE_FORMAT.parse(s)
+				case Date: new SimpleDateFormat(KEY_DATE_FORMAT).parse(s)
 				default: throw new EntityException(this.toString + ' could not convert "' + s + '" to a valid key, since s is not a supported type. Supported types are: ' + EntityMap.SupportedTypes.values.join(', '))
 			}
 		} catch(Exception e) {
