@@ -129,6 +129,7 @@ project( 'test' ) {
   dependencies {
     compile project( ':annotations' )
     testCompile 'com.kimengi.util:xtend-tools-test:latest.release'
+    testCompile 'com.kimengi.util:xtend-async-test:latest.release'
   }
 }
 

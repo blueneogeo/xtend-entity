@@ -102,7 +102,7 @@ class TestReactiveMap {
 		map.put('b', 2)
 		map.putAll(#{'c'->3, 'd'->4}) // produces UPDATE 'c'->3 and UPDATE 'd'->4
 		map.remove('b')
-		changes.finish
+		changes.close
 		
 		changes.collect.then [
 			val expected = #[
@@ -134,7 +134,7 @@ class TestReactiveMap {
 		sublist.set(1, 'world') // 4
 		sublist.remove(0) // 5
 		list.remove(0) // 6
-		changes.finish
+		changes.close
 		
 		// collect what has been streamed and check for the expected changes we caused in the list structure
 		changes.collect.then [

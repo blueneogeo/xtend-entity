@@ -102,7 +102,7 @@ class TestReactiveList {
 		list.add(2)
 		list.addAll(#[3, 4]) // produces ADD 3 and ADD 4
 		list.remove(1) // removes at 1st index, 2nd place
-		changes.finish
+		changes.close
 		
 		changes.collect.then [
 			val expected = #[
@@ -133,7 +133,7 @@ class TestReactiveList {
 		sublist.set(1, 'world') // 4
 		sublist.remove(0) // 5
 		list.remove(0) // 6
-		changes.finish
+		changes.close
 		
 		// collect what has been streamed and check for the expected changes we caused in the list structure
 		changes.collect.then [

@@ -387,17 +387,21 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 						«IF f.in(observedFields)»
 							// if we are publishing, publish the change we've made, and only if the value is new 
 							if(this.isPublishing() && isNewValue) {
-								«IF f.type.primitive || typeConversions.values.map[newTypeReference].toList.contains(f.type)|| f.type.isAssignableFrom(String.newTypeReference)»
-									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", value));
-								«ELSEIF f.isEntityMap»
-									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityMapType(context).name»)this.«f.simpleName»).clone()));
-								«ELSEIF f.isEntityList»
-									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
-								«ELSEIF f.type.extendsType(Cloneable.newTypeReference)»
-									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName» != null ? this.«f.simpleName».clone() : null));
-								«ELSE»
-									getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName»));
-								«ENDIF»
+								if(value == null) {
+									getPublisher().apply(new Change(nl.kii.entity.ChangeType.CLEAR, "«f.simpleName»", null));
+								} else {
+									«IF f.type.primitive || typeConversions.values.map[newTypeReference].toList.contains(f.type)|| f.type.isAssignableFrom(String.newTypeReference)»
+										getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", value));
+									«ELSEIF f.isEntityMap»
+										getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityMapType(context).name»)this.«f.simpleName»).clone()));
+									«ELSEIF f.isEntityList»
+										getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", ((«f.toEntityListType(context).name»)this.«f.simpleName»).clone()));
+									«ELSEIF f.type.extendsType(Cloneable.newTypeReference)»
+										getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName» != null ? this.«f.simpleName».clone() : null));
+									«ELSE»
+										getPublisher().apply(new Change(nl.kii.entity.ChangeType.UPDATE, "«f.simpleName»", this.«f.simpleName»));
+									«ENDIF»
+								}
 							}
 						«ENDIF»
 					''']

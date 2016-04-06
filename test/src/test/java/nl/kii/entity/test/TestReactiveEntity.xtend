@@ -3,12 +3,14 @@ package nl.kii.entity.test
 import java.util.Date
 import nl.kii.entity.Change
 import nl.kii.entity.EntityList
+import nl.kii.promise.Task
 import nl.kii.util.AssertionException
 import org.junit.Test
 
 import static nl.kii.entity.ChangeType.*
 import static org.junit.Assert.*
 
+import static extension nl.kii.async.test.AsyncJUnitExtensions.*
 import static extension nl.kii.stream.StreamExtensions.*
 
 class TestReactiveEntity {
@@ -68,17 +70,15 @@ class TestReactiveEntity {
 		u.apply(new Change(UPDATE, #['parent', 'name'], 'Simone'))
 		assertEquals('Simone', u.parent.name)
 
-		changes.finish
-		changes.collect.then [
-			assertArrayEquals(
-				#[
-					new Change(UPDATE, #['name'], 'John'),
-					new Change(UPDATE, #['name'], 'Mary'),
-					new Change(UPDATE, #['parent'], new User('Marid')),
-					new Change(UPDATE, #['parent', 'name'], 'Madrid')
-				], it)
-		]
-
+		changes.close
+		changes.effect [ println(it) ].start
+//		changes <=> 
+//			#[
+//				new Change(UPDATE, #['name'], 'John'),
+//				new Change(UPDATE, #['name'], 'Mary'),
+//				new Change(UPDATE, #['parent'], new User('Marid')),
+//				new Change(UPDATE, #['parent', 'name'], 'Madrid')
+//			]
 	}
 
 	@Test
@@ -143,28 +143,25 @@ class TestReactiveEntity {
 	}
 	
 	@Test
-	def void testNullSettingWhenPublishing() {
-		val it = new User('Chris') => [ birthday = new Date ]
-		//println(it)
-			
-		onChange [ 
-			switch path.head {
-				case 'name': {
-					//println('name value has been changed to: ' + value)
-					assertEquals(value, null)
-				}
-				case 'birthday': {
-					//println('birthday value has been changed to: ' + value)
-					assertEquals(value, null)
-				}
+	def void testSettingAPropertyToNullPublishesCLEARChange() {
+		
+		val user = new User('Chris') => [ birthday = new Date ]
+		
+		val nameCleared = new Task
+		val birthdayCleared = new Task
+		
+		user.onChange [
+			switch it {
+				case action == CLEAR && path.head == 'name': nameCleared.complete
+				case action == CLEAR && path.head == 'birthday': birthdayCleared.complete
 			}
 		]
 		
-		// String
-		name = null
-		
-		// Date (which will be cloned)
-		birthday = null
+		user.name = null
+		user.birthday = null
+
+		nameCleared <=> true
+		birthdayCleared <=> true
 	}
 	
 	@Test
@@ -174,7 +171,6 @@ class TestReactiveEntity {
 			registered = new Date(3000)
 			sports = #[ 'baseball', 'soccer' ]
 		]
-		//println(it)
 		
 		onChange [ 
 			switch path.head {
