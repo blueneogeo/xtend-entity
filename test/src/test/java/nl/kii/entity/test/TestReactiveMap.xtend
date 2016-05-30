@@ -9,7 +9,9 @@ import org.junit.Test
 import static nl.kii.entity.ChangeType.*
 import static org.junit.Assert.*
 
-import static extension nl.kii.stream.StreamExtensions.*
+import static extension nl.kii.async.stream.StreamExtensions.*
+import static extension nl.kii.util.JUnitExtensions.*
+import static extension nl.kii.async.promise.PromiseExtensions.*
 
 class TestReactiveMap {
 	
@@ -94,7 +96,8 @@ class TestReactiveMap {
 
 	@Test
 	def void letsListenToChanges() {
-		val changes = Change.stream
+		val changes = Change.sink
+		val buffered = changes.buffer(100)
 		val map = new EntityMap(String, int)
 		map.onChange [ it >> changes ]
 		map.clear
@@ -102,26 +105,23 @@ class TestReactiveMap {
 		map.put('b', 2)
 		map.putAll(#{'c'->3, 'd'->4}) // produces UPDATE 'c'->3 and UPDATE 'd'->4
 		map.remove('b')
-		changes.close
+		changes.complete
 		
-		changes.collect.then [
-			val expected = #[
-				new Change(CLEAR),
-				new Change(UPDATE, 'a', 1),
-				new Change(UPDATE, 'b', 2),
-				new Change(UPDATE, 'c', 3),
-				new Change(UPDATE, 'd', 4), 
-				new Change(REMOVE, 'b', 2)
-			]
-			assertArrayEquals(expected, it)
+		buffered.collect.await <=> #[
+			new Change(CLEAR),
+			new Change(UPDATE, 'a', 1),
+			new Change(UPDATE, 'b', 2),
+			new Change(UPDATE, 'd', 4), 
+			new Change(UPDATE, 'c', 3),
+			new Change(REMOVE, 'b', 2)
 		]
-		assertEquals(#{'a'->1, 'c'->3, 'd'->4}, map)
-		assertEquals(3, map.size)
+		map <=> #{'a'->1, 'c'->3, 'd'->4}
 	}
 	
 	@Test
 	def void letsListenToChangesWithinEntries() {
-		val changes = Change.stream
+		val changes = Change.sink
+		val buffered = changes.buffer(100)
 		val list = new EntityList(EntityList)
 		val sublist = new EntityList(String)
 		// pass the list changes into a stream
@@ -134,19 +134,16 @@ class TestReactiveMap {
 		sublist.set(1, 'world') // 4
 		sublist.remove(0) // 5
 		list.remove(0) // 6
-		changes.close
+		changes.complete
 		
 		// collect what has been streamed and check for the expected changes we caused in the list structure
-		changes.collect.then [
-			val expected = #[
-				new Change(ADD, sublist), // 1
-				new Change(ADD, 0, 'hello'), // 2
-				new Change(ADD, 0, 'word'), // 3
-				new Change(UPDATE, #['0', '1'], 'world'), // 4
-				new Change(REMOVE, #['0', '0'], 'hello'), // 5
-				new Change(REMOVE, 0, #['world']) // 6
-			]
-			assertArrayEquals(expected, it)
+		buffered.collect.await <=> #[
+			new Change(ADD, sublist), // 1
+			new Change(ADD, 0, 'hello'), // 2
+			new Change(ADD, 0, 'word'), // 3
+			new Change(UPDATE, #['0', '1'], 'world'), // 4
+			new Change(REMOVE, #['0', '0'], 'hello'), // 5
+			new Change(REMOVE, 0, #['world']) // 6
 		]
 	}
 	

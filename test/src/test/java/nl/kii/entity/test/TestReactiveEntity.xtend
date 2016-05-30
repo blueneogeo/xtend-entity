@@ -1,17 +1,17 @@
 package nl.kii.entity.test
 
 import java.util.Date
+import nl.kii.async.promise.Task
 import nl.kii.entity.Change
 import nl.kii.entity.EntityList
-import nl.kii.promise.Task
 import nl.kii.util.AssertionException
 import org.junit.Test
 
 import static nl.kii.entity.ChangeType.*
 import static org.junit.Assert.*
 
-import static extension nl.kii.async.test.AsyncJUnitExtensions.*
-import static extension nl.kii.stream.StreamExtensions.*
+import static extension nl.kii.async.stream.StreamExtensions.*
+import static extension nl.kii.util.JUnitExtensions.*
 
 class TestReactiveEntity {
 
@@ -33,7 +33,7 @@ class TestReactiveEntity {
 
 	@Test
 	def void testEntityChangeListening() {
-		val changes = Change.stream
+		val changes = Change.sink
 
 		val u = new User('Christian')
 		val stop = u.onChange[it >> changes]
@@ -160,8 +160,8 @@ class TestReactiveEntity {
 		user.name = null
 		user.birthday = null
 
-		nameCleared <=> true
-		birthdayCleared <=> true
+		nameCleared.fulfilled <=> true
+		birthdayCleared.fulfilled <=> true
 	}
 	
 	@Test

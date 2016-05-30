@@ -8,7 +8,9 @@ import org.junit.Test
 import static nl.kii.entity.ChangeType.*
 import static org.junit.Assert.*
 
-import static extension nl.kii.stream.StreamExtensions.*
+import static extension nl.kii.async.stream.StreamExtensions.*
+import static extension nl.kii.async.promise.PromiseExtensions.*
+import static extension nl.kii.util.JUnitExtensions.*
 
 class TestReactiveList {
 	
@@ -94,7 +96,8 @@ class TestReactiveList {
 
 	@Test
 	def void letsListenToChanges() {
-		val changes = Change.stream
+		val changes = Change.sink
+		val buffered = changes.buffer(100)
 		val list = new EntityList<Integer>(int)
 		list.onChange [ it >> changes ]
 		list.clear
@@ -102,25 +105,23 @@ class TestReactiveList {
 		list.add(2)
 		list.addAll(#[3, 4]) // produces ADD 3 and ADD 4
 		list.remove(1) // removes at 1st index, 2nd place
-		changes.close
+		changes.complete
 		
-		changes.collect.then [
-			val expected = #[
-				new Change(CLEAR),
-				new Change(ADD, 1),
-				new Change(ADD, 2),
-				new Change(ADD, 3),
-				new Change(ADD, 4),
-				new Change(REMOVE, 1, 2) // removes value 2 from index 1
-			]
-			assertArrayEquals(expected, it)
+		buffered.collect.await <=> #[
+			new Change(CLEAR),
+			new Change(ADD, 1),
+			new Change(ADD, 2),
+			new Change(ADD, 3),
+			new Change(ADD, 4),
+			new Change(REMOVE, 1, 2) // removes value 2 from index 1
 		]
-		assertArrayEquals(#[1, 3, 4], list)
+		list <=> #[1, 3, 4]
 	}
 	
 	@Test
 	def void letsListenToChangesWithinEntries() {
-		val changes = Change.stream
+		val changes = Change.sink
+		val buffered = changes.buffer(100)
 		val list = new EntityList(EntityList)
 		val sublist = new EntityList(String)
 		// pass the list changes into a stream
@@ -133,19 +134,16 @@ class TestReactiveList {
 		sublist.set(1, 'world') // 4
 		sublist.remove(0) // 5
 		list.remove(0) // 6
-		changes.close
+		changes.complete
 		
 		// collect what has been streamed and check for the expected changes we caused in the list structure
-		changes.collect.then [
-			val expected = #[
-				new Change(ADD, sublist), // 1
-				new Change(ADD, 0, 'hello'), // 2
-				new Change(ADD, 0, 'word'), // 3
-				new Change(UPDATE, #['0', '1'], 'world'), // 4
-				new Change(REMOVE, #['0', '0'], 'hello'), // 5
-				new Change(REMOVE, 0, #['world']) // 6
-			]
-			assertArrayEquals(expected, it)
+		buffered.collect.await <=> #[
+			new Change(ADD, sublist), // 1
+			new Change(ADD, 0, 'hello'), // 2
+			new Change(ADD, 0, 'word'), // 3
+			new Change(UPDATE, #['0', '1'], 'world'), // 4
+			new Change(REMOVE, #['0', '0'], 'hello'), // 5
+			new Change(REMOVE, 0, #['world']) // 6
 		]
 	}
 	
