@@ -121,13 +121,15 @@ subprojects {
 
 project( 'annotations' ) {
   dependencies {
-    compile 'com.kimengi.async:xtend-async-core:latest.release'
+    compile 'com.kimengi.async:xtend-async-annotations:latest.release'
+    compile 'com.kimengi.util:xtend-tools-core:latest.release'
   }
 }
 
 project( 'test' ) {
   dependencies {
     compile project( ':annotations' )
+    testCompile 'com.kimengi.async:xtend-async-core:latest.release'
     testCompile 'com.kimengi.util:xtend-tools-test:latest.release'
   }
 }
