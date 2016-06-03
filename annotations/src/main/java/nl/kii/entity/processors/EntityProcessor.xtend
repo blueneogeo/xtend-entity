@@ -671,9 +671,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 		}
 		
 		// field.type.extendsType(ReactiveObject.newTypeReference) ||
-		isEntity ||
-		field.type.extendsType(List.newTypeReference) ||
-		field.type.extendsType(Map.newTypeReference)
+		isEntity
 	}
 	
 	def isEntityList(MutableFieldDeclaration field) {
@@ -698,16 +696,13 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 			«field.newEntityList('newList', context)»
 			if(value != null) newList.addAll(value);
 			«field.simpleName» = newList;
-			this.«field.getStopObservingFunctionName» = newList.onChange(newChangeHandler("«field.simpleName»"));
 		«ELSEIF field.entityMap»
 			// if the map is not already listenable, wrap the map as a listenable
 			«field.newEntityMap('newMap', context)»;
 			if(value != null) newMap.putAll(value);
 			«field.simpleName» = newMap;
-			this.«field.getStopObservingFunctionName» = newMap.onChange(newChangeHandler("«field.simpleName»"));
 		«ELSEIF field.isObservable(context)»
 			this.«field.simpleName» = value;
-			if(value != null) this.«field.getStopObservingFunctionName» = this.«field.simpleName».onChange(newChangeHandler("«field.simpleName»"));
 		«ELSE»
 			this.«field.simpleName» = value;
 		«ENDIF»
