@@ -623,7 +623,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 			// convert map fields to entitymap fields
 
-			reactiveFields
+			observedFields
 				.filter [ type.simpleName.startsWith('Map') ]
 				.forEach [
 					val key = type.actualTypeArguments.head
@@ -633,7 +633,7 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 
 			// convert lists to entitylists
 
-			reactiveFields
+			observedFields
 				.filter [ type.simpleName.startsWith('List') ]
 				.forEach [
 					val typeArg = type.actualTypeArguments.get(0)
@@ -672,6 +672,8 @@ class EntityProcessor implements TransformationParticipant<MutableClassDeclarati
 		
 		// field.type.extendsType(ReactiveObject.newTypeReference) ||
 		isEntity
+		//field.type.extendsType(List.newTypeReference) ||
+		//field.type.extendsType(Map.newTypeReference)
 	}
 	
 	def isEntityList(MutableFieldDeclaration field) {

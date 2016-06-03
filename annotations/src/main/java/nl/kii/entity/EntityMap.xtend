@@ -7,8 +7,9 @@ import java.util.Map
 import nl.kii.util.AssertionException
 
 import static extension nl.kii.util.IterableExtensions.*
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
-class EntityMap<K, V> extends HashMap<K, V> implements EntityObject {
+class EntityMap<K, V> extends HashMap<K, V> implements Reactive, EntityObject {
 	
 	/** Using the standard Javascript date format */
 	public static val KEY_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS Z"
@@ -45,6 +46,22 @@ class EntityMap<K, V> extends HashMap<K, V> implements EntityObject {
 	}
 	
 	private def isSupportedType(Class<K> type) {
+	}
+	
+	override apply(Change p) {
+		// silent
+	}
+	
+	override isPublishing() {
+		false
+	}
+	
+	override onChange(Procedure1<? super Change> observeFn) {
+		// silent
+	}
+	
+	override setPublishing(boolean publish) {
+		// silent
 	}
 	
 	def getType() { type }
