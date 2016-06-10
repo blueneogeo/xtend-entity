@@ -17,6 +17,10 @@ class EntityExtensions {
 		serialized.deserialize(type)
 	}
 	
+	def static <T extends Entity> receive(Map<String, ?> serialized, Class<T> type) {
+		type.create(serialized)
+	}
+	
 	def static <K, V> get(Iterable<? extends Pair<K, V>> iterable, K key) {
 		iterable.findFirst [ it.key == key ]?.value
 	}
