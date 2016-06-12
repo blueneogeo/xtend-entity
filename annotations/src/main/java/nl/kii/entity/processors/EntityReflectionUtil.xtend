@@ -11,14 +11,16 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 class EntityReflectionUtil {
 	val extension TransformationContext context
+	val extension EntityProcessor.Util baseUtil
 		
 	new(TransformationContext context) {
 		this.context = context
+		this.baseUtil = new EntityProcessor.Util(context)
 	}
 	
 	def populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {
 		val entityFieldTypeRef = EntityField.newTypeReference
-		
+
 		fields.forEach [ extension field |
 			/** Copy fields to Fields class */
 			fieldsClass.addField(field.simpleName) [
@@ -43,9 +45,16 @@ class EntityReflectionUtil {
 			primarySourceElement = entityClass
 			returnType = entityFieldListTypeRef
 			addAnnotation(pureAnnotationTypeRef)
-			body = '''
+			
+			if (entityClass.extendsEntity) body = ['''
+				return «nl.kii.util.IterableExtensions.newTypeReference.name».concat(
+					super.getFields(),
+					«collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»)
+				);
+			''']
+			else body = ['''
 				return «collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»);
-			'''
+			''']
 		]		
 	}
 

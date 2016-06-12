@@ -7,6 +7,7 @@ import org.eclipse.xtend.lib.annotations.AccessorsProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
@@ -16,6 +17,7 @@ import static extension nl.kii.util.OptExtensions.*
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
 	val extension AccessorsProcessor.Util accessorsUtil
+	val extension EntityProcessor.Util baseUtil
 	
 	val MutableClassDeclaration initializerClass
 	val MutableClassDeclaration entityClass
@@ -26,10 +28,11 @@ class EntityInitializerClassUtil {
 		this.entityClass = entityClass
 		
 		this.accessorsUtil = new AccessorsProcessor.Util(context)
+		this.baseUtil = new EntityProcessor.Util(context)
 	}
 	
 	def populateInitializerClass(Iterable<? extends FieldDeclaration> fields) {
-				
+		
 		/** Copy fields from Entity into constructor class */
 		fields.forEach [ extension field |
 			initializerClass.addField(simpleName) [
@@ -50,7 +53,7 @@ class EntityInitializerClassUtil {
 				primarySourceElement = initializerClass
 				body = ''' '''
 			]
-			
+
 			/** Create 'entity copy constructor' in entity initializer class to later modify entity */
 			addConstructor [ 
 				primarySourceElement = initializerClass
@@ -59,7 +62,7 @@ class EntityInitializerClassUtil {
 				body = '''
 					«FOR field : fields»
 						this.«field.simpleName» = «
-						IF Opt.newTypeReference.isAssignableFrom(entityClass.findDeclaredMethod(field.getterName).returnType)»«
+						IF Opt.newTypeReference.isAssignableFrom(entityClass.newTypeReference.findGetter(field).returnType)»«
 							OptExtensions.newTypeReference».orNull(«argName».«field.getterName»());«
 						ELSE»«
 							argName».«field.getterName»();«
@@ -68,6 +71,12 @@ class EntityInitializerClassUtil {
 				'''
 			]
 		]
+	}
+	
+	def findGetter(TypeReference cls, FieldDeclaration field) {
+		cls.allResolvedMethods
+			.map [ declaration ]
+			.findFirst [ field.getterName == simpleName ]
 	}
 	
 	

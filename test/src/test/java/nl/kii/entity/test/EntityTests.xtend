@@ -234,6 +234,31 @@ class EntityTests {
 		println(users)
 	}
 	
+	@Test
+	def void testInheritance() {
+		val d1 = new Dog [
+			legs = 4
+			breed = 'beagle'
+			weight = 10_000
+		]
+
+		assertEquals(4, d1.legs)
+		
+		assertEquals(
+			'fields class and getFields() should inherit',
+			#[ Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed ],
+			d1.fields
+		)
+		
+		val d2 = d1 >> [
+			breed = 'jack russell'
+			weight = 7_000
+		]
+		
+		assertEquals('jack russell', d2.breed)
+		assertEquals(7000, d2.weight)
+		assertEquals(4, d2.legs)
+		
 }
 
 

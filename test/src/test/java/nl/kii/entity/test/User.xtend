@@ -55,6 +55,24 @@ class Location {
 
 
 
+@Entity
+abstract class Animal {
+	String color
+	int weight
+	
+	// Date discovered
+}
+
+@Entity
+abstract class Mammal extends Animal {
+	int legs
+}
+
+@Entity
+class Dog extends Mammal {
+	String breed
+}
+
 
 
 

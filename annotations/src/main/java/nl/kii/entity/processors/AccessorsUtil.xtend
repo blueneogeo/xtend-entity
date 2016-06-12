@@ -4,6 +4,7 @@ import nl.kii.util.Opt
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.annotations.AccessorsProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 
@@ -16,7 +17,7 @@ class AccessorsUtil {
 		this.accessorsUtil = new AccessorsProcessor.Util(context)
 	}
 	
-	def addGetters(MutableClassDeclaration cls, Iterable<? extends MutableFieldDeclaration> fields, boolean optionals) {
+	def addGetters(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields, boolean optionals) {
 		fields.filter [ shouldAddGetter ].forEach [ field |
 			//addGetter(getterType?.toVisibility ?: Visibility.PUBLIC)
 			cls.addGetter(field, optionals)
@@ -27,7 +28,7 @@ class AccessorsUtil {
 		throw new UnsupportedOperationException
 	}
 	
-	def addGetter(MutableClassDeclaration cls, MutableFieldDeclaration field, boolean optionals) {
+	def addGetter(MutableClassDeclaration cls, FieldDeclaration field, boolean optionals) {
 		cls.addMethod(field.getterName) [
 			addAnnotation(Pure.newAnnotationReference)
 			docComment = field.docComment

@@ -15,6 +15,8 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import nl.kii.entity.processors.EntityProcessor.Util
 
 class EntitySerializationUtil {
 	val extension TransformationContext context
@@ -41,8 +43,11 @@ class EntitySerializationUtil {
 		outOfTheBoxTypes.map [ newTypeReference ] + serializers.map [ key ]
 	}
 	
+	val extension EntityProcessor.Util baseUtil
+	
 	new(TransformationContext context, List<Pair<TypeReference, String>> serializers, Casing casing) {
 		this.context = context
+		this.baseUtil = new Util(context)
 		this.serializers = serializers
 		this.casing = switch casing {
 			case underscore, case snake:			CaseFormat.LOWER_UNDERSCORE
@@ -65,7 +70,7 @@ class EntitySerializationUtil {
 		}
 	}
 	
-	def validateFields(MutableClassDeclaration cls, List<? extends FieldDeclaration> fields) {
+	def validateFields(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
 		fields.filter [ !type.isSupported ].list.forEach [ 
 			addError('''Fields of type «type.name» cannot be serialized, add a Serializer to make the type compatible''')
 		]
@@ -96,7 +101,7 @@ class EntitySerializationUtil {
 	
 
 	val static serializeResultName = 'serialized'
-	def addSerializeMethod(MutableClassDeclaration cls, List<? extends FieldDeclaration> fields) {
+	def addSerializeMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
 		cls.addMethod('serialize') [
 			primarySourceElement = cls
 			addAnnotation(Pure.newAnnotationReference)
@@ -133,7 +138,7 @@ class EntitySerializationUtil {
 			
 	val static deserializeArgumentName = 'serialized'
 
-	def addDeserializeMethod(MutableClassDeclaration cls, List<? extends FieldDeclaration> fields) {
+	def addDeserializeMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
 		cls.addMethod('deserialize') [
 			primarySourceElement = cls
 			addAnnotation(Override.newAnnotationReference)			
@@ -204,11 +209,7 @@ class EntitySerializationUtil {
 	def static extendsType(TypeReference type, TypeReference superType) {
 		superType.isAssignableFrom(type)
 	}
-
-	def extendsType(TypeReference type, Class<?> superType) {
-		superType.newTypeReference.isAssignableFrom(type)
-	}
-	
+		
 	def getSerializedKeyName(extension FieldDeclaration field) {
 		val casing = casing 
 		CaseFormat.LOWER_CAMEL.to(casing, simpleName)
