@@ -12,8 +12,8 @@ import static org.junit.Assert.*
 
 import static extension nl.kii.entity.EntityExtensions.*
 import static extension nl.kii.entity.csv.CsvExtensions.*
-import static extension nl.kii.entity.yaml.YamlExtensions.*
 import static extension nl.kii.entity.test.JsonExtensions.*
+import static extension nl.kii.entity.yaml.YamlExtensions.*
 import static extension nl.kii.util.DateExtensions.*
 
 class EntityTests {
@@ -25,7 +25,7 @@ class EntityTests {
 			name = 'john'
 		]
 		
-//		user1.age = 30 // won't compile
+		// user1.age = 30 /* won't compile */
 			
 		val user2 = user1.mutate [
 			age = 30
@@ -39,8 +39,7 @@ class EntityTests {
 		assertEquals('user1 age should be unchanged', 20, user1.age)
 		assertEquals('user2 age should have the new value', 30, user2.age)
 		assertEquals('mutation should also work with >> operator', 40, user3.age)
-		assertEquals('john', user2.name)
-		
+		assertEquals('john', user2.name)		
 	}
 	
 	@Test
@@ -49,7 +48,7 @@ class EntityTests {
 			address = 'Kattenburgerstraat'
 			number = 5
 		]
-		
+
 		assertTrue(
 			'location fields should be optional, since @Entity.optionals=true',
 			Opt.isAssignableFrom(location.address.class)
@@ -160,12 +159,7 @@ class EntityTests {
 			user2.deserialize(User)
 		)
 	}
-		
-	
-	
-	
-	
-	
+
 	@Test
 	def void testJsonDeserializing() {
 		val data = newLinkedHashMap('some' -> 'data')
@@ -175,7 +169,7 @@ class EntityTests {
 				"age": 30,
 				"name": "john",
 				"birthday": "2016-01-01",
-				"parent": {
+				"referral": {
 					"age": 50
 				}
 			}
@@ -196,14 +190,14 @@ class EntityTests {
 			name: "john"
 			birthday: 2016-01-01
 			best_time: pt20m
-			parent:
+			referral:
 				age: 50
 		'''.yaml
 
 		val yaml = #{
 			'age' -> 30,
 			'name' -> 'john',
-			'parent' -> #{
+			'referral' -> #{
 				'age' -> 40,
 				'name' -> 'hans'
 			}
@@ -246,7 +240,7 @@ class EntityTests {
 		
 		assertEquals(
 			'fields class and getFields() should inherit',
-			#[ Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed ],
+			#[ Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father ],
 			d1.fields
 		)
 		
@@ -259,6 +253,68 @@ class EntityTests {
 		assertEquals(7000, d2.weight)
 		assertEquals(4, d2.legs)
 		
+	}
+
+	@Test
+	def void testApplyingConvenienceProcedure() {
+		assertEquals(
+			someFnUser(new User [ 
+				name = 'john' 
+				age = 30
+			]),
+			someFnUser [
+				name = 'john' 
+				age = 30
+			]
+		)
+		
+		assertEquals(
+			someFnDog(new Dog [ 
+				breed = 'beagle'
+				weight = 10_000
+			]),
+			someFnDog [
+				breed = 'beagle'
+				weight = 10_000
+			]
+		)
+	}		
+	
+	def static someFnUser(User user) { user.serialize }
+	def static someFnDog(Dog dog) { dog.serialize }
+	
+	@Test 
+	def void testConvenienceEntitySetter() {
+		assertEquals(
+			new User [ 
+				name = 'john' 
+				referral = new User [
+					name = 'hans'
+				]
+			],
+			new User [
+				name = 'john' 
+				referral [
+					name = 'hans'
+				]
+			]
+		)
+		
+		assertEquals(
+			new Dog [ 
+				breed = 'beagle'
+				mother = new Dog [
+					color = 'brown'
+				]
+			],
+			new Dog [
+				breed = 'beagle'
+				mother [
+					color = 'brown'
+				]
+			]
+		)
+	}			
 }
 
 

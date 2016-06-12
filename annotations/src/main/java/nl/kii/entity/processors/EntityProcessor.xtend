@@ -5,7 +5,7 @@ import nl.kii.entity.annotations.Casing
 import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
-import org.eclipse.xtend.lib.annotations.EqualsHashCodeProcessor
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend.lib.annotations.ToStringConfiguration
 import org.eclipse.xtend.lib.annotations.ToStringProcessor
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
@@ -40,7 +40,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		val extension baseUtil = new Util(context)
 		val extension accessorsUtil = new AccessorsUtil(context)
 		val extension toStringUtil = new ToStringProcessor.Util(context)
-		val extension equalsHashCodeUtil = new EqualsHashCodeProcessor.Util(context)
+		val extension equalsHashCodeUtil = new EntityEqualsHashCodeUtil(context)
 		val initializerClass = findClass(cls.entityInitializerClassName)
 		val extension entityInitializerClassUtil = new EntityInitializerClassUtil(context, initializerClass, cls)
 		val extension reflectionUtil = new EntityReflectionUtil(context)
@@ -88,7 +88,15 @@ class EntityProcessor extends AbstractClassProcessor {
 			
 			/** Integrate generated EntityConstructor class into the Entity class. */
 			addInitializerFunctionsToEntity(accessorsFields)
+
+			addConvenienceProcedureInitializer
+			addConvenienceNestedEntitySetters		
 		} 
+		
+		if (cls.abstract) cls.addConstructor [
+			primarySourceElement = cls
+			body = [''' ''']
+		] //else cls.final = true
 		
 		
 		val fieldsClass = findClass(cls.entityFieldsClassName)
@@ -123,14 +131,12 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		/** Generate a nice toString, equals and hashCode. */
 		if (cls.needsToStringEqualsHashCode) cls => [
-			addToString(serializeFields, new ToStringConfiguration)
+			addToString(serializeFields, new ToStringConfiguration(true, false, false, false))
 			addEquals(serializeFields, false)
 			addHashCode(serializeFields, false)				
 		]
 		
-		cls.validateFields(localSerializeFields)
-		//addConvenienceNestedEntitySetters
-		
+		cls.validateFields(localSerializeFields)		
 	}
 	
 	def needsInitializerClass(ClassDeclaration cls) {
@@ -149,13 +155,10 @@ class EntityProcessor extends AbstractClassProcessor {
 		!cls.abstract
 	}
 	
+	@FinalFieldsConstructor
 	static class Util {
 		val extension TransformationContext context
-		
-		new(TransformationContext context) {
-			this.context = context
-		}
-		
+				
 		def static extendsType(TypeReference type, TypeReference superType) {
 			superType.isAssignableFrom(type)
 		}
@@ -205,7 +208,7 @@ class EntityProcessor extends AbstractClassProcessor {
 				field.annotations.forEach [ a |
 					addAnnotation(a)
 				]
-			]	
+			]
 		}
 		
 }

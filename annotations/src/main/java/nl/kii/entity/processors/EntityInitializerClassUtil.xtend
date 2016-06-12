@@ -1,6 +1,5 @@
 package nl.kii.entity.processors
 
-import nl.kii.entity.Entity
 import nl.kii.util.Opt
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.annotations.AccessorsProcessor
@@ -85,8 +84,7 @@ class EntityInitializerClassUtil {
 		val entityTypeRef = entityClass.newTypeReference
 		val constructorTypeRef = initializerClass.newTypeReference
 		val constructorOptionsTypeRef = newTypeReference(Procedure1, constructorTypeRef)
-
-
+				
 		/** Interal method to apply values from the constructor class on to the entity */
 		entityClass.addMethod('applyConstructorFields') [
 			primarySourceElement = entityClass
@@ -122,8 +120,7 @@ class EntityInitializerClassUtil {
 				«argName».apply(constructor);
 				applyConstructorFields(constructor);
 			'''
-		]
-				
+		]		
 						
 		/** Method to immutably modify entity, returning a new instance of the entity */
 		entityClass.addMethod('mutate') [
@@ -153,25 +150,42 @@ class EntityInitializerClassUtil {
 		]
 	}
 	
-	def addConvenienceNestedEntitySetters() {
-		val entityTypeRef = Entity.newTypeReference
+	def addConvenienceProcedureInitializer() {
+		if (entityClass.abstract) return
+
+		val constructorTypeRef = initializerClass.newTypeReference
+
+		entityClass.implementedInterfaces = entityClass.implementedInterfaces + Procedure1.newTypeReference(constructorTypeRef)
+			
+		entityClass.addMethod('apply') [
+			addParameter('constructor', constructorTypeRef)
+			body = ''' '''
+		]
+
+		/** Add empty constructor that applies constructing procedure in case {@code apply} is overridden  */
+		entityClass.addConstructor [
+			primarySourceElement = entityClass
+			body = '''
+				«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
+				apply(constructor);
+				applyConstructorFields(constructor);
+			'''
+		]
+	}
+	
+	def void addConvenienceNestedEntitySetters() {
 		initializerClass.declaredFields
-			.filter [ entityTypeRef.isAssignableFrom(type) ]
-			.list
+			.filter [ type.defined && type.extendsType(Procedure1) ]
 			.forEach [ field |
-				val constructorTypeRef = if (field.type == entityClass.newTypeReference) initializerClass else findClass('''«field.type.name»Constructor''')
-				if (constructorTypeRef.defined) 
-					initializerClass.addMethod(field.simpleName) [ 
-						val argName = '''«field.simpleName»Constructor'''
-						
-						val argTypeRef = Procedure1.newTypeReference(constructorTypeRef.newTypeReference)
-						addParameter(argName, argTypeRef)
-						body = '''
-							«field.setterName»(new «field.type»(«argName»));
-						'''
-					]
-				
-			]
+				initializerClass.addMethod(field.simpleName) [ 
+					val argName = field.simpleName
+					
+					addParameter(argName, field.type)
+					body = '''
+						«field.setterName»(«argName»);
+					'''
+				]
+		]
 	}
 	
 }

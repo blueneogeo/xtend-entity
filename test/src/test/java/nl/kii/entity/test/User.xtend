@@ -7,11 +7,12 @@ import nl.kii.entity.annotations.Entity
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.util.Period
+import java.util.List
 
 @Entity(casing=underscore)
 class User {
 	@Require String name
-	User parent
+	User referral
 	Integer age
 	
 	Date dateOfBirth
@@ -60,6 +61,8 @@ abstract class Animal {
 	String color
 	int weight
 	
+	def Animal getMother()
+	def Animal getFather()
 	// Date discovered
 }
 
@@ -71,6 +74,10 @@ abstract class Mammal extends Animal {
 @Entity
 class Dog extends Mammal {
 	String breed
+	
+	Dog mother
+	Dog father
+	//List<Dog> pack
 }
 
 
