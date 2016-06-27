@@ -1,7 +1,5 @@
 package nl.kii.entity
 
-import static extension nl.kii.util.IterableExtensions.*
-
 import java.util.ArrayList
 import java.util.Collection
 import java.util.List
@@ -9,11 +7,12 @@ import java.util.Map
 import nl.kii.async.annotation.Atomic
 import nl.kii.observe.Observable
 import nl.kii.observe.Publisher
+import nl.kii.util.AssertionException
 
 import static nl.kii.entity.ChangeType.*
 
 import static extension java.lang.Integer.*
-import nl.kii.util.AssertionException
+import static extension nl.kii.util.IterableExtensions.*
 
 class EntityList<E> extends ArrayList<E> implements Reactive, EntityObject {
 
