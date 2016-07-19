@@ -20,6 +20,6 @@ interface Entity {
 //	/** Returns the value for the field */
 //	def Object get(String fieldName) throws NoSuchFieldException
 	
-	def Entity deserialize(Map<String, Object> serialized)
-	def Map<String, Object> serialize()
+	def Entity deserialize(Map<String, ?> serialized)
+	def Map<String, ?> serialize()
 }

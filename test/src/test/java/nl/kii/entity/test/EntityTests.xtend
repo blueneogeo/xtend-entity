@@ -240,7 +240,7 @@ class EntityTests {
 		
 		assertEquals(
 			'fields class and getFields() should inherit',
-			#[ Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father ],
+			#[ Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father, Dog.Fields.hasOwner ],
 			d1.fields
 		)
 		
@@ -317,11 +317,11 @@ class EntityTests {
 	}			
 }
 
-
+// TODO: move to xtend-vertx
 class JsonExtensions {
 	
 	def static JsonObject json(Entity entity) {
-		new JsonObject(entity.serialize)
+		new JsonObject(entity.serialize as Map<String, Object>)
 	}
 	
 	def static <T extends Entity> create(Class<T> type, JsonObject json) {
@@ -331,6 +331,10 @@ class JsonExtensions {
 	def static <T extends Entity> receive(JsonObject json, Class<T> type) {
 		type.create(json)
 	}
+
+//	def static <T extends Entity> receive(JsonArray json, Class<T> type) {
+//		json.list.receiveList(type)
+//	}
 	
 	def static Map<String, Object> fullMap(JsonObject json) {
 		json.fold(newHashMap) [ map, it |

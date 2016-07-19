@@ -193,7 +193,11 @@ class EntityProcessor extends AbstractClassProcessor {
 				!transient && !findAnnotation(Ignore.newTypeReference.type).defined
 			]
 		}
-		
+
+		def cleanTypeName(TypeReference typeRef) {
+			typeRef.name.replaceAll('<.+>', '').replaceAll('\\$', '.')
+		}	
+			
 		def copyTo(FieldDeclaration field, MutableClassDeclaration cls) {
 			cls.addField(field.simpleName) [
 				final = field.final

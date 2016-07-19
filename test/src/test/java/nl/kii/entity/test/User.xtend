@@ -2,12 +2,13 @@ package nl.kii.entity.test
 
 import java.time.Instant
 import java.util.Date
+import java.util.List
+import java.util.Map
 import nl.kii.entity.Serializers
 import nl.kii.entity.annotations.Entity
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.util.Period
-import java.util.List
 
 @Entity(casing=underscore)
 class User {
@@ -19,16 +20,22 @@ class User {
 	Date registered
 	
 	Period bestTime
-	//List<String> sports
+	
+	List<String> interests
+	List<Date> purchases
+	List<User> friends
+	
 	Location location
 	Membership membership
 	
-	Long profileId
+	Map<String, String> attributes 
+	Map<Membership, Period> membershipDurations
 	
+	Long profileId
 	
 	@Serializer(Period) 
 	val static s2 = Serializers.period
-
+	
 	@Serializer(Date) 
 	val static s1 = Serializers.date('yyyy-MM-dd', 'yyyy_MM_dd')
 	
@@ -77,6 +84,8 @@ class Dog extends Mammal {
 	
 	Dog mother
 	Dog father
+
+	boolean hasOwner
 	//List<Dog> pack
 }
 
