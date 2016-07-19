@@ -8,6 +8,8 @@ import java.util.Date
 import nl.kii.util.Period
 
 import static extension nl.kii.util.IterableExtensions.*
+import static extension java.lang.Long.*
+import java.util.UUID
 
 interface Serializer<O, S> {
 	def S serialize(O original)
@@ -16,12 +18,28 @@ interface Serializer<O, S> {
 
 class Serializers {
 	val public static PERIOD_SERIALIZER = new PeriodSerializer
+	val public static PERIOD_MS_SERIALIZER = new PeriodMsSerializer
+	val public static UUID_SERIALIZER = new UUIDSerializer
+	val public static DIRECT_SERIALIZER = new DirectSerializer
 	
 	/** ISO-8601 period formatting */
 	def static Serializer<Period, Object> period() {
 		PERIOD_SERIALIZER
 	}
+
+	/** Period -> milliseconds formatting */
+	def static Serializer<Period, Object> periodMs() {
+		PERIOD_MS_SERIALIZER
+	}
 	
+	def static Serializer<UUID, Object> uuid() {
+		UUID_SERIALIZER
+	}
+
+	def static Serializer<Object, Object> direct() {
+		DIRECT_SERIALIZER
+	}
+		
 	def static Serializer<Date, Object> date(String... patterns) {
 		new MultiSerializer(patterns.map [ new DateSerializer(it) ].list)
 	}
@@ -88,7 +106,7 @@ class InstantSerializer implements Serializer<Instant, Object> {
 	}	
 }
 
-/** ISO-8601 period formatting */
+/** ISO-8601 period formatting. Example: 20 minutes becomes 'PT20M' */
 class PeriodSerializer implements Serializer<Period, Object> {
 	
 	override serialize(Period original) {
@@ -100,4 +118,41 @@ class PeriodSerializer implements Serializer<Period, Object> {
 	}	
 }
 
+/** Period -> milliseconds (long) */
+class PeriodMsSerializer implements Serializer<Period, Object> {
+	
+	override serialize(Period original) {
+		original.ms
+	}
+	
+	override deserialize(Object serialized) {
+		switch it:serialized {
+			Long: new Period(it)
+			default: try new Period(serialized.toString.parseLong) catch(Exception e) null
+		}
+	}
+}
 
+class UUIDSerializer implements Serializer<UUID, Object> {
+	
+	override deserialize(Object serialized) {
+		UUID.fromString(serialized.toString)
+	}
+	
+	override serialize(UUID original) {
+		original.toString
+	}
+	
+}
+
+class DirectSerializer implements Serializer<Object, Object> {
+	
+	override deserialize(Object serialized) {
+		serialized
+	}
+	
+	override serialize(Object original) {
+		original
+	}
+	
+}
