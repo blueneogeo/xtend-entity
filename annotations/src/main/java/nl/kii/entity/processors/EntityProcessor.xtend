@@ -164,7 +164,7 @@ class EntityProcessor extends AbstractClassProcessor {
 			superType.isAssignableFrom(type)
 		}
 	
-		def extendsType(TypeReference type, Class<?> superType) {
+		def Boolean extendsType(TypeReference type, Class<?> superType) {
 			superType.newTypeReference.isAssignableFrom(type)
 		}
 		

@@ -78,7 +78,6 @@ class EntityInitializerClassUtil {
 			.findFirst [ field.getterName == simpleName ]
 	}
 	
-	
 	def addInitializerFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
 		val pureAnnotationTypeRef = Pure.newAnnotationReference		
 		val entityTypeRef = entityClass.newTypeReference
@@ -109,7 +108,6 @@ class EntityInitializerClassUtil {
 			'''
 		]
 		
-	
 		/** Add constructor with constructor class options argument to entity */
 		entityClass.addConstructor [
 			primarySourceElement = entityClass

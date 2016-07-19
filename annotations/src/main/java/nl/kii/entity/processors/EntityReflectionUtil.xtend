@@ -50,7 +50,7 @@ class EntityReflectionUtil {
 			addAnnotation(pureAnnotationTypeRef)
 			
 			if (entityClass.extendsEntity) body = ['''
-				return «nl.kii.util.IterableExtensions.newTypeReference.name».concat(
+				return «IterableExtensions.newTypeReference.name».concat(
 					super.getFields(),
 					«collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»)
 				);

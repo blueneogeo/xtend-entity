@@ -25,7 +25,7 @@ class EntityTests {
 			name = 'john'
 		]
 		
-		// user1.age = 30 /* won't compile */
+		/** user1.age = 30 // won't compile */
 			
 		val user2 = user1.mutate [
 			age = 30
@@ -212,7 +212,7 @@ class EntityTests {
 		val user = new User(map)
 		println(user)
 	}
-
+	
 	@Test
 	def void testCsvDeserializing() {
 		val csvRecords = '''
@@ -259,11 +259,11 @@ class EntityTests {
 	def void testApplyingConvenienceProcedure() {
 		assertEquals(
 			someFnUser(new User [ 
-				name = 'john' 
+				name = 'john'
 				age = 30
 			]),
 			someFnUser [
-				name = 'john' 
+				name = 'john'
 				age = 30
 			]
 		)
