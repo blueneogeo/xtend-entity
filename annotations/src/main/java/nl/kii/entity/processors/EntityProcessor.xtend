@@ -43,10 +43,8 @@ class EntityProcessor extends AbstractClassProcessor {
 		val extension equalsHashCodeUtil = new EntityEqualsHashCodeUtil(context)
 		val initializerClass = findClass(cls.entityInitializerClassName)
 		val extension entityInitializerClassUtil = new EntityInitializerClassUtil(context, initializerClass, cls)
-		val extension reflectionUtil = new EntityReflectionUtil(context)
 		
 		cls.primarySourceElement = cls
-		
 		
 		val entityAnnotation = cls.findAnnotation(nl.kii.entity.annotations.Entity.newTypeReference.type)
 		
@@ -91,21 +89,13 @@ class EntityProcessor extends AbstractClassProcessor {
 
 			addConvenienceProcedureInitializer
 			addConvenienceNestedEntitySetters		
-		} 
+		}
 		
 		if (cls.abstract) cls.addConstructor [
 			primarySourceElement = cls
 			body = [''' ''']
 		] //else cls.final = true
-		
-		
-		val fieldsClass = findClass(cls.entityFieldsClassName)
-		fieldsClass.populateFieldsClass(localSerializeFields)
-		cls.addFieldsGetter(fieldsClass)
-
-		if (cls.extendsEntity) 
-			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
-		
+				
 		val serializerTypeRef = Serializer.newAnnotationReference.annotationTypeDeclaration
 		val userDefinedSerializersFields = cls.declaredFields.filter [ 
 			findAnnotation(serializerTypeRef).defined
@@ -128,6 +118,17 @@ class EntityProcessor extends AbstractClassProcessor {
 			if (!cls.abstract) addDeserializeContructor
 			addSerializeMethod(serializeFields)
 		]
+		
+		/** Add static 'Fields' class to the entity, that contains field reflection data */
+		val extension reflectionUtil = new EntityReflectionUtil(context) [ getSerializedKeyName ]
+		
+		val fieldsClass = findClass(cls.entityFieldsClassName)
+		fieldsClass.populateFieldsClass(localSerializeFields)
+		cls.addFieldsGetter(fieldsClass)
+
+		if (cls.extendsEntity) 
+			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
+
 		
 		/** Generate a nice toString, equals and hashCode. */
 		if (cls.needsToStringEqualsHashCode) cls => [

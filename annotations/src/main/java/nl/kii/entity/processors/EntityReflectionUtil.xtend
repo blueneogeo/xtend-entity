@@ -2,6 +2,7 @@ package nl.kii.entity.processors
 
 import java.util.List
 import nl.kii.entity.EntityField
+import nl.kii.util.IterableExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
@@ -12,10 +13,12 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 class EntityReflectionUtil {
 	val extension TransformationContext context
 	val extension EntityProcessor.Util baseUtil
-		
-	new(TransformationContext context) {
+	val (String)=>String fieldNameFormatter
+	
+	new(TransformationContext context, (String)=>String fieldNameFormatter) {
 		this.context = context
 		this.baseUtil = new EntityProcessor.Util(context)
+		this.fieldNameFormatter = fieldNameFormatter
 	}
 	
 	def populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {
@@ -29,7 +32,7 @@ class EntityReflectionUtil {
 				visibility = Visibility.PUBLIC
 				static = true
 				final = true
-				initializer = '''new «entityFieldTypeRef.simpleName»("«field.simpleName»", «field.type.cleanTypeName».class)'''
+				initializer = '''new «entityFieldTypeRef.simpleName»("«field.simpleName»", "«fieldNameFormatter.apply(field.simpleName)»", «field.type.cleanTypeName».class)'''
 				docComment = field.docComment
 			]
 		]

@@ -253,8 +253,12 @@ class EntitySerializationUtil {
 	}
 		
 	def getSerializedKeyName(extension FieldDeclaration field) {
+		simpleName.serializedKeyName
+	}
+
+	def getSerializedKeyName(String fieldName) {
 		val casing = casing 
-		CaseFormat.LOWER_CAMEL.to(casing, simpleName)
+		CaseFormat.LOWER_CAMEL.to(casing, fieldName)
 	}
 
 //	def getDeserializedKeyName(extension FieldDeclaration field) {
