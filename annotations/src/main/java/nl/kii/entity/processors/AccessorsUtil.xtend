@@ -6,7 +6,6 @@ import org.eclipse.xtend.lib.annotations.AccessorsProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 
 class AccessorsUtil {
 	val extension TransformationContext context
@@ -30,6 +29,8 @@ class AccessorsUtil {
 	
 	def addGetter(MutableClassDeclaration cls, FieldDeclaration field, boolean optionals) {
 		cls.addMethod(field.getterName) [
+			primarySourceElement = field
+			
 			addAnnotation(Pure.newAnnotationReference)
 			docComment = field.docComment
 			deprecated = field.deprecated
