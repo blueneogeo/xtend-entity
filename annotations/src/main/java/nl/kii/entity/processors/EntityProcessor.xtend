@@ -1,7 +1,7 @@
 package nl.kii.entity.processors
 
+import nl.kii.entity.Casing
 import nl.kii.entity.Entity
-import nl.kii.entity.annotations.Casing
 import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
@@ -91,10 +91,7 @@ class EntityProcessor extends AbstractClassProcessor {
 			addConvenienceNestedEntitySetters		
 		}
 		
-		if (cls.abstract) cls.addConstructor [
-			primarySourceElement = cls
-			body = [''' ''']
-		] //else cls.final = true
+		if (cls.abstract) cls.addEmptyConstructor //else cls.final = true
 				
 		val serializerTypeRef = Serializer.newAnnotationReference.annotationTypeDeclaration
 		val userDefinedSerializersFields = cls.declaredFields.filter [ 
@@ -108,7 +105,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		val serializers = userDefinedSerializersFields.map [ 
 			findAnnotation(serializerTypeRef).newAnnotationReference.getClassValue('value') -> simpleName
 		].list
-
+		
 		val casing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
 		val extension serializationUtil = new EntitySerializationUtil(context, serializers, casing)		
 		
@@ -194,6 +191,12 @@ class EntityProcessor extends AbstractClassProcessor {
 				!transient && !findAnnotation(Ignore.newTypeReference.type).defined
 			]
 		}
+		
+		def <T extends FieldDeclaration> getRequiredFields(Iterable<T> fields) {
+			fields.filter [
+				findAnnotation(Require.newTypeReference.type).defined
+			].list
+		}
 
 		def cleanTypeName(TypeReference typeRef) {
 			typeRef.name.replaceAll('<.+>', '').replaceAll('\\$', '.')
@@ -216,6 +219,12 @@ class EntityProcessor extends AbstractClassProcessor {
 			]
 		}
 		
+		def addEmptyConstructor(MutableClassDeclaration cls) {
+			cls.addConstructor [
+				primarySourceElement = cls
+				body = [''' ''']
+			] 
+		}	
 }
 	
 	

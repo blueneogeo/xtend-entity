@@ -12,6 +12,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import java.util.Map
+import java.util.Date
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
@@ -48,10 +50,7 @@ class EntityInitializerClassUtil {
 			]
 			
 			/** Create empty constructor in entity constructor class */
-			addConstructor [ 
-				primarySourceElement = initializerClass
-				body = ''' '''
-			]
+			addEmptyConstructor
 
 			/** Create 'entity copy constructor' in entity initializer class to later modify entity */
 			addConstructor [ 
@@ -119,7 +118,45 @@ class EntityInitializerClassUtil {
 				applyConstructorFields(constructor);
 			'''
 		]		
-						
+		
+		val requiredFields = fields.requiredFields
+		if (!requiredFields.empty) {
+			/** Add constructor with required fields and constructor class options as args to entity */
+			entityClass.addConstructor [
+				primarySourceElement = entityClass
+				
+				requiredFields.forEach [ f | addParameter(f.simpleName, f.type) ]
+				
+				val argName = 'constructorOptions'
+				addParameter(argName, constructorOptionsTypeRef)
+				
+				body = ['''
+					«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
+					«FOR f:requiredFields»
+						constructor.«f.setterName»(«f.simpleName»);
+					«ENDFOR»
+					«argName».apply(constructor);
+					applyConstructorFields(constructor);
+				''']
+			]
+			
+//			/** Add constructor with just required fields as args to entity (if it doesn't confict with the already present serialized map constructor) */
+//			if (requiredFields.size != 1 || (!Map.newTypeReference.isAssignableFrom(requiredFields.head.type)))
+//				entityClass.addConstructor [
+//					primarySourceElement = entityClass
+//					
+//					requiredFields.forEach [ f | addParameter(f.simpleName, f.type) ]
+//					
+//					body = ['''
+//						«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
+//						«FOR f:requiredFields»
+//							constructor.«f.setterName»(«f.simpleName»);
+//						«ENDFOR»
+//						applyConstructorFields(constructor);
+//					''']
+//				]
+		}
+								
 		/** Method to immutably modify entity, returning a new instance of the entity */
 		entityClass.addMethod('mutate') [
 			primarySourceElement = entityClass
