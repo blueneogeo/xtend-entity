@@ -21,7 +21,7 @@ interface Entity {
 //	def Object get(String fieldName) throws NoSuchFieldException
 	
 	def Entity deserialize(Map<String, ?> serialized)
-	def Map<String, ?> serialize()
+	def Map<String, Object> serialize()
 }
 
 //abstract class Entity2 implements Map<String, Object> {

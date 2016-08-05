@@ -3,21 +3,22 @@ package nl.kii.entity.processors
 import com.google.common.base.CaseFormat
 import java.util.List
 import java.util.Map
+import nl.kii.entity.Casing
 import nl.kii.entity.Entity
 import nl.kii.entity.EntityExtensions
 import nl.kii.entity.Serializer
-import nl.kii.entity.annotations.Casing
 import nl.kii.entity.processors.EntityProcessor.Util
+import nl.kii.util.MapExtensions
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
+import org.eclipse.xtext.xbase.lib.Functions.Function1
+import org.eclipse.xtext.xbase.lib.Functions.Function2
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import org.eclipse.xtext.xbase.lib.Functions.Function1
-import org.eclipse.xtext.xbase.lib.Functions.Function2
 
 class EntitySerializationUtil {
 	val extension TransformationContext context
@@ -41,7 +42,8 @@ class EntitySerializationUtil {
 	val List<Pair<TypeReference, String>> serializers
 	val CaseFormat casing
 	
-	def getSerializedMapTypeRef() { Map.newTypeReference(String.newTypeReference, newWildcardTypeReference) }
+	def getSerializedMapTypeRef() { Map.newTypeReference(string, object) }
+	def getDeserializedMapTypeRef() { Map.newTypeReference(string, newWildcardTypeReference) }
 	
 	def getSupportedTypes() {
 		outOfTheBoxTypes.map [ newTypeReference ] + serializers.map [ key ]
@@ -107,7 +109,7 @@ class EntitySerializationUtil {
 	val static serializeResultName = 'serialized'
 	def void addSerializeMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
 		cls.addMethod('serialize') [
-			val mapTypeRef = Map.newTypeReference(string, object)
+			val mapTypeRef = serializedMapTypeRef
 			primarySourceElement = cls
 			addAnnotation(Pure.newAnnotationReference)
 			addAnnotation(Override.newAnnotationReference)			
@@ -148,7 +150,7 @@ class EntitySerializationUtil {
 			primarySourceElement = cls
 			addAnnotation(Override.newAnnotationReference)			
 			returnType = cls.newTypeReference
-			addParameter(deserializeArgumentName, serializedMapTypeRef)
+			addParameter(deserializeArgumentName, deserializedMapTypeRef)
 			body = ['''
 				«fields.map [ 
 					'''
@@ -216,7 +218,7 @@ class EntitySerializationUtil {
 								return «Pair.newTypeReference.name».of(key, value);
 							}
 						};
-						«assignment» «nl.kii.util.MapExtensions.newTypeReference.name».map((Map) «valName», _function);
+						«assignment» «MapExtensions.newTypeReference.name».map((Map) «valName», _function);
 					}
 				'''
 			}
@@ -229,7 +231,7 @@ class EntitySerializationUtil {
 				«assignment» «t.serializer».deserialize(«valName»);
 			'''
 			case t.extendsType(Entity): '''
-				«assignment» («t») «EntityExtensions.newTypeReference.name».deserialize((«serializedMapTypeRef») «valName», «t.name».class);
+				«assignment» («t») «EntityExtensions.newTypeReference.name».deserialize((«deserializedMapTypeRef») «valName», «t.name».class);
 			'''
 		}»
 	'''
@@ -237,7 +239,7 @@ class EntitySerializationUtil {
 	def addDeserializeContructor(MutableClassDeclaration cls) {
 		cls.addConstructor [
 			primarySourceElement = cls
-			addParameter(deserializeArgumentName, serializedMapTypeRef)
+			addParameter(deserializeArgumentName, deserializedMapTypeRef)
 			body = ['''
 				deserialize(«deserializeArgumentName»);
 			''']
