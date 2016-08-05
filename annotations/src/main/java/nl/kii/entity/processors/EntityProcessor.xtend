@@ -132,9 +132,9 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		/** Generate a nice toString, equals and hashCode. */
 		if (cls.needsToStringEqualsHashCode) cls => [
-			addToString(serializeFields, new ToStringConfiguration(true, false, false, false))
-			addEquals(serializeFields, false)
-			addHashCode(serializeFields, false)				
+			if (!hasToString) addToString(serializeFields, new ToStringConfiguration(true, false, false, false))
+			if (!hasEquals) addEquals(serializeFields, false)
+			if (!hasHashCode) addHashCode(serializeFields, false)
 		]
 		
 		cls.validateFields(localSerializeFields)		
