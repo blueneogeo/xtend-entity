@@ -66,8 +66,7 @@ class EntitySerializationUtil {
 	
 	def isSupported(TypeReference type) {
 		val supportedTypes = concat(outOfTheBoxTypes.map [ newTypeReference ], serializers.map [ key ])
-		//val typeRef = type.newTypeReference
-		
+				
 		supportedTypes.exists [ type.extendsType(it) ] || 
 		findEnumerationType(type.name).defined /** <-- workaround for compiler not recognizing enums in same source file */ ||
 		{

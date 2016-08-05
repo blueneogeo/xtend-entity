@@ -12,8 +12,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import java.util.Map
-import java.util.Date
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context

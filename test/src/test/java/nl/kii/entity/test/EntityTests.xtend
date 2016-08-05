@@ -254,6 +254,43 @@ class EntityTests {
 		assertEquals(4, d2.legs)
 		
 	}
+	
+	@Test
+	def void testCollections() {
+		val user1 = new User [ name = 'john' ]
+		
+		assertEquals(
+			'empty list from getter when list is null',
+			emptyList,
+			user1.purchases
+		)
+
+		assertEquals(
+			'empty map from getter when map is null',
+			emptyMap,
+			user1.membershipDurations
+		)
+		
+		assertTrue(
+			'mutating map should fail', 
+			try { 
+				user1.membershipDurations.put(Membership.trial, 7.days) 
+				false
+			} 
+			catch(UnsupportedOperationException e) true
+			catch(Exception e) false
+		)
+		
+		assertTrue(
+			'mutating list should fail', 
+			try { 
+				user1.purchases.add(now) 
+				false
+			} 
+			catch(UnsupportedOperationException e) true
+			catch(Exception e) false
+		)
+	}
 
 	@Test
 	def void testApplyingConvenienceProcedure() {

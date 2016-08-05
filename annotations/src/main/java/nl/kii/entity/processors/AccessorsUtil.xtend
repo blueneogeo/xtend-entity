@@ -1,5 +1,7 @@
 package nl.kii.entity.processors
 
+import java.util.List
+import java.util.Map
 import nl.kii.util.Opt
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.annotations.AccessorsProcessor
@@ -35,13 +37,24 @@ class AccessorsUtil {
 			docComment = field.docComment
 			deprecated = field.deprecated
 			
-			if (optionals) {
+			if (Map.newTypeReference.isAssignableFrom(field.type)) {
+				returnType = field.type
+				body = '''
+					if («field.simpleName» == null) return «CollectionLiterals.newTypeReference».emptyMap();
+					return «field.simpleName»;
+				'''
+			} else if (List.newTypeReference.isAssignableFrom(field.type)) {
+				returnType = field.type
+				body = '''
+					if («field.simpleName» == null) return «CollectionLiterals.newTypeReference».emptyList();
+					return «field.simpleName»;
+				'''
+			} else if (optionals) {
 				returnType = Opt.newTypeReference(field.type)
 				body = '''return «OptExtensions.newTypeReference».option(«field.simpleName»);'''
-			}
-			else {
+			} else {
 				returnType = field.type
-				body = '''return «field.simpleName»;'''				
+				body = '''return «field.simpleName»;'''
 			}
 		]
 	}
