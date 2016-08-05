@@ -175,7 +175,7 @@ class EntitySerializationUtil {
 			'''
 			case t.extendsType(Long): '''
 				if («valName» instanceof Long) «assignment» (Long) «valName»;
-				else this.«valName» = Long.parseLong(«valName».toString());
+				else «assignment» Long.parseLong(«valName».toString());
 			'''
 			case t.extendsType(Float): '''
 				if («valName» instanceof Float) «assignment» (Long) «valName»;

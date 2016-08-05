@@ -1,8 +1,8 @@
 package nl.kii.entity.processors
 
+import com.google.common.collect.Iterables
 import java.util.List
 import nl.kii.entity.EntityField
-import nl.kii.util.IterableExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
@@ -50,10 +50,10 @@ class EntityReflectionUtil {
 			addAnnotation(pureAnnotationTypeRef)
 			
 			if (entityClass.extendsEntity) body = ['''
-				return «IterableExtensions.newTypeReference.name».concat(
+				return «IterableExtensions.newTypeReference.name».toList(«Iterables.newTypeReference.name».concat(
 					super.getFields(),
 					«collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»)
-				);
+				));
 			''']
 			else body = ['''
 				return «collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»);

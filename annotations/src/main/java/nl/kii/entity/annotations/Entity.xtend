@@ -1,5 +1,6 @@
 package nl.kii.entity.annotations
 
+import nl.kii.entity.Casing
 import nl.kii.entity.processors.EntityProcessor
 import org.eclipse.xtend.lib.macro.Active
 
@@ -17,39 +18,4 @@ annotation Entity {
 
 	boolean mutable = false // true not yet supported
 	boolean reactive = false // true not yet supported	
-}
-
-enum Casing {
-	
-	/** field_name */
-	underscore, 
-	/** field_name */
-	snake,
-	
-	///////////////////
-	
-	/** fieldName */
-	camel, 
-	/** fieldName */
-	lowerCamel, 
-	
-	///////////////////
-	
-	/** FieldName */
-	upperCamel, 
-	
-	///////////////////
-
-	/** field-name */
-	dash, 
-	/** field-name */
-	hyphen, 
-
-	///////////////////
-	
-	/** FIELD_NAME */
-	upperUnderscore,
-	/** FIELD_NAME */
-	upperSnake 
-	
 }
