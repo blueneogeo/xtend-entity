@@ -235,13 +235,13 @@ class EntityTests {
 			breed = 'beagle'
 			weight = 10_000
 		]
-
+		
 		assertEquals(4, d1.legs)
 		
 		assertEquals(
 			'fields class and getFields() should inherit',
-			#[ Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father, Dog.Fields.hasOwner ],
-			d1.fields
+			#[ Dog.Fields.type, Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father, Dog.Fields.hasOwner ].sortBy[name],
+			d1.fields.sortBy[name]
 		)
 		
 		val d2 = d1 >> [

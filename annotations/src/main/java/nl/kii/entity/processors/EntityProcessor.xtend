@@ -5,6 +5,7 @@ import nl.kii.entity.Entity
 import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
+import nl.kii.entity.annotations.Type
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend.lib.annotations.ToStringConfiguration
 import org.eclipse.xtend.lib.annotations.ToStringProcessor
@@ -41,6 +42,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		val extension accessorsUtil = new AccessorsUtil(context)
 		val extension toStringUtil = new ToStringProcessor.Util(context)
 		val extension equalsHashCodeUtil = new EntityEqualsHashCodeUtil(context)
+		val extension fieldValidationUtil = new FieldValidationUtil(context)
 		val initializerClass = findClass(cls.entityInitializerClassName)
 		val extension entityInitializerClassUtil = new EntityInitializerClassUtil(context, initializerClass, cls)
 		
@@ -59,10 +61,8 @@ class EntityProcessor extends AbstractClassProcessor {
 		val localSerializeFields = localAccessorsFields.serializeFields
 		val serializeFields = accessorsFields.serializeFields
 		
-		/** Figure out which fields are marked with @Required. */
-		val requiredFields = serializeFields.filter [
-			findAnnotation(Require.newTypeReference.type).defined
-		].list
+		/** Figure out which fields are marked with @Require. */
+		val requiredFields = serializeFields.requiredFields
 		
 		if (cls.needsAccessors) {
 			/** Copy fields declared in super types, to be able to make them private */
@@ -125,6 +125,28 @@ class EntityProcessor extends AbstractClassProcessor {
 
 		if (cls.extendsEntity) 
 			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
+			
+		
+		
+		val typeFields = cls.declaredFields.filter [ findAnnotation(Type.newTypeReference.type).defined ]
+		cls.addValidationMethod(requiredFields, switch size:typeFields.size {
+			case 1: {
+				val field = typeFields.head
+				
+				if (field.type != string) 
+					cls.addError('@Type field must be a String')
+				
+				val defaultTypeName = cls.simpleName.serializedKeyName
+				if (!field.initializer.defined) 
+					field.initializer = '''"«defaultTypeName»"'''
+				
+				field -> (field.initializer?.toString?.replace('\'', '') ?: defaultTypeName)
+			}
+			case size > 1: {
+				cls.addError('There can only be one field marked with @Type')
+				null				
+			}
+		})	
 
 		
 		/** Generate a nice toString, equals and hashCode. */
@@ -224,7 +246,7 @@ class EntityProcessor extends AbstractClassProcessor {
 				primarySourceElement = cls
 				body = [''' ''']
 			] 
-		}	
+		}
 }
 	
 	

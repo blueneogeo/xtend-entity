@@ -1,6 +1,6 @@
 package nl.kii.entity.processors
 
-import com.google.common.collect.Iterables
+import com.google.common.collect.Sets
 import java.util.List
 import nl.kii.entity.EntityField
 import org.eclipse.xtend.lib.macro.TransformationContext
@@ -23,7 +23,7 @@ class EntityReflectionUtil {
 	
 	def populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {
 		val entityFieldTypeRef = EntityField.newTypeReference
-
+		
 		fields.forEach [ extension field |
 			/** Copy fields to Fields class */
 			fieldsClass.addField(field.simpleName) [
@@ -49,21 +49,21 @@ class EntityReflectionUtil {
 			returnType = entityFieldListTypeRef
 			addAnnotation(pureAnnotationTypeRef)
 			
-			if (entityClass.extendsEntity) body = ['''
-				return «IterableExtensions.newTypeReference.name».toList(«Iterables.newTypeReference.name».concat(
-					super.getFields(),
-					«collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»)
+			if (entityClass.extendsEntity) body = '''
+				return «IterableExtensions.newTypeReference».toList(«Sets.newTypeReference».union(
+					«IterableExtensions.newTypeReference».toSet(super.getFields()),
+					«IterableExtensions.newTypeReference».toSet(«collectionsTypeRef».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»))
 				));
-			''']
-			else body = ['''
-				return «collectionsTypeRef.name».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»);
-			''']
-		]		
+			'''
+			else body = '''
+				return «collectionsTypeRef».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»);
+			'''
+		]
 	}
-
+	
 	def static cleanTypeName(TypeReference typeRef) {
 		typeRef.name.replaceAll('<.+>', '').replaceAll('\\$', '.')
-	}	
-		
+	}
+	
 }
 

@@ -2,6 +2,7 @@ package nl.kii.entity
 
 import java.util.List
 import java.util.Map
+import nl.kii.util.AssertionException
 
 /**
  * An Entity has getters, default constructors, extendable serialization support, mandatory fields and a validation method for those fields.
@@ -11,8 +12,8 @@ interface Entity {
 //	/** Returns true if the object data is valid */
 //	def boolean isValid()
 //
-//	/** Throws a descriptive exception if the object data is invalid */
-//	def void validate() throws AssertionException
+	/** Throws a descriptive exception if the object data is invalid */
+	def void validate() throws AssertionException
 
 	/** Returns all fields in this object */
 	def List<EntityField> getFields()
@@ -24,14 +25,8 @@ interface Entity {
 	def Map<String, Object> serialize()
 }
 
-//abstract class Entity2 implements Map<String, Object> {
-//	
-//	/** Returns all fields in this object */
-//	def List<EntityField> getFields()
-//	
-//	def Entity deserialize(Map<String, ?> serialized)
-//	def Map<String, ?> serialize()
-//	
+//abstract class Entity2 implements Map<String, Object>, Entity {
+//
 //	override clear() {
 //		throw new UnsupportedOperationException
 //	}
@@ -60,18 +55,6 @@ interface Entity {
 //		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 //	}
 //	
-//	override put(String key, Object value) {
-//		throw new UnsupportedOperationException("TODO: auto-generated method stub")
-//	}
-//	
-//	override putAll(Map<? extends String, ?> m) {
-//		throw new UnsupportedOperationException("TODO: auto-generated method stub")
-//	}
-//	
-//	override remove(Object key) {
-//		throw new UnsupportedOperationException("TODO: auto-generated method stub")
-//	}
-//	
 //	override size() {
 //		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 //	}
@@ -79,5 +62,18 @@ interface Entity {
 //	override values() {
 //		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 //	}
+//
+//	override put(String key, Object value) {
+//		throw new UnsupportedOperationException
+//	}
+//	
+//	override putAll(Map<? extends String, ?> m) {
+//		throw new UnsupportedOperationException
+//	}
+//	
+//	override remove(Object key) {
+//		throw new UnsupportedOperationException
+//	}
+//	
 //	
 //}

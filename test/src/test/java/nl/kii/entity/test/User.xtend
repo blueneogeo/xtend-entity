@@ -9,6 +9,7 @@ import nl.kii.entity.annotations.Entity
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.util.Period
+import nl.kii.entity.annotations.Type
 
 @Entity(casing=underscore)
 class User {
@@ -75,11 +76,15 @@ abstract class Animal {
 
 @Entity
 abstract class Mammal extends Animal {
+	@Type String type = 'mammal'
+
 	int legs
 }
 
 @Entity
 class Dog extends Mammal {
+	@Type String type
+	
 	String breed
 	
 	Dog mother
