@@ -13,16 +13,15 @@ import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Functions.Function2
 
+import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import static extension nl.kii.entity.processors.EntityProcessor.Util.*
-import com.google.common.collect.Iterables
-import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 
 class EntitySerializationUtil {
 	val extension TransformationContext context
@@ -82,9 +81,14 @@ class EntitySerializationUtil {
 	}
 	
 	def validateFields(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
-		fields.filter [ !type.isSupported ].list.forEach [ 
-			addError('''Fields of type «type.name» cannot be serialized, add a Serializer to make the type compatible''')
-		]
+		fields
+			.map [ it -> type.actualTypeArguments.concat(type).list ]
+			.flattenValues
+			.filter [ !value.isSupported ]
+			.list
+			.forEach [
+				key.addError('''Fields of type «value.name» cannot be serialized, add a Serializer to make the type compatible''')
+			]
 	}
 
 	val static serializersName = 'serializers'
