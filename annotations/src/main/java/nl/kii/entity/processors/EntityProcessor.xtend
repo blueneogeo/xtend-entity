@@ -16,11 +16,11 @@ import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
+import org.eclipse.xtend.lib.macro.declaration.Visibility
 
+import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import static extension nl.kii.entity.processors.EntityProcessor.Util.*
-import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -114,19 +114,13 @@ class EntityProcessor extends AbstractClassProcessor {
 		]
 
 		val allSerializers = cls.newTypeReference.allResolvedMethods
-//			.filter [ declaration.returnType == nl.kii.entity.Serializer.newTypeReference ]
 			.map [ 
 				declaration.findAnnotation(serializerTypeDeclaration)?.getClassValue('value') -> 
 				'''«IF declaration.declaringType.newTypeReference != cls.newTypeReference»super.«ENDIF»«declaration.simpleName»()'''
 			]
 			.filter [ key.defined ]
 			.list
-		
-		
-		val serializers = declaredSerializerFields.map [ 
-			findAnnotation(serializerTypeDeclaration).newAnnotationReference.getClassValue('value') -> simpleName
-		].list
-		
+				
 		val casing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
 		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers, casing)
 		
