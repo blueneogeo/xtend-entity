@@ -31,6 +31,7 @@ class User {
 	
 	Map<String, String> attributes 
 	Map<Membership, Period> membershipDurations
+	Map<Location, List<Double>> coordinates
 	
 	Long profileId
 	
@@ -72,6 +73,9 @@ abstract class Animal {
 	def Animal getMother()
 	def Animal getFather()
 	// Date discovered
+	
+	@Serializer(Date) 
+	val static s1 = Serializers.date
 }
 
 @Entity
@@ -92,6 +96,8 @@ class Dog extends Mammal {
 
 	boolean hasOwner
 	//List<Dog> pack
+	
+	Date born
 }
 
 

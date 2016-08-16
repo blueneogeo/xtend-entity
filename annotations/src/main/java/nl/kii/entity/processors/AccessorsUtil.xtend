@@ -9,13 +9,14 @@ import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 
-class AccessorsUtil {
+class AccessorsUtil extends AccessorsProcessor.Util {
 	val extension TransformationContext context
-	val extension AccessorsProcessor.Util accessorsUtil
+	//val extension AccessorsProcessor.Util accessorsUtil
 		
 	new(TransformationContext context) {
+		super(context)
 		this.context = context
-		this.accessorsUtil = new AccessorsProcessor.Util(context)
+		//this.accessorsUtil = new AccessorsProcessor.Util(context)
 	}
 	
 	def addGetters(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields, boolean optionals) {

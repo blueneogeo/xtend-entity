@@ -14,11 +14,15 @@ import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
+import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Functions.Function2
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import static extension nl.kii.entity.processors.EntityProcessor.Util.*
+import com.google.common.collect.Iterables
+import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 
 class EntitySerializationUtil {
 	val extension TransformationContext context
@@ -50,10 +54,12 @@ class EntitySerializationUtil {
 	}
 	
 	val extension EntityProcessor.Util baseUtil
+	val extension AccessorsUtil accessorsUtil
 	
 	new(TransformationContext context, List<Pair<TypeReference, String>> serializers, Casing casing) {
 		this.context = context
 		this.baseUtil = new Util(context)
+		this.accessorsUtil = new AccessorsUtil(context)
 		this.serializers = serializers
 		this.casing = switch casing {
 			case underscore, case snake:			CaseFormat.LOWER_UNDERSCORE
@@ -81,26 +87,39 @@ class EntitySerializationUtil {
 		]
 	}
 
-	val static serializersFieldName = '_serializers'
-	def addSerializers(MutableClassDeclaration cls) {
-		if (serializers.nullOrEmpty) return
+	val static serializersName = 'serializers'
+	val static String serializersFieldName = serializersName.hiddenName
+	val static String serializersGetterName = 'getSerializers'.hiddenName
+	
+	def MutableFieldDeclaration addSerializers(MutableClassDeclaration cls) {
+		//if (serializers.nullOrEmpty) return null
 		val wildCardRef = newWildcardTypeReference
 		val classTypeRef = Class.newTypeReference(wildCardRef)
-		val serializerRef = Serializer.newTypeReference(wildCardRef, Object.newTypeReference)
+		val serializerRef = Serializer.newTypeReference(wildCardRef, object)
 		
 		val pairRef = Pair.newTypeReference
 		
-		cls.addField(serializersFieldName) [
+		cls.addField(serializersName) [
 			primarySourceElement = cls
 			
 			type = Map.newTypeReference(classTypeRef, serializerRef)
-			initializer = ['''
-				«CollectionLiterals.newTypeReference.name».newLinkedHashMap(
-					«FOR s:serializers SEPARATOR ', '»
-						«pairRef.name».of(«s.key.name».class, «s.value»)
-					«ENDFOR»
+			initializer = '''
+				«nl.kii.util.IterableExtensions.newTypeReference.name».toMap(
+					«CollectionLiterals.newTypeReference.name».newImmutableList(
+						«FOR s:serializers SEPARATOR ', '»
+							«pairRef.name».of(«s.key.name».class, «s.value»)
+						«ENDFOR»					
+					)
 				)
-			''']
+			'''
+			
+			cls.addGetter(it, false) => [ m |
+				m.visibility = Visibility.PROTECTED
+				
+				m.simpleName = simpleName.hiddenName
+				simpleName = simpleName.hiddenName
+			]
+			
 		]
 	}
 	
@@ -113,33 +132,66 @@ class EntitySerializationUtil {
 			addAnnotation(Pure.newAnnotationReference)
 			addAnnotation(Override.newAnnotationReference)			
 			returnType = serializedMapTypeRef
-			body = ['''
+			body = '''
 				«mapTypeRef» «serializeResultName» = «CollectionLiterals.newTypeReference.name».newLinkedHashMap();
 				
-				«fields.map [ serializationBody ].join('\n')»
+				«fields.map [ 
+					'''
+						final «type» «simpleName» = this.«simpleName»;
+						if («OptExtensions.newTypeReference.name».defined(«simpleName»)) {
+							«type.getSerializationBody('''«object» serializedValue =''', '''«simpleName»''')»
+							«serializeResultName».put("«serializedKeyName»", serializedValue);
+						}
+					'''
+				].join('\n')»
 				
 				return serialized;
-			''']
+			'''
 		]
 	}	
 	
-	def getSerializationBody(extension FieldDeclaration field) '''
-		if («OptExtensions.newTypeReference.name».defined(«simpleName»)) {
-			«switch f:field.type {
-				case nativeSerializationTypes.exists [ f.extendsType(it) ]: '''
-					«serializeResultName».put("«field.serializedKeyName»", «simpleName»);
+	def CharSequence getSerializationBody(TypeReference type, String assignment, String valName) '''
+		«switch t:type {
+			case t.extendsType(Iterable): {
+				val entryType = t.actualTypeArguments.head
 				'''
-				case f.extendsType(Enum): '''
-					«serializeResultName».put("«field.serializedKeyName»", «simpleName».toString());
+					final «Function1.newTypeReference(entryType, object).cleanTypeName» _function = new «Function1.newTypeReference(entryType, object).name.replace('$', '.')»() {
+						public «object» apply(final «entryType» entry) {
+							«entryType.getSerializationBody('return', 'entry')»
+						}
+					};
+					«assignment» «IterableExtensions.newTypeReference.name».toList(«IterableExtensions.newTypeReference.name».map((Iterable) «valName», _function));
 				'''
-				case serializers.exists [ f.extendsType(key) ]: '''
-					«serializeResultName».put("«field.serializedKeyName»", «f.serializer».serialize(«simpleName»));
+			}
+			case t.extendsType(Map): {
+				val entryTypes = type.actualTypeArguments.get(0) -> type.actualTypeArguments.get(1)
+				val returnPair = Pair.newTypeReference(object, object)
 				'''
-				case f.extendsType(Entity): '''
-					«serializeResultName».put("«field.serializedKeyName»", «simpleName».serialize());
+					final «Function2.newTypeReference.cleanTypeName» _function = new «Function2.newTypeReference(entryTypes.key, entryTypes.value, returnPair).name.replace('$', '.')»() {
+						public «returnPair.name» apply(final «entryTypes.key» k, final «entryTypes.value» v) {
+							«entryTypes.key.getSerializationBody('''«object» key =''', 'k')»
+							
+							«entryTypes.value.getSerializationBody('''«object» value =''', 'v')»
+							
+							return «Pair.newTypeReference.name».of(key, value);
+						}
+					};
+					«assignment» «MapExtensions.newTypeReference.name».map((Map) «valName», _function);
 				'''
-			}»
-		}
+			}
+			case nativeSerializationTypes.exists [ t.extendsType(it) ]: '''
+				«assignment» «valName»;
+			'''
+			case t.extendsType(Enum): '''
+				«assignment» «valName».toString();
+			'''
+			case serializers.exists [ t.extendsType(key) ]: '''
+				«assignment» «t.serializer».serialize(«valName»);
+			'''
+			case t.extendsType(Entity): '''
+				«assignment» «valName».serialize();
+			'''
+		}»
 	'''
 			
 	val static deserializeArgumentName = 'serialized'

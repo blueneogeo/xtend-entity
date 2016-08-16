@@ -27,7 +27,7 @@ class Serializers {
 		PERIOD_SERIALIZER
 	}
 
-	/** Period -> milliseconds formatting */
+	/** Period <-> milliseconds formatting */
 	def static Serializer<Period, Object> periodMs() {
 		PERIOD_MS_SERIALIZER
 	}
@@ -118,7 +118,7 @@ class PeriodSerializer implements Serializer<Period, Object> {
 	}	
 }
 
-/** Period -> milliseconds (long) */
+/** Period <-> milliseconds (long) */
 class PeriodMsSerializer implements Serializer<Period, Object> {
 	
 	override serialize(Period original) {

@@ -19,6 +19,8 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import static extension nl.kii.entity.processors.EntityProcessor.Util.*
+import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -93,24 +95,43 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		if (cls.abstract) cls.addEmptyConstructor //else cls.final = true
 				
-		val serializerTypeRef = Serializer.newAnnotationReference.annotationTypeDeclaration
-		val userDefinedSerializersFields = cls.declaredFields.filter [ 
-			findAnnotation(serializerTypeRef).defined
+		val serializerTypeRef = Serializer.newAnnotationReference
+		val serializerTypeDeclaration = serializerTypeRef.annotationTypeDeclaration
+		
+		val declaredSerializerFields = cls.declaredFields.filter [ 
+			findAnnotation(serializerTypeDeclaration).defined
 		].list
 		
-		userDefinedSerializersFields.forEach [
-			simpleName = '''_«simpleName»'''
+		declaredSerializerFields.forEach [ f |
+			addGetter(f, Visibility.PROTECTED)
+			cls.findDeclaredMethod(f.getterName).option => [
+				val fieldAnnotation = f.annotations.findFirst [ annotationTypeDeclaration == serializerTypeDeclaration ]
+				addAnnotation(fieldAnnotation)
+				
+				f.simpleName = f.simpleName.hiddenName
+				simpleName = simpleName.hiddenName
+			]
 		]
+
+		val allSerializers = cls.newTypeReference.allResolvedMethods
+//			.filter [ declaration.returnType == nl.kii.entity.Serializer.newTypeReference ]
+			.map [ 
+				declaration.findAnnotation(serializerTypeDeclaration)?.getClassValue('value') -> 
+				'''«IF declaration.declaringType.newTypeReference != cls.newTypeReference»super.«ENDIF»«declaration.simpleName»()'''
+			]
+			.filter [ key.defined ]
+			.list
 		
-		val serializers = userDefinedSerializersFields.map [ 
-			findAnnotation(serializerTypeRef).newAnnotationReference.getClassValue('value') -> simpleName
+		
+		val serializers = declaredSerializerFields.map [ 
+			findAnnotation(serializerTypeDeclaration).newAnnotationReference.getClassValue('value') -> simpleName
 		].list
 		
 		val casing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
-		val extension serializationUtil = new EntitySerializationUtil(context, serializers, casing)		
+		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers, casing)
 		
+		cls.addSerializers
 		if (cls.needsSerializing) cls => [
-			addSerializers
 			addDeserializeMethod(serializeFields)
 			if (!cls.abstract) addDeserializeContructor
 			addSerializeMethod(serializeFields)
@@ -125,8 +146,6 @@ class EntityProcessor extends AbstractClassProcessor {
 
 		if (cls.extendsEntity) 
 			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
-			
-		
 		
 		val typeFields = cls.declaredFields.filter [ findAnnotation(Type.newTypeReference.type).defined ]
 		cls.addValidationMethod(requiredFields, switch size:typeFields.size {
@@ -247,6 +266,9 @@ class EntityProcessor extends AbstractClassProcessor {
 				body = [''' ''']
 			] 
 		}
+		
+		def static String getHiddenName(String name) '''_«name»'''
+			
 }
 	
 	

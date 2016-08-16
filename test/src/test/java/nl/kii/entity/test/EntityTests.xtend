@@ -84,7 +84,7 @@ class EntityTests {
 	}
 
 	@Test
-	def void testCustomizedSerialization() {
+	def void testAdvancedSerialization() {
 		val date = moment(2016, Month.JANUARY.ordinal, 1)
 		
 		val user = new User [
@@ -95,6 +95,7 @@ class EntityTests {
 		]
 		
 		assertEquals(
+			'period serializer should understand the ISO-8601 formatting',
 			#{ 
 				'name' -> 'john',
 				'age' -> 30,
@@ -102,6 +103,44 @@ class EntityTests {
 				'best_time' -> 'PT6M'
 			},
 			user.serialize
+		)
+		
+		val user2 = new User [
+			name = 'john'
+			referral = new User [
+				name = 'ref'
+			]
+		]
+
+		assertEquals(
+			'nested entity should be serialized as a map',
+			#{ 
+				'name' -> 'john',
+				'referral' -> #{
+					'name' -> 'ref'
+				}
+			},
+			user2.serialize
+		)
+		
+		val user3 = new User [
+			name = 'john'
+			friends = #[
+				new User [ name = 'friend1' ],
+				new User [ name = 'friend2' ]
+			]
+		]
+		
+		assertEquals(
+			'nested entity in list should be serialized as a list of maps',
+			#{ 
+				'name' -> 'john',
+				'friends' -> #[
+					#{ 'name' -> 'friend1' },
+					#{ 'name' -> 'friend2' }
+				]
+			},
+			user3.serialize
 		)
 	}
 	
@@ -126,7 +165,7 @@ class EntityTests {
 	}
 
 	@Test
-	def void testCustomizedDeserialization() {
+	def void testAdvancedDeserialization() {
 		val date = moment(2016, Month.JANUARY.ordinal, 1)
 		
 		val user1 = #{ 
@@ -137,6 +176,7 @@ class EntityTests {
 		}
 				
 		assertEquals(
+			'period serializer should understand the ISO-8601 formatting',
 			new User [
 				age = 30
 				name = 'john'
@@ -152,6 +192,7 @@ class EntityTests {
 		}
 
 		assertEquals(
+			'other date format should still work, since it is defined like that in the entity',
 			new User [
 				name = 'john'
 				registered = date
@@ -240,7 +281,7 @@ class EntityTests {
 		
 		assertEquals(
 			'fields class and getFields() should inherit',
-			#[ Dog.Fields.type, Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father, Dog.Fields.hasOwner ].sortBy[name],
+			#[ Dog.Fields.type, Dog.Fields.born, Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father, Dog.Fields.hasOwner ].sortBy[name],
 			d1.fields.sortBy[name]
 		)
 		
