@@ -46,7 +46,7 @@ subprojects {
       }
     }
     maven {
-      url "${artifactory_url}/libs-snapshot"
+      url "${artifactory_url}/main"
       credentials {
         username artifactory_user
         password artifactory_password
@@ -109,7 +109,7 @@ subprojects {
     }
     repositories {
       maven {
-        url "${artifactory_url}/libs-${project.version.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'}-local"
+        url "${artifactory_url}/main-local"
         credentials {
           username artifactory_user
           password artifactory_password
@@ -119,33 +119,35 @@ subprojects {
   }
 }
 
-project( 'annotations' ) {
+project('annotations') {
   dependencies {
     compile 'com.kimengi.util:xtend-tools-core:latest.release'
   }
 }
 
-project( 'test' ) {
+project('test') {
   dependencies {
-    testCompile project( ':annotations' )
+    testCompile project(':annotations')
 
-    testCompile project( ':yaml' )
-    testCompile project( ':csv' )
+    testCompile project(':yaml')
+    testCompile project(':csv')
+    testCompile project(':jackson')
+
     testCompile 'com.kimengi.util:xtend-tools-test:latest.release'
     testCompile 'io.vertx:vertx-core:3.1.0'
   }
 }
 
-project( 'yaml' ) {
+project('yaml') {
   dependencies {
-    compile project( ':annotations' )
+    compile project(':annotations')
     compile 'org.yaml:snakeyaml:1.17'
   }
 }
 
-project( 'csv' ) {
+project('csv') {
   dependencies {
-    compile project( ':annotations' )
+    compile project(':annotations')
     compile 'org.apache.commons:commons-csv:latest.release'
   }
 }
