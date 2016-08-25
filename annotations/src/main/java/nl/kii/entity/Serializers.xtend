@@ -3,13 +3,14 @@ package nl.kii.entity
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.UUID
 import nl.kii.util.Period
 
-import static extension nl.kii.util.IterableExtensions.*
 import static extension java.lang.Long.*
-import java.util.UUID
+import static extension nl.kii.util.IterableExtensions.*
 
 interface Serializer<O, S> {
 	def S serialize(O original)
@@ -91,7 +92,7 @@ class InstantSerializer implements Serializer<Instant, Object> {
 	val private DateTimeFormatter formatter
 	
 	new(String dateFormat) {
-		this.formatter = DateTimeFormatter.ofPattern(dateFormat)
+		this.formatter = DateTimeFormatter.ofPattern(dateFormat).withZone(ZoneOffset.UTC)
 	}
 	
 	override serialize(Instant original) {
