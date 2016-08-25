@@ -49,6 +49,7 @@ class Serializers {
 		new MultiSerializer(patterns.map [ new InstantSerializer(it) ].list)
 	}
 	
+	val static DEFAULT_INSTANT_FORMAT = 'yyyy-MM-dd HH:mm:ss Z'
 	val static DEFAULT_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss X'
 	
 	/** Uses format of 'yyyy-MM-dd HH:mm:ss X' */
@@ -56,10 +57,11 @@ class Serializers {
 		new DateSerializer(DEFAULT_DATE_FORMAT)
 	}
 
-	/** Uses format of 'yyyy-MM-dd HH:mm:ss X' */
+	/** Uses format of 'yyyy-MM-dd HH:mm:ss Z' */
 	def static Serializer<Instant, Object> instant() {
-		new InstantSerializer(DEFAULT_DATE_FORMAT)
+		new InstantSerializer(DEFAULT_INSTANT_FORMAT)
 	}
+	
 }
 
 

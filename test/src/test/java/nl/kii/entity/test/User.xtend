@@ -74,8 +74,8 @@ abstract class Animal {
 	def Animal getFather()
 	// Date discovered
 	
-	@Serializer(Date) 
-	val static s1 = Serializers.date
+	@Serializer(Instant) 
+	val static s1 = Serializers.instant
 }
 
 @Entity
@@ -97,7 +97,7 @@ class Dog extends Mammal {
 	boolean hasOwner
 	//List<Dog> pack
 	
-	Date born
+	Instant born
 }
 
 
