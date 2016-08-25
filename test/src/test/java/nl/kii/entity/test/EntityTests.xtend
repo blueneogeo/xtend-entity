@@ -15,6 +15,7 @@ import static extension nl.kii.entity.csv.CsvExtensions.*
 import static extension nl.kii.entity.test.JsonExtensions.*
 import static extension nl.kii.entity.yaml.YamlExtensions.*
 import static extension nl.kii.util.DateExtensions.*
+import nl.kii.entity.jackson.JacksonExtensions
 
 class EntityTests {
 	
@@ -202,7 +203,7 @@ class EntityTests {
 	}
 
 	@Test
-	def void testJsonDeserializing() {
+	def void testVertxJsonDeserializing() {
 		val data = newLinkedHashMap('some' -> 'data')
 		
 		val it = new JsonObject('''
@@ -253,6 +254,22 @@ class EntityTests {
 		val user = new User(map)
 		println(user)
 	}
+	
+	@Test
+	def void testJacksonDeserializing() {		
+		val it = '''
+			{
+				"age": 30,
+				"name": "john",
+				"birthday": "2016-01-01",
+				"referral": {
+					"age": 50
+				}
+			}
+		'''
+		println(JacksonExtensions.map(it))
+		println(JacksonExtensions.receive(it, User))
+	}	
 	
 	@Test
 	def void testCsvDeserializing() {

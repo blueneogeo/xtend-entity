@@ -1,1 +1,1 @@
-include 'annotations', 'yaml', 'csv', 'test'
+include 'annotations', 'yaml', 'csv', 'test', 'jackson'

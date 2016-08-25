@@ -150,3 +150,10 @@ project( 'csv' ) {
   }
 }
 
+project('jackson') {
+  dependencies {
+    compile project(':annotations')
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.1'
+  }
+}
+
