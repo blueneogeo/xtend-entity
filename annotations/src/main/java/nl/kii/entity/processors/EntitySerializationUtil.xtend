@@ -138,6 +138,9 @@ class EntitySerializationUtil {
 			returnType = serializedMapTypeRef
 			body = '''
 				«mapTypeRef» «serializeResultName» = «CollectionLiterals.newTypeReference.name».newLinkedHashMap();
+				«IF cls.extendsEntity»
+					«serializeResultName».putAll(super.serialize());
+				«ENDIF»	
 				
 				«fields.map [ 
 					'''
@@ -207,6 +210,10 @@ class EntitySerializationUtil {
 			returnType = cls.newTypeReference
 			addParameter(deserializeArgumentName, deserializedMapTypeRef)
 			body = ['''
+				«IF cls.extendsEntity»
+					super.deserialize(«deserializeArgumentName»);
+					
+				«ENDIF»
 				«fields.map [ 
 					'''
 						final Object «simpleName» = «deserializeArgumentName».get("«serializedKeyName»");

@@ -310,7 +310,6 @@ class EntityTests {
 		assertEquals('jack russell', d2.breed)
 		assertEquals(7000, d2.weight)
 		assertEquals(4, d2.legs)
-		
 	}
 	
 	@Test

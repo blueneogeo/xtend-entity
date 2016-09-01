@@ -30,7 +30,7 @@ class EntityInitializerClassUtil {
 		this.baseUtil = new EntityProcessor.Util(context)
 	}
 	
-	def populateInitializerClass(Iterable<? extends FieldDeclaration> fields) {
+	def void populateInitializerClass(Iterable<? extends FieldDeclaration> fields) {
 		
 		/** Copy fields from Entity into constructor class */
 		fields.forEach [ extension field |
@@ -40,8 +40,12 @@ class EntityInitializerClassUtil {
 			]
 		]
 		
-		/** Create getters and setters */
 		initializerClass => [
+			/** Inherit constructor from super entity if necessary */
+			if (entityClass.extendsEntity) 
+				initializerClass.extendedClass = newTypeReference('''«entityClass.extendedClass.cleanTypeName»Constructor''')
+			
+			/** Create getters and setters */
 			declaredFields.forEach [
 				addGetter(getterType?.toVisibility ?: Visibility.PUBLIC)
 				addSetter(setterType?.toVisibility ?: Visibility.PUBLIC)
@@ -56,6 +60,10 @@ class EntityInitializerClassUtil {
 				val argName = 'entity'
 				addParameter(argName, entityClass.newTypeReference)
 				body = '''
+					«IF initializerClass.extendedClass.defined && initializerClass.extendedClass != object»
+						super(«argName»);
+						
+					«ENDIF»
 					«FOR field : fields»
 						this.«field.simpleName» = «
 						IF Opt.newTypeReference.isAssignableFrom(entityClass.newTypeReference.findGetter(field).returnType)»«
@@ -75,18 +83,21 @@ class EntityInitializerClassUtil {
 			.findFirst [ field.getterName == simpleName ]
 	}
 	
+	val static APPLY_CONSTRUCTOR_METHOD_NAME = '_applyConstructorFields'
 	def addInitializerFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
-		val pureAnnotationTypeRef = Pure.newAnnotationReference		
-		val entityTypeRef = entityClass.newTypeReference
 		val constructorTypeRef = initializerClass.newTypeReference
 		val constructorOptionsTypeRef = newTypeReference(Procedure1, constructorTypeRef)
 				
 		/** Interal method to apply values from the constructor class on to the entity */
-		entityClass.addMethod('applyConstructorFields') [
+		entityClass.addMethod(APPLY_CONSTRUCTOR_METHOD_NAME) [
 			primarySourceElement = entityClass
-			visibility = Visibility.PRIVATE
+			visibility = Visibility.PROTECTED
 			addParameter('constructor', constructorTypeRef)
 			body = '''
+				«IF entityClass.extendsEntity»
+					super.«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
+					
+				«ENDIF»
 				«FOR field : fields»
 					«IF !field.type.primitive»if (constructor.«field.getterName»() != null) 
 						«ENDIF»this.«field.simpleName» = constructor.«field.getterName»();
@@ -101,7 +112,7 @@ class EntityInitializerClassUtil {
 			val argName = 'constructor'
 			addParameter(argName, constructorTypeRef)
 			body = '''
-				applyConstructorFields(constructor);
+				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''
 		]
 		
@@ -113,7 +124,7 @@ class EntityInitializerClassUtil {
 			body = '''
 				«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
 				«argName».apply(constructor);
-				applyConstructorFields(constructor);
+				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''
 		]		
 		
@@ -134,7 +145,7 @@ class EntityInitializerClassUtil {
 						constructor.«f.setterName»(«f.simpleName»);
 					«ENDFOR»
 					«argName».apply(constructor);
-					applyConstructorFields(constructor);
+					«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 				''']
 			]
 			
@@ -154,7 +165,14 @@ class EntityInitializerClassUtil {
 //					''']
 //				]
 		}
-								
+	}
+	
+	def addMutationFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
+		val constructorTypeRef = initializerClass.newTypeReference
+		val constructorOptionsTypeRef = newTypeReference(Procedure1, constructorTypeRef)
+		val pureAnnotationTypeRef = Pure.newAnnotationReference		
+		val entityTypeRef = entityClass.newTypeReference
+		
 		/** Method to immutably modify entity, returning a new instance of the entity */
 		entityClass.addMethod('mutate') [
 			primarySourceElement = entityClass
@@ -183,9 +201,10 @@ class EntityInitializerClassUtil {
 		]
 	}
 	
+	
 	def addConvenienceProcedureInitializer() {
 		if (entityClass.abstract) return
-
+		
 		val constructorTypeRef = initializerClass.newTypeReference
 
 		entityClass.implementedInterfaces = entityClass.implementedInterfaces + Procedure1.newTypeReference(constructorTypeRef)
@@ -201,7 +220,7 @@ class EntityInitializerClassUtil {
 			body = '''
 				«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
 				apply(constructor);
-				applyConstructorFields(constructor);
+				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''
 		]
 	}

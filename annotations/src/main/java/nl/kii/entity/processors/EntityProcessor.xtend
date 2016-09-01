@@ -6,12 +6,14 @@ import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.entity.annotations.Type
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend.lib.annotations.ToStringConfiguration
 import org.eclipse.xtend.lib.annotations.ToStringProcessor
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
@@ -30,9 +32,7 @@ class EntityProcessor extends AbstractClassProcessor {
 	
 	override doRegisterGlobals(ClassDeclaration cls, extension RegisterGlobalsContext context) {
 		context.registerClass(cls.entityFieldsClassName)
-		
-		if (cls.needsInitializerClass)
-			context.registerClass(cls.entityInitializerClassName)
+		context.registerClass(cls.entityInitializerClassName)
 	}
 	
 	def static String getEntityInitializerClassName(ClassDeclaration cls) '''«cls.qualifiedName»Constructor'''
@@ -57,44 +57,42 @@ class EntityProcessor extends AbstractClassProcessor {
 			cls.implementedInterfaces = cls.implementedInterfaces + Entity.newTypeReference
 		
 		/** Figure out which fields need accessors added. */
-		val localAccessorsFields = cls.declaredFields.accessorsFields
-		val accessorsFields = cls.allDeclaredFields.accessorsFields
+		//val localAccessorsFields = cls.declaredFields.accessorsFields
+		val accessorsFields = cls.declaredFields.accessorsFields
 		
-		val localSerializeFields = localAccessorsFields.serializeFields
+		val localSerializeFields = accessorsFields.serializeFields
 		val serializeFields = accessorsFields.serializeFields
 		
 		/** Figure out which fields are marked with @Require. */
 		val requiredFields = serializeFields.requiredFields
 		
-		if (cls.needsAccessors) {
-			/** Copy fields declared in super types, to be able to make them private */
-			accessorsFields
-				.filter [ f | !localAccessorsFields.exists [ f.simpleName == simpleName ] ]
-				.forEach [ copyTo(cls) ]
+//			/** Copy fields declared in super types, to be able to make them private */
+//			accessorsFields
+//				.filter [ f | !localAccessorsFields.exists [ f.simpleName == simpleName ] ]
+//				.forEach [ copyTo(cls) ]
 			
-			/** Add getters for fields that need them. If @Entity.optionals is set to true, wrap them in an Opt, except for the required fields. */
-			val entityNeedsOptionals = entityAnnotation.getBooleanValue('optionals')
-			if (entityNeedsOptionals) {
-				cls.addGetters(requiredFields, false)
-				cls.addGetters(accessorsFields, true)
-			} else {
-				cls.addGetters(accessorsFields, false)
-			}			
+		/** Add getters for fields that need them. If @Entity.optionals is set to true, wrap them in an Opt, except for the required fields. */
+		val entityNeedsOptionals = entityAnnotation.getBooleanValue('optionals') && !cls.abstract
+		if (entityNeedsOptionals) {
+			cls.addGetters(requiredFields, false)
+			cls.addGetters(accessorsFields, true)
+		} else {
+			cls.addGetters(accessorsFields, false)
 		}
 		
-		if (cls.needsInitializerClass) {
-			/** Setup the generated EntityConstructor class, by copying accessors and fields from Entity class. */
-			populateInitializerClass(accessorsFields)
-			
-			/** Integrate generated EntityConstructor class into the Entity class. */
-			addInitializerFunctionsToEntity(accessorsFields)
-
-			addConvenienceProcedureInitializer
-			addConvenienceNestedEntitySetters		
-		}
+		/** Setup the generated EntityConstructor class, by copying accessors and fields from Entity class. */
+		populateInitializerClass(accessorsFields)
+		
+		/** Integrate generated EntityConstructor class into the Entity class. */
+		addInitializerFunctionsToEntity(accessorsFields)
+		if (!cls.abstract) addMutationFunctionsToEntity(accessorsFields)
+		
+		addConvenienceProcedureInitializer
+		addConvenienceNestedEntitySetters		
 		
 		if (cls.abstract) cls.addEmptyConstructor //else cls.final = true
-				
+		
+		
 		val serializerTypeRef = Serializer.newAnnotationReference
 		val serializerTypeDeclaration = serializerTypeRef.annotationTypeDeclaration
 		
@@ -125,9 +123,11 @@ class EntityProcessor extends AbstractClassProcessor {
 		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers, casing)
 		
 		cls.addSerializers
-		if (cls.needsSerializing) cls => [
+		//if (cls.needsSerializing) 
+		cls => [
 			addDeserializeMethod(serializeFields)
-			if (!cls.abstract) addDeserializeContructor
+			//if (!cls.abstract) 
+			addDeserializeContructor
 			addSerializeMethod(serializeFields)
 		]
 		
@@ -141,6 +141,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		if (cls.extendsEntity) 
 			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
 		
+		/** Find @Type annotated field */
 		val typeFields = cls.declaredFields.filter [ findAnnotation(Type.newTypeReference.type).defined ]
 		cls.addValidationMethod(requiredFields, switch size:typeFields.size {
 			case 1: {
@@ -169,25 +170,19 @@ class EntityProcessor extends AbstractClassProcessor {
 			if (!hasHashCode) addHashCode(serializeFields, false)
 		]
 		
-		cls.validateFields(localSerializeFields)		
+		/** Validate fields for serializability */
+		cls.validateFields(localSerializeFields)
+		
+		/** Validate in case of entity extending that the extended entity is marked abstract */
+		if (cls.extendsEntity && cls.extendedClass.declaredResolvedMethods.exists [ declaration.simpleName == 'mutate' ]) /** Workaround to find detect abstract super type */
+			cls.addError('Extended Entity class must be marked abstract.')
+				
 	}
 	
-	def needsInitializerClass(ClassDeclaration cls) {
-		!cls.abstract
-	}
-	
-	def needsAccessors(ClassDeclaration cls) {
-		!cls.abstract
-	}
-
 	def needsToStringEqualsHashCode(ClassDeclaration cls) {
 		!cls.abstract
 	}
-
-	def needsSerializing(ClassDeclaration cls) {
-		!cls.abstract
-	}
-	
+		
 	@FinalFieldsConstructor
 	static class Util {
 		val extension TransformationContext context
@@ -204,14 +199,20 @@ class EntityProcessor extends AbstractClassProcessor {
 			cls.extendedClass?.extendsType(Entity)
 		}
 		
-		def allDeclaredFields(ClassDeclaration cls) {
-			cls.allDeclaredFields(#[])
-		}
-
-		def Iterable<? extends FieldDeclaration> allDeclaredFields(ClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
-			val result = fields + cls.declaredFields.filter [ f | !fields.exists [ f.simpleName == simpleName ] ]
-			if (!cls.extendsEntity) result
-			else cls.extendedClass.name.findClass.allDeclaredFields(result)
+//		def allDeclaredFields(ClassDeclaration cls) {
+//			cls.allDeclaredFields(#[])
+//		}
+//
+//		def private Iterable<? extends FieldDeclaration> allDeclaredFields(ClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
+//			val result = fields + cls.declaredFields.filter [ f | !fields.exists [ f.simpleName == simpleName ] ]
+//			if (!cls.extendsEntity) result
+//			else {
+//				cls.newTypeReference.declaredResolvedMethods
+//				cls.extendedClass.name.findClass.allDeclaredFields(result)
+//				
+//			}
+//		}
+	
 		}
 		
 		def <T extends FieldDeclaration> getAccessorsFields(Iterable<T> fields) {
