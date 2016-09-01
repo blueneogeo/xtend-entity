@@ -10,6 +10,7 @@ import java.util.UUID
 import nl.kii.util.Period
 
 import static extension java.lang.Long.*
+import static extension nl.kii.util.TemporalExtensions.*
 import static extension nl.kii.util.IterableExtensions.*
 
 interface Serializer<O, S> {
@@ -20,6 +21,8 @@ interface Serializer<O, S> {
 class Serializers {
 	val public static PERIOD_SERIALIZER = new PeriodSerializer
 	val public static PERIOD_MS_SERIALIZER = new PeriodMsSerializer
+	val public static DURATION_SERIALIZER = new DurationSerializer
+	val public static DURATION_MS_SERIALIZER = new DurationMsSerializer
 	val public static UUID_SERIALIZER = new UUIDSerializer
 	val public static DIRECT_SERIALIZER = new DirectSerializer
 	
@@ -30,6 +33,16 @@ class Serializers {
 
 	/** Period <-> milliseconds formatting */
 	def static Serializer<Period, Object> periodMs() {
+		PERIOD_MS_SERIALIZER
+	}
+	
+	/** ISO-8601 period formatting */
+	def static Serializer<Period, Object> duration() {
+		PERIOD_SERIALIZER
+	}
+
+	/** Period <-> milliseconds formatting */
+	def static Serializer<Period, Object> durationMs() {
 		PERIOD_MS_SERIALIZER
 	}
 	
@@ -132,6 +145,33 @@ class PeriodMsSerializer implements Serializer<Period, Object> {
 		switch it:serialized {
 			Long: new Period(it)
 			default: try new Period(serialized.toString.parseLong) catch(Exception e) null
+		}
+	}
+}
+
+/** ISO-8601 period formatting. Example: 20 minutes becomes 'PT20M' */
+class DurationSerializer implements Serializer<Duration, Object> {
+	
+	override serialize(Duration original) {
+		original.toString
+	}
+	
+	override deserialize(Object serialized) {
+		Duration.parse(serialized.toString)
+	}	
+}
+
+/** Period <-> milliseconds (long) */
+class DurationMsSerializer implements Serializer<Duration, Object> {
+	
+	override serialize(Duration original) {
+		original.ms
+	}
+	
+	override deserialize(Object serialized) {
+		switch it:serialized {
+			Long: ms
+			default:toString.parseLong.ms
 		}
 	}
 }
