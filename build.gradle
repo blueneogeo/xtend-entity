@@ -20,6 +20,9 @@ buildscript {
   }
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
+}
 
 // CONFIGURE ALL SUBPROJECTS ///////////////////////////////////////////////////
 subprojects {
@@ -80,7 +83,7 @@ subprojects {
   task install( dependsOn: publishToMavenLocal )
 
   jar {
-    baseName rootProject.name + '-' + project.name 
+    baseName rootProject.name + '-' + project.name
   }
 
   jacoco {
