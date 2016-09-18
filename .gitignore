@@ -93,3 +93,6 @@ hs_err_pid*
 ## Xtend
 
 build/
+gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
