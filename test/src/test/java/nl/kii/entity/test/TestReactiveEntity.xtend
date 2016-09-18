@@ -33,7 +33,7 @@ class TestReactiveEntity {
 
 	@Test
 	def void testEntityChangeListening() {
-		val changes = Change.sink
+		val changes = newSink
 
 		val u = new User('Christian')
 		val stop = u.onChange[it >> changes]

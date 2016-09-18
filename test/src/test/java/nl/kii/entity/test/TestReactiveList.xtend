@@ -8,8 +8,8 @@ import org.junit.Test
 import static nl.kii.entity.ChangeType.*
 import static org.junit.Assert.*
 
+import static extension nl.kii.async.promise.BlockingExtensions.*
 import static extension nl.kii.async.stream.StreamExtensions.*
-import static extension nl.kii.async.promise.PromiseExtensions.*
 import static extension nl.kii.util.JUnitExtensions.*
 
 class TestReactiveList {
@@ -96,7 +96,7 @@ class TestReactiveList {
 
 	@Test
 	def void letsListenToChanges() {
-		val changes = Change.sink
+		val changes = newSink
 		val buffered = changes.buffer(100)
 		val list = new EntityList<Integer>(int)
 		list.onChange [ it >> changes ]
@@ -120,7 +120,7 @@ class TestReactiveList {
 	
 	@Test
 	def void letsListenToChangesWithinEntries() {
-		val changes = Change.sink
+		val changes = newSink
 		val buffered = changes.buffer(100)
 		val list = new EntityList(EntityList)
 		val sublist = new EntityList(String)
