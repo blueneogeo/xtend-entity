@@ -8,10 +8,10 @@ import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
@@ -86,7 +86,6 @@ class EntityInitializerClassUtil {
 	val static APPLY_CONSTRUCTOR_METHOD_NAME = '_applyConstructorFields'
 	def addInitializerFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
 		val constructorTypeRef = initializerClass.newTypeReference
-		val constructorOptionsTypeRef = newTypeReference(Procedure1, constructorTypeRef)
 				
 		/** Interal method to apply values from the constructor class on to the entity */
 		entityClass.addMethod(APPLY_CONSTRUCTOR_METHOD_NAME) [
@@ -115,6 +114,8 @@ class EntityInitializerClassUtil {
 				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''
 		]
+		
+		val constructorOptionsTypeRef = newTypeReference(nl.kii.entity.Procedure1, constructorTypeRef)
 		
 		/** Add constructor with constructor class options argument to entity */
 		entityClass.addConstructor [
@@ -206,7 +207,7 @@ class EntityInitializerClassUtil {
 		if (entityClass.abstract) return
 		
 		val constructorTypeRef = initializerClass.newTypeReference
-
+		
 		entityClass.implementedInterfaces = entityClass.implementedInterfaces + Procedure1.newTypeReference(constructorTypeRef)
 			
 		entityClass.addMethod('apply') [
