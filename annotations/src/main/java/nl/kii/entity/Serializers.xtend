@@ -23,6 +23,7 @@ class Serializers {
 	val public static PERIOD_MS_SERIALIZER = new PeriodMsSerializer
 	val public static DURATION_SERIALIZER = new DurationSerializer
 	val public static DURATION_MS_SERIALIZER = new DurationMsSerializer
+	val public static INSTANT_MS_SERIALIZER = new InstantMsSerializer
 	val public static UUID_SERIALIZER = new UUIDSerializer
 	val public static DIRECT_SERIALIZER = new DirectSerializer
 	
@@ -74,6 +75,11 @@ class Serializers {
 	def static Serializer<Instant, Object> instant() {
 		new InstantSerializer(DEFAULT_INSTANT_FORMAT)
 	}
+
+	/** Uses milliseconds sinds epoch */
+	def static Serializer<Instant, Object> instantMs() {
+		INSTANT_MS_SERIALIZER
+	}
 	
 }
 
@@ -120,6 +126,20 @@ class InstantSerializer implements Serializer<Instant, Object> {
 			Long: Instant.ofEpochMilli(it)
 		}
 	}	
+}
+
+class InstantMsSerializer implements Serializer<Instant, Object> {
+	
+	override serialize(Instant original) {
+		original.toEpochMilli
+	}
+	
+	override deserialize(Object serialized) {
+		switch it:serialized {
+			Long: Instant.ofEpochMilli(it)
+			default: Instant.ofEpochMilli(toString.parseLong)
+		}
+	}
 }
 
 /** ISO-8601 period formatting. Example: 20 minutes becomes 'PT20M' */
