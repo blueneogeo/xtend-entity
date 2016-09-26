@@ -5,17 +5,17 @@ import java.time.Month
 import java.util.Date
 import java.util.Map
 import nl.kii.entity.Entity
+import nl.kii.entity.jackson.JacksonExtensions
 import nl.kii.util.Opt
 import org.junit.Test
 
 import static org.junit.Assert.*
 
 import static extension nl.kii.entity.EntityExtensions.*
-import static extension nl.kii.entity.csv.CsvExtensions.*
+import static extension nl.kii.entity.csv.CSVExtensions.*
 import static extension nl.kii.entity.test.JsonExtensions.*
 import static extension nl.kii.entity.yaml.YamlExtensions.*
 import static extension nl.kii.util.DateExtensions.*
-import nl.kii.entity.jackson.JacksonExtensions
 
 class EntityTests {
 	

@@ -59,6 +59,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		/** Figure out which fields need accessors added. */
 		//val localAccessorsFields = cls.declaredFields.accessorsFields
 		val accessorsFields = cls.declaredFields.accessorsFields
+		//cls.docComment = '''-- «cls.newTypeReference.allDeclaredFields.map[simpleName]»'''
 		
 		val localSerializeFields = accessorsFields.serializeFields
 		val serializeFields = accessorsFields.serializeFields
@@ -117,6 +118,8 @@ class EntityProcessor extends AbstractClassProcessor {
 				'''«IF declaration.declaringType.newTypeReference != cls.newTypeReference»super.«ENDIF»«declaration.simpleName»()'''
 			]
 			.filter [ key.defined ]
+			.toList
+			.reverse
 			.list
 				
 		val casing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
@@ -212,8 +215,6 @@ class EntityProcessor extends AbstractClassProcessor {
 //				
 //			}
 //		}
-	
-		}
 		
 		def <T extends FieldDeclaration> getAccessorsFields(Iterable<T> fields) {
 			fields.filter [
