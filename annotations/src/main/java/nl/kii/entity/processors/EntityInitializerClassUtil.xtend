@@ -123,7 +123,7 @@ class EntityInitializerClassUtil {
 			val argName = 'constructorOptions'
 			addParameter(argName, constructorOptionsTypeRef)
 			body = '''
-				«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
+				«initializerClass» constructor = new «initializerClass»();
 				«argName».apply(constructor);
 				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''
@@ -140,14 +140,14 @@ class EntityInitializerClassUtil {
 				val argName = 'constructorOptions'
 				addParameter(argName, constructorOptionsTypeRef)
 				
-				body = ['''
-					«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
+				body = '''
+					«initializerClass» constructor = new «initializerClass»();
 					«FOR f:requiredFields»
 						constructor.«f.setterName»(«f.simpleName»);
 					«ENDFOR»
 					«argName».apply(constructor);
 					«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
-				''']
+				'''
 			]
 			
 //			/** Add constructor with just required fields as args to entity (if it doesn't confict with the already present serialized map constructor) */
@@ -181,12 +181,12 @@ class EntityInitializerClassUtil {
 			addParameter(argName, constructorOptionsTypeRef)
 			returnType = entityTypeRef
 			addAnnotation(pureAnnotationTypeRef)
-			body = ['''
-				«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»(this);
+			body = '''
+				«initializerClass» constructor = new «initializerClass»(this);
 				«argName».apply(constructor);
 				
-				return new «entityClass.qualifiedName»(constructor);
-			''']		
+				return new «entityClass»(constructor);
+			'''	
 		]
 
 		/** Operator shortcut for 'mutate' method */
@@ -196,9 +196,9 @@ class EntityInitializerClassUtil {
 			addParameter(argName, constructorOptionsTypeRef)
 			returnType = entityTypeRef
 			addAnnotation(pureAnnotationTypeRef)
-			body = ['''
+			body = '''
 				return mutate(mutation);
-			''']		
+			'''	
 		]
 	}
 	
@@ -219,7 +219,7 @@ class EntityInitializerClassUtil {
 		entityClass.addConstructor [
 			primarySourceElement = entityClass
 			body = '''
-				«initializerClass.qualifiedName» constructor = new «initializerClass.qualifiedName»();
+				«initializerClass» constructor = new «initializerClass»();
 				apply(constructor);
 				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''

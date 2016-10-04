@@ -41,18 +41,18 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 			if (Map.newTypeReference.isAssignableFrom(field.type)) {
 				returnType = field.type
 				body = '''
-					if («field.simpleName» == null) return «CollectionLiterals.newTypeReference».emptyMap();
+					if («field.simpleName» == null) return «CollectionLiterals».emptyMap();
 					return «field.simpleName»;
 				'''
 			} else if (List.newTypeReference.isAssignableFrom(field.type)) {
 				returnType = field.type
 				body = '''
-					if («field.simpleName» == null) return «CollectionLiterals.newTypeReference».emptyList();
+					if («field.simpleName» == null) return «CollectionLiterals».emptyList();
 					return «field.simpleName»;
 				'''
 			} else if (optionals) {
 				returnType = Opt.newTypeReference(field.type)
-				body = '''return «OptExtensions.newTypeReference».option(«field.simpleName»);'''
+				body = '''return «OptExtensions».option(«field.simpleName»);'''
 			} else {
 				returnType = field.type
 				body = '''return «field.simpleName»;'''

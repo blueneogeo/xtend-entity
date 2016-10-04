@@ -21,28 +21,26 @@ class EntityReflectionUtil {
 		this.fieldNameFormatter = fieldNameFormatter
 	}
 	
-	def populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {
-		val entityFieldTypeRef = EntityField.newTypeReference
-		
+	def void populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {		
 		fields.forEach [ extension field |
 			/** Copy fields to Fields class */
 			fieldsClass.addField(field.simpleName) [
 				primarySourceElement = field
-				type = entityFieldTypeRef
+				type = EntityField.newTypeReference
 				visibility = Visibility.PUBLIC
 				static = true
 				final = true
-				initializer = '''new «entityFieldTypeRef.simpleName»("«field.simpleName»", "«fieldNameFormatter.apply(field.simpleName)»", «field.type.cleanTypeName».class)'''
+				initializer = '''new «EntityField»("«field.simpleName»", "«fieldNameFormatter.apply(field.simpleName)»", «field.type.cleanTypeName».class)'''
 				docComment = field.docComment
 			]
 		]
 	}
 	
-	def addFieldsGetter(MutableClassDeclaration entityClass, ClassDeclaration fieldsClass) {
+	def void addFieldsGetter(MutableClassDeclaration entityClass, ClassDeclaration fieldsClass) {
 		val pureAnnotationTypeRef = Pure.newAnnotationReference
 		val entityFieldTypeRef = EntityField.newTypeReference
 		val entityFieldListTypeRef = List.newTypeReference(entityFieldTypeRef)
-		val collectionsTypeRef = CollectionLiterals.newTypeReference
+		//val collectionsTypeRef = CollectionLiterals.newTypeReference
 		
 		entityClass.addMethod('getFields') [
 			primarySourceElement = entityClass
@@ -50,13 +48,13 @@ class EntityReflectionUtil {
 			addAnnotation(pureAnnotationTypeRef)
 			
 			if (entityClass.extendsEntity) body = '''
-				return «IterableExtensions.newTypeReference».toList(«Sets.newTypeReference».union(
-					«IterableExtensions.newTypeReference».toSet(super.getFields()),
-					«IterableExtensions.newTypeReference».toSet(«collectionsTypeRef».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»))
+				return «IterableExtensions».toList(«Sets».union(
+					«IterableExtensions».toSet(super.getFields()),
+					«IterableExtensions».toSet(«CollectionLiterals».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»))
 				));
 			'''
 			else body = '''
-				return «collectionsTypeRef».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»);
+				return «CollectionLiterals».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»);
 			'''
 		]
 	}
