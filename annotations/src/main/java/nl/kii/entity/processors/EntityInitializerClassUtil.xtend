@@ -8,10 +8,10 @@ import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
@@ -37,6 +37,7 @@ class EntityInitializerClassUtil {
 			initializerClass.addField(simpleName) [
 				type = field.type
 				docComment = field.docComment
+				initializer = field.initializer
 			]
 		]
 		
@@ -98,9 +99,8 @@ class EntityInitializerClassUtil {
 					
 				«ENDIF»
 				«FOR field : fields»
-					«IF !field.type.primitive»if (constructor.«field.getterName»() != null) 
-						«ENDIF»this.«field.simpleName» = constructor.«field.getterName»();
-					
+«««					«IF !field.type.primitive»if (constructor.«field.getterName»() != null)«ENDIF»
+					this.«field.simpleName» = constructor.«field.getterName»();
 				«ENDFOR»
 			'''
 		]

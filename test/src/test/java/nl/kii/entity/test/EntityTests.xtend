@@ -65,11 +65,27 @@ class EntityTests {
 	}
 	
 	@Test
+	def void testDefaults() {
+		val defaultUser = new User
+		
+		assertEquals(Membership.free, defaultUser.membership)
+		assertEquals(10, defaultUser.voucherCount)
+		
+		val nonDefaultUser = new User [ 
+			voucherCount = 0
+			membership = null
+		]
+		
+		assertEquals(null, nonDefaultUser.membership)
+		assertEquals(0, nonDefaultUser.voucherCount)
+	}
+	
+	@Test
 	def void testBasicSerialization() {
 		val user = new User [
 			age = 30
 			name = 'john'
-			membership = Membership.free
+			membership = Membership.premium
 			profileId = 1234L
 		]
 		
@@ -77,13 +93,14 @@ class EntityTests {
 			#{ 
 				'name' -> 'john',
 				'age' -> 30,
-				'membership' -> 'free',
+				'membership' -> 'premium',
+				'voucher_count' -> 10,
 				'profile_id' -> 1234L
 			},
 			user.serialize
 		)
 	}
-
+	
 	@Test
 	def void testAdvancedSerialization() {
 		val date = moment(2016, Month.JANUARY.ordinal, 1)
@@ -101,6 +118,8 @@ class EntityTests {
 				'name' -> 'john',
 				'age' -> 30,
 				'registered' -> '2016-01-01',
+				'voucher_count' -> 10,
+				'membership' -> 'free',
 				'best_time' -> 'PT6M'
 			},
 			user.serialize
@@ -111,6 +130,7 @@ class EntityTests {
 			referral = new User [
 				name = 'ref'
 			]
+			voucherCount = 10
 		]
 
 		assertEquals(
@@ -118,8 +138,12 @@ class EntityTests {
 			#{ 
 				'name' -> 'john',
 				'referral' -> #{
-					'name' -> 'ref'
-				}
+					'name' -> 'ref',
+					'membership' -> 'free',
+					'voucher_count' -> 10
+				},
+				'voucher_count' -> 10,
+				'membership' -> 'free'
 			},
 			user2.serialize
 		)
@@ -136,9 +160,11 @@ class EntityTests {
 			'nested entity in list should be serialized as a list of maps',
 			#{ 
 				'name' -> 'john',
+				'voucher_count' -> 10,
+				'membership' -> 'free',
 				'friends' -> #[
-					#{ 'name' -> 'friend1' },
-					#{ 'name' -> 'friend2' }
+					#{ 'name' -> 'friend1', 'voucher_count' -> 10, 'membership' -> 'free' },
+					#{ 'name' -> 'friend2', 'voucher_count' -> 10, 'membership' -> 'free' }
 				]
 			},
 			user3.serialize

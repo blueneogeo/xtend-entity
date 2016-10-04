@@ -26,13 +26,14 @@ class User {
 	List<User> friends
 	
 	Location location
-	Membership membership
+	Membership membership = Membership.free
 	
 	Map<String, String> attributes 
 	Map<Membership, Period> membershipDurations
 	Map<Location, List<Double>> coordinates
 	
 	Long profileId
+	int voucherCount = 10
 	
 	@Serializer(Period) 
 	val static s2 = Serializers.period

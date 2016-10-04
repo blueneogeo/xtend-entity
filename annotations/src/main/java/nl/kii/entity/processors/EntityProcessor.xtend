@@ -6,14 +6,12 @@ import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.entity.annotations.Type
-import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend.lib.annotations.ToStringConfiguration
 import org.eclipse.xtend.lib.annotations.ToStringProcessor
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
-import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
@@ -179,7 +177,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		/** Validate in case of entity extending that the extended entity is marked abstract */
 		if (cls.extendsEntity && cls.extendedClass.declaredResolvedMethods.exists [ declaration.simpleName == 'mutate' ]) /** Workaround to find detect abstract super type */
 			cls.addError('Extended Entity class must be marked abstract.')
-				
+		
 	}
 	
 	def needsToStringEqualsHashCode(ClassDeclaration cls) {
