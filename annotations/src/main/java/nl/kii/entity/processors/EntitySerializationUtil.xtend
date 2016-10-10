@@ -44,7 +44,7 @@ class EntitySerializationUtil {
 	]
 	
 	val List<Pair<TypeReference, String>> serializers
-	val CaseFormat casing
+	val (String)=>String casing
 	
 	def getSerializedMapTypeRef() { Map.newTypeReference(string, object) }
 	def getDeserializedMapTypeRef() { Map.newTypeReference(string, newWildcardTypeReference) }
@@ -62,11 +62,12 @@ class EntitySerializationUtil {
 		this.accessorsUtil = new AccessorsUtil(context)
 		this.serializers = serializers
 		this.casing = switch casing {
-			case underscore, case snake:			CaseFormat.LOWER_UNDERSCORE
-			case camel, case lowerCamel:			CaseFormat.LOWER_CAMEL
-			case dash, case hyphen: 				CaseFormat.LOWER_HYPHEN
-			case upperCamel: 						CaseFormat.UPPER_CAMEL
-			case upperUnderscore, case upperSnake: 	CaseFormat.UPPER_UNDERSCORE
+			case underscore, case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
+			case camel, case lowerCamel:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
+			case dash, case hyphen: 				[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
+			case upperCamel: 						[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
+			case upperUnderscore, case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
+			case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
 		}
 	}
 	
@@ -319,7 +320,7 @@ class EntitySerializationUtil {
 
 	def getSerializedKeyName(String fieldName) {
 		val casing = casing
-		CaseFormat.LOWER_CAMEL.to(casing, fieldName)
+		casing.apply(fieldName)
 	}
 	
 

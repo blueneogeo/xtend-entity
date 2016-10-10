@@ -31,6 +31,11 @@ enum Casing {
 	/** FIELD_NAME */
 	upperUnderscore,
 	/** FIELD_NAME */
-	upperSnake 
+	upperSnake,
+	
+	///////////////////
+	
+	/** field.name */
+	dot
 	
 }

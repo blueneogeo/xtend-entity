@@ -14,8 +14,11 @@ import static org.junit.Assert.*
 import static extension nl.kii.entity.EntityExtensions.*
 import static extension nl.kii.entity.csv.CSVExtensions.*
 import static extension nl.kii.entity.test.JsonExtensions.*
+import static extension nl.kii.entity.PropertiesExtensions.*
 import static extension nl.kii.entity.yaml.YamlExtensions.*
 import static extension nl.kii.util.DateExtensions.*
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 class EntityTests {
 	
@@ -310,6 +313,31 @@ class EntityTests {
 		
 		val users = csvRecords.receiveList(User)
 		println(users)
+	}
+	
+	@Test
+	def void testPropetiesDeserializing() {
+		val properties = '''
+			log.level=WARN
+			appender.rollover=p30d
+			appender.max.MB=200
+		'''.toString.properties
+		
+		println('''
+			«properties»
+		''')
+		
+		val conf = properties.receive(LogConfiguration)
+		println(conf)
+		
+		assertEquals(
+			new LogConfiguration [
+				logLevel = 'WARN'
+				appenderMaxMb = 200
+				appenderRollover = Duration.of(30, ChronoUnit.DAYS)
+			],
+			conf
+		)
 	}
 	
 	@Test

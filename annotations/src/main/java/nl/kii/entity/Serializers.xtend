@@ -38,8 +38,8 @@ class Serializers {
 	}
 	
 	/** ISO-8601 period formatting */
-	def static Serializer<Period, Object> duration() {
-		PERIOD_SERIALIZER
+	def static Serializer<Duration, Object> duration() {
+		DURATION_SERIALIZER
 	}
 
 	/** Period <-> milliseconds formatting */
