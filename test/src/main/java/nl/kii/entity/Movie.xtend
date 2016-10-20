@@ -1,4 +1,4 @@
-package nl.kii.entity.test
+package nl.kii.entity
 
 import nl.kii.entity.annotations.Entity
 import nl.kii.entity.annotations.Serializer

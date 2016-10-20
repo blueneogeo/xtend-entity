@@ -1,4 +1,4 @@
-package nl.kii.entity.test
+package nl.kii.entity
 
 import java.time.Instant
 import java.util.Date

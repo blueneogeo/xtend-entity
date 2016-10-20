@@ -1,24 +1,20 @@
-package nl.kii.entity.test
+package nl.kii.entity
 
 import io.vertx.core.json.JsonObject
+import java.time.Duration
 import java.time.Month
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Map
-import nl.kii.entity.Entity
-import nl.kii.entity.jackson.JacksonExtensions
 import nl.kii.util.Opt
 import org.junit.Test
 
 import static org.junit.Assert.*
 
 import static extension nl.kii.entity.EntityExtensions.*
-import static extension nl.kii.entity.csv.CSVExtensions.*
-import static extension nl.kii.entity.test.JsonExtensions.*
 import static extension nl.kii.entity.PropertiesExtensions.*
-import static extension nl.kii.entity.yaml.YamlExtensions.*
+import static extension nl.kii.entity.JsonExtensions.*
 import static extension nl.kii.util.DateExtensions.*
-import java.time.Duration
-import java.time.temporal.ChronoUnit
 
 class EntityTests {
 	
@@ -79,12 +75,13 @@ class EntityTests {
 			membership = null
 		]
 		
-		assertEquals(null, nonDefaultUser.membership)
+//		assertEquals('default overrides with null should be null', null, nonDefaultUser.membership)
+		assertEquals('default overrides with null should not be null', Membership.free, nonDefaultUser.membership)
 		assertEquals(0, nonDefaultUser.voucherCount)
 	}
 	
 	@Test
-	def void testBasicSerialization() {
+	def void testBasicSerDe() {
 		val user = new User [
 			age = 30
 			name = 'john'
@@ -220,7 +217,7 @@ class EntityTests {
 			'name' -> 'john',
 			'registered' -> '2016_01_01'
 		}
-
+		
 		assertEquals(
 			'other date format should still work, since it is defined like that in the entity',
 			new User [
@@ -247,74 +244,74 @@ class EntityTests {
 		''').put('json', data)
 		
 		println(map)
-		map.values.forEach[ class ]
+		map.values.forEach [ class ]
 		
 		println(fullMap)
 		
 		println(receive(User))
 	}
 
-	@Test
-	def void testYamlDeserializing() {
-		val map = '''
-			age: 30
-			name: "john"
-			birthday: 2016-01-01
-			best_time: pt20m
-			referral:
-				age: 50
-		'''.yaml
-
-		val yaml = #{
-			'age' -> 30,
-			'name' -> 'john',
-			'referral' -> #{
-				'age' -> 40,
-				'name' -> 'hans'
-			}
-		}.yaml
-		
-		println('''
-			«map»
-			
-			«yaml»
-		''')
-		
-		val user = new User(map)
-		println(user)
-	}
+//	@Test
+//	def void testYamlDeserializing() {
+//		val map = '''
+//			age: 30
+//			name: "john"
+//			birthday: 2016-01-01
+//			best_time: pt20m
+//			referral:
+//				age: 50
+//		'''.yaml
+//		
+//		val yaml = #{
+//			'age' -> 30,
+//			'name' -> 'john',
+//			'referral' -> #{
+//				'age' -> 40,
+//				'name' -> 'hans'
+//			}
+//		}.yaml
+//		
+//		println('''
+//			«map»
+//			
+//			«yaml»
+//		''')
+//		
+//		val user = new User(map)
+//		println(user)
+//	}
 	
-	@Test
-	def void testJacksonDeserializing() {		
-		val it = '''
-			{
-				"age": 30,
-				"name": "john",
-				"birthday": "2016-01-01",
-				"referral": {
-					"age": 50
-				}
-			}
-		'''
-		println(JacksonExtensions.map(it))
-		println(JacksonExtensions.receive(it, User))
-	}	
+//	@Test
+//	def void testJacksonDeserializing() {		
+//		val it = '''
+//			{
+//				"age": 30,
+//				"name": "john",
+//				"birthday": "2016-01-01",
+//				"referral": {
+//					"age": 50
+//				}
+//			}
+//		'''
+//		println(JacksonExtensions.map(it))
+//		println(JacksonExtensions.receive(it, User))
+//	}
 	
-	@Test
-	def void testCsvDeserializing() {
-		val csvRecords = '''
-			"age","name","date_of_birth","best_time"
-			30,"john","2016-01-01","pt20m"
-		'''.toString.csv
-		
-		println('''
-			«csvRecords»
-		''')
-		
-		val users = csvRecords.receiveList(User)
-		println(users)
-	}
-	
+//	@Test
+//	def void testCsvDeserializing() {
+//		val csvRecords = '''
+//			"age","name","date_of_birth","best_time"
+//			30,"john","2016-01-01","pt20m"
+//		'''.toString.csv
+//		
+//		println('''
+//			«csvRecords»
+//		''')
+//		
+//		val users = csvRecords.receiveList(User)
+//		println(users)
+//	}
+//	
 	@Test
 	def void testPropetiesDeserializing() {
 		val properties = '''
@@ -351,7 +348,7 @@ class EntityTests {
 		assertEquals(4, d1.legs)
 		
 		assertEquals(
-			'fields class and getFields() should inherit',
+			'fields class / getFields() should inherit',
 			#[ Dog.Fields.type, Dog.Fields.born, Dog.Fields.color, Dog.Fields.weight, Dog.Fields.legs, Dog.Fields.breed, Dog.Fields.mother, Dog.Fields.father, Dog.Fields.hasOwner ].sortBy[name],
 			d1.fields.sortBy[name]
 		)
@@ -375,7 +372,7 @@ class EntityTests {
 			emptyList,
 			user1.purchases
 		)
-
+		
 		assertEquals(
 			'empty map from getter when map is null',
 			emptyMap,
@@ -402,7 +399,7 @@ class EntityTests {
 			catch(Exception e) false
 		)
 	}
-
+	
 	@Test
 	def void testApplyingConvenienceProcedure() {
 		assertEquals(

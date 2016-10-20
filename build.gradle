@@ -15,7 +15,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'org.xtext:xtext-gradle-plugin:1.0.9'
+    classpath 'org.xtext:xtext-gradle-plugin:1.0.12'
     classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.0.3'
   }
 }
@@ -130,11 +130,11 @@ project('annotations') {
 
 project('test') {
   dependencies {
-    testCompile project(':annotations')
+    compile project(':annotations')
 
-    testCompile project(':yaml')
-    testCompile project(':csv')
-    testCompile project(':jackson')
+    // testCompile project(':yaml')
+    // testCompile project(':csv')
+    // testCompile project(':jackson')
 
     testCompile 'com.kimengi.util:xtend-tools-test:latest.release'
     testCompile 'io.vertx:vertx-core:3.1.0'
@@ -145,6 +145,8 @@ project('yaml') {
   dependencies {
     compile project(':annotations')
     compile 'org.yaml:snakeyaml:1.17'
+
+    testCompile project(':test')
   }
 }
 
@@ -152,6 +154,8 @@ project('csv') {
   dependencies {
     compile project(':annotations')
     compile 'org.apache.commons:commons-csv:latest.release'
+
+    testCompile project(':test')
   }
 }
 
@@ -159,6 +163,8 @@ project('jackson') {
   dependencies {
     compile project(':annotations')
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.1'
+
+    testCompile project(':test')
   }
 }
 
