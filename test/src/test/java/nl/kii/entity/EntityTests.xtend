@@ -13,6 +13,7 @@ import static org.junit.Assert.*
 
 import static extension nl.kii.entity.EntityExtensions.*
 import static extension nl.kii.entity.PropertiesExtensions.*
+import static extension nl.kii.util.OptExtensions.*
 import static extension nl.kii.entity.JsonExtensions.*
 import static extension nl.kii.util.DateExtensions.*
 
@@ -397,6 +398,16 @@ class EntityTests {
 			} 
 			catch(UnsupportedOperationException e) true
 			catch(Exception e) false
+		)
+	}
+	
+	@Test
+	def void testValidation() {
+		assertNull(
+			attempt [ 
+				val user = new User [ age = 50 ].validate /** No 'name' field entered */
+				user
+			].orNull
 		)
 	}
 	

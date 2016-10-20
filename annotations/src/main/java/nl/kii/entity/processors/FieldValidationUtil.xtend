@@ -19,8 +19,8 @@ class FieldValidationUtil {
 	
 	def addValidationMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields, Pair<? extends FieldDeclaration, String> typeAssertion) {
 		cls.addMethod('validate') [
-			primarySourceElement = cls
 			exceptions = AssertionException.newTypeReference
+			returnType = cls.newSelfTypeReference
 			body = '''
 				«IF typeAssertion.defined»
 					if (!«typeAssertion.key.simpleName».equals("«typeAssertion.value»"))
@@ -30,6 +30,8 @@ class FieldValidationUtil {
 					if (!«OptExtensions».defined(«f.simpleName»)) 
 						throw new «AssertionException»("Mandatory field '«f.simpleName»' should be defined.");
 				«ENDFOR»
+				
+				return this;
 			'''
 		]
 	}

@@ -12,8 +12,8 @@ interface Entity {
 //	/** Returns true if the object data is valid */
 //	def boolean isValid()
 //
-	/** Throws a descriptive exception if the object data is invalid */
-	def void validate() throws AssertionException
+	/** Throws a descriptive exception if the object data is invalid. Fluent, should return {@code this}. */
+	def Entity validate() throws AssertionException
 
 	/** Returns all fields in this object */
 	def List<EntityField> getFields()
