@@ -2,7 +2,6 @@ package nl.kii.entity.processors
 
 import nl.kii.util.Opt
 import nl.kii.util.OptExtensions
-import org.eclipse.xtend.lib.annotations.AccessorsProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
@@ -15,7 +14,7 @@ import static extension nl.kii.util.OptExtensions.*
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
-	val extension AccessorsProcessor.Util accessorsUtil
+	val extension AccessorsUtil accessorsUtil
 	val extension EntityProcessor.Util baseUtil
 	
 	val MutableClassDeclaration initializerClass
@@ -26,7 +25,7 @@ class EntityInitializerClassUtil {
 		this.initializerClass = entityInitializerClass
 		this.entityClass = entityClass
 		
-		this.accessorsUtil = new AccessorsProcessor.Util(context)
+		this.accessorsUtil = new AccessorsUtil(context)
 		this.baseUtil = new EntityProcessor.Util(context)
 	}
 	
@@ -35,9 +34,8 @@ class EntityInitializerClassUtil {
 		/** Copy fields from Entity into constructor class */
 		fields.forEach [ extension field |
 			initializerClass.addField(simpleName) [
-				type = field.type
+				type = field.type.wrapperIfPrimitive
 				docComment = field.docComment
-				initializer = field.initializer
 			]
 		]
 		
@@ -98,9 +96,9 @@ class EntityInitializerClassUtil {
 					super.«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 					
 				«ENDIF»
-				«FOR field : fields»
-«««					«IF !field.type.primitive»if (constructor.«field.getterName»() != null)«ENDIF»
-					this.«field.simpleName» = constructor.«field.getterName»();
+				«FOR field : fields SEPARATOR '\n'»
+					if (constructor.«field.getterName»() != null)
+						this.«field.simpleName» = constructor.«field.getterName»();
 				«ENDFOR»
 			'''
 		]
@@ -127,7 +125,7 @@ class EntityInitializerClassUtil {
 				«argName».apply(constructor);
 				«APPLY_CONSTRUCTOR_METHOD_NAME»(constructor);
 			'''
-		]		
+		]
 		
 		val requiredFields = fields.requiredFields
 		if (!requiredFields.empty) {
@@ -170,7 +168,7 @@ class EntityInitializerClassUtil {
 	
 	def addMutationFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
 		val constructorTypeRef = initializerClass.newTypeReference
-		val constructorOptionsTypeRef = newTypeReference(Procedure1, constructorTypeRef)
+		val constructorOptionsTypeRef = Procedure1.newTypeReference(constructorTypeRef)
 		val pureAnnotationTypeRef = Pure.newAnnotationReference		
 		val entityTypeRef = entityClass.newTypeReference
 		

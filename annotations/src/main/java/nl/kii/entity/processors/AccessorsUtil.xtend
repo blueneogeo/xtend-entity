@@ -8,6 +8,7 @@ import org.eclipse.xtend.lib.annotations.AccessorsProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
 class AccessorsUtil extends AccessorsProcessor.Util {
 	val extension TransformationContext context
@@ -59,5 +60,22 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 			}
 		]
 	}
+	
+	/** Copied from parent, with small modification to skip 'is'-setters */	
+	override getPossibleGetterNames(FieldDeclaration it) {
+			val names = newArrayList
+			// common case: a boolean field already starts with 'is'. Allow field name as getter method name
+			if (type.orObject.isBooleanType && simpleName.startsWith('is') && simpleName.length>2 && Character.isUpperCase(simpleName.charAt(2))) {
+				names += simpleName
+			}
+			names.addAll(#["get"].map[prefix|prefix + simpleName.toFirstUpper])
+			return names
+	}
+	
+	/** Copied from parent */
+	private def orObject(TypeReference ref) {
+		if (ref === null) object else ref
+	}
+	
 }
 
