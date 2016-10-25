@@ -238,7 +238,7 @@ class EntitySerializationUtil {
 				else «assignment» «Long».parseLong(«valName».toString());
 			'''
 			case t.extendsType(Float): '''
-				if («valName» instanceof «Float») «assignment» («Long») «valName»;
+				if («valName» instanceof «Float») «assignment» («Float») «valName»;
 				else «assignment» «Float».parseFloat(«valName».toString());
 			'''
 			case t.extendsType(Double): '''
@@ -252,21 +252,21 @@ class EntitySerializationUtil {
 			case t.extendsType(Iterable): {
 				val entryType = type.actualTypeArguments.head
 				'''
-					if («valName» instanceof «Iterable») {
+«««					if («valName» instanceof «Iterable») {
 						final «Function1» _function = new «Function1»<«Object», «entryType»>() {
 							public «entryType» apply(final «Object» entry) {
 								«entryType.getDeserializationBody('''return''', 'entry')»
 							}
 						};
 						«assignment» «IterableExtensions».toList(«IterableExtensions».map((«Iterable») «valName», _function));
-					}
+«««					}
 				'''
 			}
 			case t.extendsType(Map): {
 				val entryTypes = type.actualTypeArguments.get(0) -> type.actualTypeArguments.get(1)
 				val entryTypePair = Pair.newTypeReference(entryTypes.key, entryTypes.value)
 				'''
-					if («valName» instanceof Map) {
+«««					if («valName» instanceof Map) {
 						final «Function2» _function = new «Function2»<«Object», «Object», «entryTypePair»>() {
 							public «entryTypePair» apply(final «Object» k, final «Object» v) {
 								«entryTypes.key» key = null;
@@ -279,7 +279,7 @@ class EntitySerializationUtil {
 							}
 						};
 						«assignment» «MapExtensions».map((«Map») «valName», _function);
-					}
+«««					} else throw new «ClassCastException»("")
 				'''
 			}
 			case t.extendsType(Enum): '''
