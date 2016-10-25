@@ -12,10 +12,10 @@ import org.junit.Test
 import static org.junit.Assert.*
 
 import static extension nl.kii.entity.EntityExtensions.*
-import static extension nl.kii.entity.PropertiesExtensions.*
-import static extension nl.kii.util.OptExtensions.*
 import static extension nl.kii.entity.JsonExtensions.*
+import static extension nl.kii.entity.PropertiesExtensions.*
 import static extension nl.kii.util.DateExtensions.*
+import static extension nl.kii.util.OptExtensions.*
 
 class EntityTests {
 	
@@ -447,11 +447,17 @@ class EntityTests {
 				referral = new User [
 					name = 'hans'
 				]
+				location = new Location [
+					number = 123
+				]
 			],
 			new User [
 				name = 'john' 
 				referral [
 					name = 'hans'
+				]
+				location [
+					number = 123
 				]
 			]
 		)

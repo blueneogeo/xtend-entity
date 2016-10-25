@@ -25,12 +25,13 @@ class FieldValidationUtil {
 				«IF typeAssertion.defined»
 					if (!«typeAssertion.key.simpleName».equals("«typeAssertion.value»"))
 						throw new «AssertionException»("Field '«typeAssertion.key.simpleName»' should be '«typeAssertion.value»', but was '" + «typeAssertion.key.simpleName» + "'.");
+						
 				«ENDIF»
 				«FOR f:fields»
 					if (!«OptExtensions».defined(«f.simpleName»)) 
 						throw new «AssertionException»("Mandatory field '«f.simpleName»' should be defined.");
+						
 				«ENDFOR»
-				
 				return this;
 			'''
 		]

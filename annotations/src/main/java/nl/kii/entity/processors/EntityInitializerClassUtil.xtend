@@ -11,6 +11,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import nl.kii.entity.annotations.Entity
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
@@ -207,12 +208,12 @@ class EntityInitializerClassUtil {
 		val constructorTypeRef = initializerClass.newTypeReference
 		
 		entityClass.implementedInterfaces = entityClass.implementedInterfaces + Procedure1.newTypeReference(constructorTypeRef)
-			
+		
 		entityClass.addMethod('apply') [
 			addParameter('constructor', constructorTypeRef)
 			body = ''' '''
 		]
-
+		
 		/** Add empty constructor that applies constructing procedure in case {@code apply} is overridden  */
 		entityClass.addConstructor [
 			primarySourceElement = entityClass
@@ -226,7 +227,7 @@ class EntityInitializerClassUtil {
 	
 	def void addConvenienceNestedEntitySetters() {
 		initializerClass.declaredFields
-			.filter [ type.defined && type.extendsType(Procedure1) ]
+			.filter [ type.defined && (type.extendsType(Procedure1) || findClass(type.name)?.findAnnotation(Entity.newTypeReference.type).defined) ]
 			.forEach [ field |
 				initializerClass.addMethod(field.simpleName) [ 
 					val argName = field.simpleName
