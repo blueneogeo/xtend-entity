@@ -9,6 +9,8 @@ import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
+import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 class AccessorsUtil extends AccessorsProcessor.Util {
 	val extension TransformationContext context
@@ -72,10 +74,29 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 			return names
 	}
 	
-	/** Copied from parent */
-	private def orObject(TypeReference ref) {
-		if (ref === null) object else ref
+	/** Copied from parent, but added docComment and deprecated copying */
+	override addSetter(MutableFieldDeclaration field, Visibility visibility) {
+		field.validateSetter
+		field.declaringType.addMethod(field.setterName) [
+			primarySourceElement = field.primarySourceElement
+			returnType = primitiveVoid
+			val param = addParameter(field.simpleName, field.type.orObject)
+			body = '''«field.fieldOwner».«field.simpleName» = «param.simpleName»;'''
+			static = field.static
+			docComment = field.docComment
+			deprecated = field.deprecated
+			it.visibility = visibility
+		]
 	}
 	
+	/** Copied from parent */	
+	def private fieldOwner(MutableFieldDeclaration it) {
+		if(static) declaringType.newTypeReference else "this"
+	}
+	
+	/** Copied from parent */
+	def private orObject(TypeReference ref) {
+		if (ref === null) object else ref
+	}
 }
 
