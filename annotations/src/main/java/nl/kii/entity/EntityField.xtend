@@ -7,4 +7,5 @@ class EntityField {
 	String name
 	String formattedName
 	Class<?> type
+	boolean required
 }

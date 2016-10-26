@@ -10,6 +10,7 @@ import static extension nl.kii.entity.EntityExtensions.*
 import static extension nl.kii.util.IterableExtensions.*
 
 class CSVExtensions {
+	
 	def static csv(String csv, String... headers) {
 		csv.csv(CSVFormat.DEFAULT.withHeader(headers))
 	}

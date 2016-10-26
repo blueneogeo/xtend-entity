@@ -9,6 +9,7 @@ import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+import nl.kii.entity.annotations.Require
 
 class EntityReflectionUtil {
 	val extension TransformationContext context
@@ -23,6 +24,7 @@ class EntityReflectionUtil {
 	
 	def void populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {		
 		fields.forEach [ extension field |
+			val required = field.findAnnotation(Require.newTypeReference.type) != null
 			/** Copy fields to Fields class */
 			fieldsClass.addField(field.simpleName) [
 				primarySourceElement = field
@@ -30,7 +32,7 @@ class EntityReflectionUtil {
 				visibility = Visibility.PUBLIC
 				static = true
 				final = true
-				initializer = '''new «EntityField»("«field.simpleName»", "«fieldNameFormatter.apply(field.simpleName)»", «field.type.cleanTypeName».class)'''
+				initializer = '''new «EntityField»("«field.simpleName»", "«fieldNameFormatter.apply(field.simpleName)»", «field.type.cleanTypeName».class, «required»)'''
 				docComment = field.docComment
 			]
 		]
