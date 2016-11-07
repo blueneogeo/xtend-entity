@@ -1,5 +1,6 @@
 package nl.kii.entity
 
+import com.google.common.collect.Range
 import java.time.Duration
 import java.time.Instant
 import java.util.Date
@@ -17,6 +18,8 @@ import nl.kii.entity.serializers.UUIDSerializer
 import nl.kii.util.Period
 
 import static extension nl.kii.util.IterableExtensions.*
+import nl.kii.entity.serializers.RangeSerializer
+import nl.kii.entity.serializers.ClassSerializer
 
 interface Serializer<O, S> {
 	def S serialize(O original)
@@ -32,6 +35,7 @@ class Serializers {
 	val public static INSTANT_MS_SERIALIZER = new InstantMsSerializer
 	val public static UUID_SERIALIZER = new UUIDSerializer
 	val public static DIRECT_SERIALIZER = new DirectSerializer
+	val public static CLASS_SERIALIZER = new ClassSerializer
 	
 	/** ISO-8601 period formatting */
 	def static Serializer<Period, Object> period() {
@@ -91,5 +95,17 @@ class Serializers {
 	def static Serializer<Instant, Object> instantMs() {
 		INSTANT_MS_SERIALIZER
 	}
+	
+	def static Serializer<Class<?>, Object> cls() {
+		CLASS_SERIALIZER
+	}
+	
+	def static <C extends Comparable<C>> Serializer<Range<C>, Object> range(Class<C> type) {
+		new RangeSerializer(type, null)
+	}
+	
+	def static <C extends Comparable<C>> Serializer<Range<C>, Object> range(Class<C> type, Serializer<C, Object> serializer) {
+		new RangeSerializer(type, serializer)
+	}	
 	
 }
