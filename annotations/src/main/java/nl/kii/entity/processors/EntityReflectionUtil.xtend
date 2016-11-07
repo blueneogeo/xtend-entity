@@ -45,13 +45,22 @@ class EntityReflectionUtil {
 		//val collectionsTypeRef = CollectionLiterals.newTypeReference
 		
 		entityClass.addMethod('getFields') [
+			returnType = entityFieldListTypeRef
+			addAnnotation(pureAnnotationTypeRef)
+			body = '''
+				return «entityClass».getEntityFields();
+			'''
+		]
+		
+		entityClass.addMethod('getEntityFields') [
 			primarySourceElement = entityClass
 			returnType = entityFieldListTypeRef
 			addAnnotation(pureAnnotationTypeRef)
+			static = true
 			
 			if (entityClass.extendsEntity) body = '''
 				return «IterableExtensions».toList(«Sets».union(
-					«IterableExtensions».toSet(super.getFields()),
+					«IterableExtensions».toSet(«entityClass.extendedClass».getEntityFields()),
 					«IterableExtensions».toSet(«CollectionLiterals».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»))
 				));
 			'''
