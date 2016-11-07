@@ -37,6 +37,7 @@ class EntityInitializerClassUtil {
 			initializerClass.addField(simpleName) [
 				type = field.type.wrapperIfPrimitive
 				docComment = field.docComment
+				field.annotations.forEach [ a | addAnnotation(a) ]
 			]
 		]
 		

@@ -11,6 +11,8 @@ import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+import nl.kii.entity.annotations.Require
+import static extension nl.kii.util.OptExtensions.*
 
 class AccessorsUtil extends AccessorsProcessor.Util {
 	val extension TransformationContext context
@@ -85,6 +87,7 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 			static = field.static
 			docComment = field.docComment
 			deprecated = field.deprecated
+			field.findAnnotation(Require.newTypeReference.type).option => [ require | addAnnotation(require) ]
 			it.visibility = visibility
 		]
 	}
