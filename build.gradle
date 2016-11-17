@@ -3,14 +3,14 @@ buildscript {
   repositories {
     jcenter()
     maven {
-      url 'https://plugins.gradle.org/m2/'
+	 url 'https://plugins.gradle.org/m2/'
     }
     maven {
-      url "${artifactory_url}/plugins-release"
-      credentials {
-        username artifactory_user
-        password artifactory_password
-      }
+	 url "${artifactory_url}/plugins-release"
+	 credentials {
+	   username artifactory_user
+	   password artifactory_password
+	 }
     }
   }
 
@@ -42,18 +42,18 @@ subprojects {
     mavenLocal()
     mavenCentral()
     maven {
-      url "${artifactory_url}/libs-release"
-      credentials {
-        username artifactory_user
-        password artifactory_password
-      }
+	 url "${artifactory_url}/libs-release"
+	 credentials {
+	   username artifactory_user
+	   password artifactory_password
+	 }
     }
     maven {
-      url "${artifactory_url}/main"
-      credentials {
-        username artifactory_user
-        password artifactory_password
-      }
+	 url "${artifactory_url}/main"
+	 credentials {
+	   username artifactory_user
+	   password artifactory_password
+	 }
     }
   }
 
@@ -63,6 +63,9 @@ subprojects {
     compile "ch.qos.logback:logback-classic:${logbackVersion}"
     testCompile "junit:junit:${junitVersion}"
   }
+	xtend {
+		preferences = [ 'useJavaCompilerCompliance':true ]
+	}
 
   task sourcesJar( type: Jar, dependsOn: classes ) {
     classifier = 'sources'
@@ -76,7 +79,7 @@ subprojects {
 
   tasks.withType( Javadoc ) {
     if ( JavaVersion.current().isJava8Compatible() ) {
-      options.addStringOption( 'Xdoclint:none', '-quiet' )
+	 options.addStringOption( 'Xdoclint:none', '-quiet' )
     }
   }
 
@@ -98,26 +101,26 @@ subprojects {
 
   publishing {
     publications {
-      mavenJava( MavenPublication ) {
-        artifactId rootProject.name + '-' + project.name
-        from components.java
-        artifact sourcesJar
-        artifact javadocJar
-        pom.withXml {
-          asNode().dependencies.'*'.each() {
-            it.scope*.value = 'compile'
-          }
-        }
-      }
+	 mavenJava( MavenPublication ) {
+	   artifactId rootProject.name + '-' + project.name
+	   from components.java
+	   artifact sourcesJar
+	   artifact javadocJar
+	   pom.withXml {
+		asNode().dependencies.'*'.each() {
+		  it.scope*.value = 'compile'
+		}
+	   }
+	 }
     }
     repositories {
-      maven {
-        url "${artifactory_url}/main-local"
-        credentials {
-          username artifactory_user
-          password artifactory_password
-        }
-      }
+	 maven {
+	   url "${artifactory_url}/main-local"
+	   credentials {
+		username artifactory_user
+		password artifactory_password
+	   }
+	 }
     }
   }
 }

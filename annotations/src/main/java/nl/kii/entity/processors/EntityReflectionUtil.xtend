@@ -56,7 +56,7 @@ class EntityReflectionUtil {
 			
 			if (entityClass.extendsEntity) body = '''
 				return «IterableExtensions».toList(«Sets».union(
-					«IterableExtensions».toSet(«entityClass.extendedClass».getEntityFields()),
+					«IterableExtensions».toSet(«entityClass.extendedClass.cleanTypeName».getEntityFields()),
 					«IterableExtensions».toSet(«CollectionLiterals».newImmutableList(«FOR f:fieldsClass.declaredFields SEPARATOR ', '»Fields.«f.simpleName»«ENDFOR»))
 				));
 			'''

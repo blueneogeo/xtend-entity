@@ -158,7 +158,7 @@ class EntitySerializationUtil {
 	
 	def StringConcatenationClient getSerializationBody(TypeReference type, StringConcatenationClient assignment, String valName) {
 		switch t:type {
-			case t.extendsType(Iterable): {
+			case t.extendsType(List): {
 				val entryType = t.actualTypeArguments.head
 				'''
 					final «Function1» _function = new «Function1»<«entryType», «Object»>() {
@@ -248,7 +248,7 @@ class EntitySerializationUtil {
 				if («valName» instanceof «Boolean») «assignment» («Boolean») «valName»;
 				else «assignment» «Boolean».parseBoolean(«valName».toString());
 			'''
-			case t.extendsType(Iterable): {
+			case t.extendsType(List): {
 				val entryType = type.actualTypeArguments.head
 				'''
 «««					if («valName» instanceof «Iterable») {

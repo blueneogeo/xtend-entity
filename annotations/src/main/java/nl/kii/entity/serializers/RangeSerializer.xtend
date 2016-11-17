@@ -8,6 +8,7 @@ import static com.google.common.collect.BoundType.*
 
 import static extension nl.kii.util.NumericExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import java.util.regex.Pattern
 
 @FinalFieldsConstructor
 class RangeSerializer<C extends Comparable<C>> implements Serializer<Range<C>, Object> {
@@ -25,7 +26,7 @@ class RangeSerializer<C extends Comparable<C>> implements Serializer<Range<C>, O
 		val value = serialized.toString.trim
 		
 		val delimiter = value.findDelimiter
-		val values = value.split(delimiter).map [ deserializeValue ]
+		val values = value.split(Pattern.quote(delimiter)).map [ deserializeValue ]
 		
 		val range = values.get(0) -> values.get(1)
 		
@@ -49,10 +50,10 @@ class RangeSerializer<C extends Comparable<C>> implements Serializer<Range<C>, O
 	
 	def static findDelimiter(String serialized) {
 		#[ Delimiters.open, Delimiters.closedOpen, Delimiters.openClosed, Delimiters.closed ]
-			.findFirst [ serialized.split(it).size == 2 ]
+			.findFirst [ serialized.split(Pattern.quote(it)).size == 2 ]
 			.or [ throw new Exception('''could not find range delimiter in range «serialized»''') ]
 	}
-	
+		
 	override serialize(Range<C> original) '''«original.lowerEndpoint»«original.serializeBound»«original.upperEndpoint»'''
 	
 	def static serializeBound(Range<?> original) {
@@ -64,7 +65,7 @@ class RangeSerializer<C extends Comparable<C>> implements Serializer<Range<C>, O
 //	}
 	
 	val static boundsChart = #{
-		(OPEN -> OPEN) 	-> Delimiters.open,
+		(OPEN -> OPEN) 		-> Delimiters.open,
 		(OPEN -> CLOSED) 	-> Delimiters.openClosed,
 		(CLOSED -> OPEN) 	-> Delimiters.closedOpen,
 		(CLOSED -> CLOSED)	-> Delimiters.closed
