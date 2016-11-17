@@ -5,5 +5,5 @@ import nl.kii.entity.Casing
 /** Override serialization behaviour from type */
 annotation Field {
 	String name = ''
-	Casing casing = Casing.camel
+	Casing casing = Casing.ignore
 }

@@ -36,6 +36,10 @@ enum Casing {
 	///////////////////
 	
 	/** field.name */
-	dot
+	dot,
 	
+	///////////////////
+	
+	/** no transformation */
+	ignore	
 }

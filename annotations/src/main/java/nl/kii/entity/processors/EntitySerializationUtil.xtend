@@ -1,28 +1,26 @@
 package nl.kii.entity.processors
 
-import com.google.common.base.CaseFormat
 import java.util.List
 import java.util.Map
-import nl.kii.entity.Casing
 import nl.kii.entity.Entity
 import nl.kii.entity.EntityExtensions
 import nl.kii.entity.Serializer
+import nl.kii.entity.processors.EntityProcessor.EntityFieldSignature
 import nl.kii.entity.processors.EntityProcessor.Util
 import nl.kii.util.MapExtensions
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
-import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Functions.Function2
 
 import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class EntitySerializationUtil {
 	val extension TransformationContext context
@@ -44,7 +42,7 @@ class EntitySerializationUtil {
 	]
 	
 	val List<Pair<TypeReference, String>> serializers
-	val (String)=>String casing
+	//val (String)=>String casing
 	
 	def getSerializedMapTypeRef() { Map.newTypeReference(string, object) }
 	def getDeserializedMapTypeRef() { Map.newTypeReference(string, newWildcardTypeReference) }
@@ -56,19 +54,20 @@ class EntitySerializationUtil {
 	val extension EntityProcessor.Util baseUtil
 	val extension AccessorsUtil accessorsUtil
 	
-	new(TransformationContext context, List<Pair<TypeReference, String>> serializers, Casing casing) {
+	new(TransformationContext context, List<Pair<TypeReference, String>> serializers) {
 		this.context = context
 		this.baseUtil = new Util(context)
 		this.accessorsUtil = new AccessorsUtil(context)
 		this.serializers = serializers
-		this.casing = switch casing {
-			case underscore, case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
-			case camel, case lowerCamel:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
-			case dash, case hyphen: 				[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
-			case upperCamel: 						[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
-			case upperUnderscore, case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
-			case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
-		}
+		//this.fieldSignatures = fieldSignatures
+//		this.casing = switch casing {
+//			case underscore, case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
+//			case camel, case lowerCamel:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
+//			case dash, case hyphen: 				[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
+//			case upperCamel: 						[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
+//			case upperUnderscore, case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
+//			case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
+//		}
 	}
 	
 	def isSupported(TypeReference type) {
@@ -82,14 +81,14 @@ class EntitySerializationUtil {
 		}
 	}
 	
-	def validateFields(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
+	def validateFields(MutableClassDeclaration cls, Iterable<? extends EntityFieldSignature> fields) {
 		fields
 			.map [ it -> type.actualTypeArguments.concat(type).list ]
 			.flattenValues
 			.filter [ !value.isSupported ]
 			.list
 			.forEach [
-				key.addError('''Fields of type «value.name» cannot be serialized, add a Serializer to make the type compatible''')
+				key.declaration.addError('''Fields of type «value.name» cannot be serialized, add a Serializer to make the type compatible''')
 			]
 	}
 
@@ -131,7 +130,7 @@ class EntitySerializationUtil {
 	
 
 	val static serializeResultName = 'serialized'
-	def void addSerializeMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
+	def void addSerializeMethod(MutableClassDeclaration cls, Iterable<? extends EntityFieldSignature> fields) {
 		cls.addMethod('serialize') [
 			val mapTypeRef = serializedMapTypeRef
 			primarySourceElement = cls
@@ -145,17 +144,17 @@ class EntitySerializationUtil {
 				«ENDIF»	
 				
 				«FOR it:fields SEPARATOR '\n'»
-					final «type» «simpleName» = this.«simpleName»;
-					if («OptExtensions».defined(«simpleName»)) {
-						«type.getSerializationBody('''«object» serializedValue =''', '''«simpleName»''')»
-						«serializeResultName».put("«serializedKeyName»", serializedValue);
+					final «type» «name» = this.«name»;
+					if («OptExtensions».defined(«name»)) {
+						«type.getSerializationBody('''«object» serializedValue =''', '''«name»''')»
+						«serializeResultName».put("«serializedName»", serializedValue);
 					}
 				«ENDFOR»
 				
 				return serialized;
 			'''
 		]
-	}	
+	}
 	
 	def StringConcatenationClient getSerializationBody(TypeReference type, StringConcatenationClient assignment, String valName) {
 		switch t:type {
@@ -203,7 +202,7 @@ class EntitySerializationUtil {
 			
 	val static deserializeArgumentName = 'serialized'
 
-	def addDeserializeMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields) {
+	def addDeserializeMethod(MutableClassDeclaration cls, Iterable<? extends EntityFieldSignature> fields) {
 		cls.addMethod('deserialize') [
 			primarySourceElement = cls
 			addAnnotation(Override.newAnnotationReference)			
@@ -215,9 +214,9 @@ class EntitySerializationUtil {
 					
 				«ENDIF»
 				«FOR it:fields SEPARATOR '\n'»
-					final «Object» «simpleName» = «deserializeArgumentName».get("«serializedKeyName»");
-					if («simpleName» != null) {
-						«type.getDeserializationBody('''this.«simpleName» =''', simpleName)»
+					final «Object» «name» = «deserializeArgumentName».get("«serializedName»");
+					if («name» != null) {
+						«type.getDeserializationBody('''this.«name» =''', name)»
 					}
 				«ENDFOR»
 				
@@ -308,20 +307,20 @@ class EntitySerializationUtil {
 	
 	def StringConcatenationClient getSerializer(TypeReference fieldType) 
 //		'''((«Serializer.newTypeReference(fieldType, Object.newTypeReference).name») «EntityExtensions.newTypeReference.name».get(_serializers, «fieldType.name».class))'''
-		'''((«Serializer»<«fieldType», «Object»>) «serializersFieldName».get(«fieldType».class))'''
+		'''((«Serializer»<«fieldType», «Object»>) «serializersFieldName».get(«fieldType.type».class))'''
 	
 	def static extendsType(TypeReference type, TypeReference superType) {
 		superType.isAssignableFrom(type)
 	}
 		
-	def getSerializedKeyName(extension FieldDeclaration field) {
-		simpleName.serializedKeyName
-	}
-
-	def getSerializedKeyName(String fieldName) {
-		val casing = casing
-		casing.apply(fieldName)
-	}
+//	def getSerializedKeyName(extension FieldDeclaration field) {
+//		simpleName.serializedKeyName
+//	}
+//
+//	def getSerializedKeyName(String fieldName) {
+//		val casing = casing
+//		casing.apply(fieldName)
+//	}
 	
 
 //	def getDeserializedKeyName(extension FieldDeclaration field) {

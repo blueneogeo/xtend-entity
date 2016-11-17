@@ -170,6 +170,30 @@ class EntityTests {
 			},
 			user3.serialize
 		)
+		
+		val user4 = new User [
+			name = 'john'
+			location [
+				latitude = 52.0
+				longitude = 4.0
+				WOEID = 727232L
+			]
+		]
+		
+		assertEquals(
+			'@Field annotated fields should override global serialization behavior',
+			#{ 
+				'name' -> 'john',
+				'voucher_count' -> 10,
+				'membership' -> 'free',
+				'location' -> #{
+					'w.o.e.i.d' -> 727232L,
+					'lat' -> 52.0,
+					'long' -> 4.0
+				}
+			},
+			user4.serialize
+		)
 	}
 	
 	@Test
@@ -227,6 +251,30 @@ class EntityTests {
 			],
 			user2.deserialize(User)
 		)
+		
+		val user3 = #{ 
+			'name' -> 'john',
+			'voucher_count' -> 10,
+			'membership' -> 'free',
+			'location' -> #{
+				'w.o.e.i.d' -> 727232L,
+				'lat' -> 52.0,
+				'long' -> 4.0
+			}
+		}
+		
+		assertEquals(
+			'@Field annotated fields should override global serialization behavior',
+			new User [
+				name = 'john'
+				location [
+					latitude = 52.0
+					longitude = 4.0
+					WOEID = 727232L
+				]
+			],
+			user3.deserialize(User)
+		)		
 	}
 
 	@Test

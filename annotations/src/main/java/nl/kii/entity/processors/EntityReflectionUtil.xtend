@@ -3,37 +3,33 @@ package nl.kii.entity.processors
 import com.google.common.collect.Sets
 import java.util.List
 import nl.kii.entity.EntityField
+import nl.kii.entity.processors.EntityProcessor.EntityFieldSignature
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
-import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
-import nl.kii.entity.annotations.Require
 
 class EntityReflectionUtil {
 	val extension TransformationContext context
 	val extension EntityProcessor.Util baseUtil
-	val (String)=>String fieldNameFormatter
 	
-	new(TransformationContext context, (String)=>String fieldNameFormatter) {
+	new(TransformationContext context) {
 		this.context = context
 		this.baseUtil = new EntityProcessor.Util(context)
-		this.fieldNameFormatter = fieldNameFormatter
 	}
 	
-	def void populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends FieldDeclaration> fields) {		
+	def void populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends EntityFieldSignature> fields) {		
 		fields.forEach [ extension field |
-			val required = field.findAnnotation(Require.newTypeReference.type) != null
 			/** Copy fields to Fields class */
-			fieldsClass.addField(field.simpleName) [
-				primarySourceElement = field
+			fieldsClass.addField(field.name) [
+				primarySourceElement = declaration
 				type = EntityField.newTypeReference
 				visibility = Visibility.PUBLIC
 				static = true
 				final = true
-				initializer = '''new «EntityField»("«field.simpleName»", "«fieldNameFormatter.apply(field.simpleName)»", «field.type.cleanTypeName».class, «required»)'''
-				docComment = field.docComment
+				initializer = '''new «EntityField»("«field.name»", "«field.serializedName»", «field.type.cleanTypeName».class, «required»)'''
+				docComment = declaration.docComment
 			]
 		]
 	}

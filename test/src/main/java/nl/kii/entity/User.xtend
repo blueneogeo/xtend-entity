@@ -1,13 +1,13 @@
 package nl.kii.entity
 
 import java.time.Instant
+
 import java.util.Date
 import java.util.List
 import java.util.Map
-import nl.kii.entity.Serializers
-import nl.kii.entity.annotations.Entity
+import nl.kii.entity.annotations.Field
 import nl.kii.entity.annotations.Require
-import nl.kii.entity.annotations.Serializer
+import nl.kii.entity.annotations.Entity
 import nl.kii.util.Period
 
 @Entity(casing=underscore)
@@ -61,4 +61,10 @@ enum Membership {
 class Location {
 	String address
 	Integer number
+	
+	/** Yahoo location id */
+	@Field(casing=dot) Long WOEID
+	
+	@Field(name='long') Double longitude
+	@Field(name='lat') Double latitude
 }

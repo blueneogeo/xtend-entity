@@ -1,11 +1,14 @@
 package nl.kii.entity.processors
 
+import com.google.common.base.CaseFormat
 import nl.kii.entity.Casing
 import nl.kii.entity.Entity
+import nl.kii.entity.annotations.Field
 import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.entity.annotations.Type
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend.lib.annotations.ToStringConfiguration
 import org.eclipse.xtend.lib.annotations.ToStringProcessor
@@ -21,6 +24,7 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import org.eclipse.xtend.lib.macro.declaration.MemberDeclaration
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -59,7 +63,6 @@ class EntityProcessor extends AbstractClassProcessor {
 		val accessorsFields = cls.declaredFields.accessorsFields
 		//cls.docComment = '''-- «cls.newTypeReference.allDeclaredFields.map[simpleName]»'''
 		
-		val localSerializeFields = accessorsFields.serializeFields
 		val serializeFields = accessorsFields.serializeFields
 		
 		/** Figure out which fields are marked with @Require. */
@@ -119,24 +122,47 @@ class EntityProcessor extends AbstractClassProcessor {
 			.toList
 			.reverse
 			.list
+		
+		val globalCasing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
+		val entityFieldSignatures = serializeFields.map [
+			new EntityFieldSignature => [ s |
+				s.declaration = it
+				s.name = simpleName
+				s.type = type
+				s.required = findAnnotation(Require.newTypeReference.type).defined
 				
-		val casing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
-		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers, casing)
+				val fieldAnnotation = findAnnotation(Field.newTypeReference.type)
+				
+				s.serializedName = if (fieldAnnotation.defined) {
+					val nameValue = fieldAnnotation.getStringValue('name')
+					if (!nameValue.nullOrEmpty) nameValue
+					else {
+						val casingValue = Casing.valueOf(fieldAnnotation.getEnumValue('casing').simpleName)
+						if (casingValue != Casing.ignore) simpleName.apply(casingValue)
+					}
+				}
+				
+				/** Fallback to globally declared casing */
+				if (!s.serializedName.defined) s.serializedName = simpleName.apply(globalCasing)
+			]
+		]
+		
+		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers)
 		
 		cls.addSerializers
 		//if (cls.needsSerializing) 
 		cls => [
-			addDeserializeMethod(serializeFields)
+			addDeserializeMethod(entityFieldSignatures)
 			//if (!cls.abstract) 
 			addDeserializeContructor
-			addSerializeMethod(serializeFields)
+			addSerializeMethod(entityFieldSignatures)
 		]
 		
 		/** Add static 'Fields' class to the entity, that contains field reflection data */
-		val extension reflectionUtil = new EntityReflectionUtil(context) [ getSerializedKeyName ]
+		val extension reflectionUtil = new EntityReflectionUtil(context)
 		
 		val fieldsClass = findClass(cls.entityFieldsClassName)
-		fieldsClass.populateFieldsClass(localSerializeFields)
+		fieldsClass.populateFieldsClass(entityFieldSignatures)
 		cls.addFieldsGetter(fieldsClass)
 
 		if (cls.extendsEntity) 
@@ -151,7 +177,7 @@ class EntityProcessor extends AbstractClassProcessor {
 				if (field.type != string) 
 					cls.addError('@Type field must be a String')
 				
-				val defaultTypeName = cls.simpleName.serializedKeyName
+				val defaultTypeName = cls.simpleName.apply(globalCasing)
 				if (!field.initializer.defined) 
 					field.initializer = '''"«defaultTypeName»"'''
 				
@@ -172,7 +198,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		]
 		
 		/** Validate fields for serializability */
-		cls.validateFields(localSerializeFields)
+		cls.validateFields(entityFieldSignatures)
 		
 		/** Validate in case of entity extending that the extended entity is marked abstract */
 		if (cls.extendsEntity && cls.extendedClass.declaredResolvedMethods.exists [ declaration.simpleName == 'mutate' ]) /** Workaround to find detect abstract super type */
@@ -183,7 +209,16 @@ class EntityProcessor extends AbstractClassProcessor {
 	def needsToStringEqualsHashCode(ClassDeclaration cls) {
 		!cls.abstract
 	}
-		
+	
+	@Accessors
+	static class EntityFieldSignature {
+		String name
+		String serializedName
+		TypeReference type
+		boolean required
+		MemberDeclaration declaration
+	}
+	
 	@FinalFieldsConstructor
 	static class Util {
 		val extension TransformationContext context
@@ -198,6 +233,18 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		def extendsEntity(ClassDeclaration cls) {
 			cls.extendedClass?.extendsType(Entity)
+		}
+		
+		def static apply(String input, Casing casing) {
+			switch casing {
+				case underscore, case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
+				case camel, case lowerCamel:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
+				case dash, case hyphen: 				[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
+				case upperCamel: 						[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
+				case upperUnderscore, case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
+				case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
+				default: [ it ]
+			}.apply(input)
 		}
 		
 //		def allDeclaredFields(ClassDeclaration cls) {
