@@ -1,16 +1,14 @@
 package nl.kii.entity
 
 import java.time.Instant
-
 import java.util.Date
 import java.util.List
 import java.util.Map
 import nl.kii.entity.annotations.Field
 import nl.kii.entity.annotations.Require
-import nl.kii.entity.annotations.Entity
 import nl.kii.util.Period
 
-@Entity(casing=underscore)
+@nl.kii.entity.annotations.Entity(casing=underscore)
 class User {
 	@Require String name
 	User referral
@@ -25,6 +23,9 @@ class User {
 	List<Date> purchases
 	List<User> friends
 	
+	@Field(casing=camel) 
+	def getFriendsCount() { if (friends != null) friends.size as Integer }
+	
 	Location location
 	Membership membership = Membership.free
 	
@@ -35,13 +36,13 @@ class User {
 	Long profileId
 	int voucherCount = 10
 	
-	@Serializer(Period) 
+	@nl.kii.entity.annotations.Serializer(Period) 
 	val static s2 = Serializers.period
 	
-	@Serializer(Date) 
+	@nl.kii.entity.annotations.Serializer(Date) 
 	val static s1 = Serializers.date('yyyy-MM-dd', 'yyyy_MM_dd')
 	
-	@Serializer(Instant) 
+	@nl.kii.entity.annotations.Serializer(Instant) 
 	val static s3 = Serializers.instant
 	
 //	val static dateFormat = #[ 'yyyy-MM-dd' ]	
@@ -57,7 +58,7 @@ enum Membership {
 	free
 }
 
-@Entity(optionals=true)
+@nl.kii.entity.annotations.Entity(optionals=true)
 class Location {
 	String address
 	Integer number

@@ -10,6 +10,8 @@ import nl.kii.entity.processors.EntityProcessor.Util
 import nl.kii.util.MapExtensions
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
@@ -141,10 +143,14 @@ class EntitySerializationUtil {
 				«mapTypeRef» «serializeResultName» = «CollectionLiterals».newLinkedHashMap();
 				«IF cls.extendsEntity»
 					«serializeResultName».putAll(super.serialize());
-				«ENDIF»	
+				«ENDIF»
 				
 				«FOR it:fields SEPARATOR '\n'»
-					final «type» «name» = this.«name»;
+					«IF declaration instanceof FieldDeclaration»
+						final «type» «name» = this.«name»;
+					«ELSEIF declaration instanceof MethodDeclaration»
+						final «type» «name» = this.«name»();
+					«ENDIF»
 					if («OptExtensions».defined(«name»)) {
 						«type.getSerializationBody('''«object» serializedValue =''', '''«name»''')»
 						«serializeResultName».put("«serializedName»", serializedValue);

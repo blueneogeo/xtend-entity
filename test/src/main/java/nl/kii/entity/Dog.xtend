@@ -13,7 +13,7 @@ abstract class Animal {
 	
 	def Animal getMother()
 	def Animal getFather()
-		
+	
 	@Serializer(Instant) 
 	val static s1 = Serializers.instant
 }

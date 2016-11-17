@@ -17,14 +17,15 @@ import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MemberDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 
+import static extension nl.kii.entity.processors.AccessorsUtil.*
 import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import org.eclipse.xtend.lib.macro.declaration.MemberDeclaration
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -124,28 +125,44 @@ class EntityProcessor extends AbstractClassProcessor {
 			.list
 		
 		val globalCasing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
+		
 		val entityFieldSignatures = serializeFields.map [
 			new EntityFieldSignature => [ s |
 				s.declaration = it
 				s.name = simpleName
 				s.type = type
 				s.required = findAnnotation(Require.newTypeReference.type).defined
-				
-				val fieldAnnotation = findAnnotation(Field.newTypeReference.type)
-				
-				s.serializedName = if (fieldAnnotation.defined) {
-					val nameValue = fieldAnnotation.getStringValue('name')
-					if (!nameValue.nullOrEmpty) nameValue
-					else {
-						val casingValue = Casing.valueOf(fieldAnnotation.getEnumValue('casing').simpleName)
-						if (casingValue != Casing.ignore) simpleName.apply(casingValue)
-					}
-				}
-				
-				/** Fallback to globally declared casing */
-				if (!s.serializedName.defined) s.serializedName = simpleName.apply(globalCasing)
+				s.serializedName = getSerializedName(globalCasing)
 			]
 		]
+		
+		val computedFieldSignatures = cls.declaredMethods
+			.filter [ findAnnotation(Field.newTypeReference.type).defined ]
+			.map [ 
+				new EntityFieldSignature => [ s |
+					s.declaration = it
+					s.name = simpleName
+					s.required = false
+					s.type = returnType
+					val fieldName = if (simpleName.isGetter) simpleName.fieldName else simpleName
+					s.serializedName = getSerializedName(fieldName, globalCasing)
+				]
+			]
+		
+		if (!computedFieldSignatures.empty) #[ 
+				[ EntityFieldSignature it | declaration.simpleName ],
+				[ EntityFieldSignature it | name ],
+				[ EntityFieldSignature it | serializedName ]
+			]
+			.forEach [ grouping |
+				(computedFieldSignatures + entityFieldSignatures)
+					.groupBy(grouping)
+					.toPairs
+					.filter [ value.size > 1 ]
+					.forEach [ group |
+						group.value.forEach [ declaration.addError('Field name ambiguity: ' + group.key) ]
+					]
+			]
 		
 		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers)
 		
@@ -155,7 +172,7 @@ class EntityProcessor extends AbstractClassProcessor {
 			addDeserializeMethod(entityFieldSignatures)
 			//if (!cls.abstract) 
 			addDeserializeContructor
-			addSerializeMethod(entityFieldSignatures)
+			addSerializeMethod(entityFieldSignatures + computedFieldSignatures)
 		]
 		
 		/** Add static 'Fields' class to the entity, that contains field reflection data */
@@ -245,6 +262,28 @@ class EntityProcessor extends AbstractClassProcessor {
 				case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
 				default: [ it ]
 			}.apply(input)
+		}
+		
+		/**
+		 * Look for @Field annotation in {@code delcaration} or else fall back to global casing.
+		 */
+		def getSerializedName(MemberDeclaration declaration, String name, Casing globalCasing) {
+			val fieldAnnotation = declaration.findAnnotation(Field.newTypeReference.type)
+			
+			val result = if (fieldAnnotation.defined) {
+				val nameValue = fieldAnnotation.getStringValue('name')
+				if (!nameValue.nullOrEmpty) nameValue
+				else {
+					val casingValue = Casing.valueOf(fieldAnnotation.getEnumValue('casing').simpleName)
+					if (casingValue != Casing.ignore) name.apply(casingValue)
+				}
+			} 
+			
+			result ?: name.apply(globalCasing)
+		}
+		
+		def getSerializedName(MemberDeclaration declaration, Casing globalCasing) {
+			getSerializedName(declaration, declaration.simpleName, globalCasing)
 		}
 		
 //		def allDeclaredFields(ClassDeclaration cls) {

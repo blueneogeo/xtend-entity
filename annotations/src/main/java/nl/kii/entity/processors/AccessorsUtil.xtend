@@ -65,6 +65,14 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 		]
 	}
 	
+	def static isGetter(String methodName) {
+		methodName.startsWith('get') && methodName.length > 3 && Character.isUpperCase(methodName.charAt(3))
+	}
+	
+	def static getFieldName(String getterName) {
+		getterName.substring(3).toFirstLower
+	}
+	
 	/** Copied from parent, with small modification to skip 'is'-setters */	
 	override getPossibleGetterNames(FieldDeclaration it) {
 			val names = newArrayList

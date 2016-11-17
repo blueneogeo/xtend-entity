@@ -166,7 +166,8 @@ class EntityTests {
 				'friends' -> #[
 					#{ 'name' -> 'friend1', 'voucher_count' -> 10, 'membership' -> 'free' },
 					#{ 'name' -> 'friend2', 'voucher_count' -> 10, 'membership' -> 'free' }
-				]
+				],
+				'friendsCount' -> 2
 			},
 			user3.serialize
 		)
