@@ -22,7 +22,7 @@ class MultiSerializer<O, S> implements Serializer<O, S> {
 		serializers.match [ serialize(original) ] ?: [ serializers.head.serialize(original) ]
 	}
 	
-	def private <T> Opt<T> match(List<? extends Serializer<O, S>> serializers, (Serializer<O, S>)=>T operation) {		
+	def private <T> Opt<T> match(List<? extends Serializer<O, S>> serializers, Function1<Serializer<O, S>, T> operation) {		
 		val serializer = serializers.head
 		if (!serializer.defined) none
 		else {
@@ -37,4 +37,8 @@ class MultiSerializer<O, S> implements Serializer<O, S> {
 		try value.apply.option catch(Exception e) none
 	}
 	
+}
+
+interface Function1<P1, R> {
+	def R apply(P1 p1)
 }
