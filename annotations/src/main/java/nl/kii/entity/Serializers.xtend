@@ -20,6 +20,7 @@ import nl.kii.util.Period
 import static extension nl.kii.util.IterableExtensions.*
 import nl.kii.entity.serializers.RangeSerializer
 import nl.kii.entity.serializers.ClassSerializer
+import nl.kii.entity.serializers.InstantSecsSerializer
 
 interface Serializer<O, S> {
 	def S serialize(O original)
@@ -33,6 +34,7 @@ class Serializers {
 	val public static DURATION_SECS_SERIALIZER = new DurationSecsSerializer
 	val public static DURATION_MS_SERIALIZER = new DurationMsSerializer
 	val public static INSTANT_MS_SERIALIZER = new InstantMsSerializer
+	val public static INSTANT_SECS_SERIALIZER = new InstantSecsSerializer
 	val public static UUID_SERIALIZER = new UUIDSerializer
 	val public static DIRECT_SERIALIZER = new DirectSerializer
 	val public static CLASS_SERIALIZER = new ClassSerializer
@@ -94,6 +96,11 @@ class Serializers {
 	/** Uses milliseconds sinds epoch */
 	def static Serializer<Instant, Object> instantMs() {
 		INSTANT_MS_SERIALIZER
+	}
+	
+	/** Uses milliseconds sinds epoch */
+	def static Serializer<Instant, Object> instantSecs() {
+		INSTANT_SECS_SERIALIZER
 	}
 	
 	def static Serializer<Class<?>, Object> cls() {
