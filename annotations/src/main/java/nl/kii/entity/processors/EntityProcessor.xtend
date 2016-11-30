@@ -26,6 +26,7 @@ import static extension nl.kii.entity.processors.AccessorsUtil.*
 import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
+import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -73,6 +74,57 @@ class EntityProcessor extends AbstractClassProcessor {
 //			accessorsFields
 //				.filter [ f | !localAccessorsFields.exists [ f.simpleName == simpleName ] ]
 //				.forEach [ copyTo(cls) ]
+		val globalCasing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
+		
+		val entityFieldSignatures = serializeFields
+			.map [
+				new EntityFieldSignature => [ s |
+					s.declaration = it
+					s.name = simpleName
+					s.type = type
+					s.required = findAnnotation(Require.newTypeReference.type).defined
+					s.serializedName = getSerializedName(globalCasing)
+					s.hasDeclaredGetter = hasGetter
+				]
+			].list
+		
+		val computedFieldSignatures = cls.declaredMethods
+			.filter [ findAnnotation(Field.newTypeReference.type).defined ]
+			.map [ 
+				new EntityFieldSignature => [ s |
+					s.declaration = it
+					s.name = simpleName
+					s.required = false
+					s.type = returnType
+					val fieldName = if (simpleName.isGetter) simpleName.fieldNameFromGetter else simpleName
+					s.hasDeclaredGetter = true
+					s.serializedName = getSerializedName(fieldName, globalCasing)
+				]
+			]
+			.list
+		
+		/** Validate field ambiguity in class declaration */
+		if (!computedFieldSignatures.empty) {
+			#[ 
+				[ EntityFieldSignature it | declaration.simpleName ],
+				[ EntityFieldSignature it | name ],
+				[ EntityFieldSignature it | serializedName ]
+			]
+			.forEach [ grouping |
+				(computedFieldSignatures + entityFieldSignatures)
+					.groupBy(grouping)
+					.toPairs
+					.filter [ value.size > 1 ]
+					.forEach [ group |
+						group.value.forEach [ declaration.addError('Field name ambiguity: ' + group.key) ]
+					]
+			]
+			
+			computedFieldSignatures
+				.map [ declaration as MethodDeclaration ]
+				.filter [ returnType.inferred ]
+				.forEach [ addError('Return type cannot be inferred.') ]
+		}
 			
 		/** Add getters for fields that need them. If @Entity.optionals is set to true, wrap them in an Opt, except for the required fields. */
 		val entityNeedsOptionals = entityAnnotation.getBooleanValue('optionals') && !cls.abstract
@@ -91,7 +143,8 @@ class EntityProcessor extends AbstractClassProcessor {
 		if (!cls.abstract) addMutationFunctionsToEntity(accessorsFields)
 		
 		addConvenienceProcedureInitializer
-		addConvenienceNestedEntitySetters		
+		addConvenienceNestedEntitySetters
+		moveOverriddenSetters
 		
 		if (cls.abstract) cls.addEmptyConstructor //else cls.final = true
 		
@@ -123,46 +176,6 @@ class EntityProcessor extends AbstractClassProcessor {
 			.toList
 			.reverse
 			.list
-		
-		val globalCasing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
-		
-		val entityFieldSignatures = serializeFields.map [
-			new EntityFieldSignature => [ s |
-				s.declaration = it
-				s.name = simpleName
-				s.type = type
-				s.required = findAnnotation(Require.newTypeReference.type).defined
-				s.serializedName = getSerializedName(globalCasing)
-			]
-		]
-		
-		val computedFieldSignatures = cls.declaredMethods
-			.filter [ findAnnotation(Field.newTypeReference.type).defined ]
-			.map [ 
-				new EntityFieldSignature => [ s |
-					s.declaration = it
-					s.name = simpleName
-					s.required = false
-					s.type = returnType
-					val fieldName = if (simpleName.isGetter) simpleName.fieldName else simpleName
-					s.serializedName = getSerializedName(fieldName, globalCasing)
-				]
-			]
-		
-		if (!computedFieldSignatures.empty) #[ 
-				[ EntityFieldSignature it | declaration.simpleName ],
-				[ EntityFieldSignature it | name ],
-				[ EntityFieldSignature it | serializedName ]
-			]
-			.forEach [ grouping |
-				(computedFieldSignatures + entityFieldSignatures)
-					.groupBy(grouping)
-					.toPairs
-					.filter [ value.size > 1 ]
-					.forEach [ group |
-						group.value.forEach [ declaration.addError('Field name ambiguity: ' + group.key) ]
-					]
-			]
 		
 		val extension serializationUtil = new EntitySerializationUtil(context, allSerializers)
 		
@@ -233,6 +246,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		String serializedName
 		TypeReference type
 		boolean required
+		boolean hasDeclaredGetter
 		MemberDeclaration declaration
 	}
 	
@@ -339,7 +353,28 @@ class EntityProcessor extends AbstractClassProcessor {
 				]
 			]
 		}
-		
+
+		def copyTo(MethodDeclaration method, MutableClassDeclaration cls) {
+			cls.addMethod(method.simpleName) [
+				final = method.final
+				static = method.static
+				body = method.body
+				exceptions = method.exceptions
+				abstract = method.abstract
+				synchronized = method.synchronized
+				returnType = method.returnType
+				docComment = method.docComment
+				visibility = method.visibility
+				deprecated = method.deprecated
+				method.parameters.forEach [ p | 
+					addParameter(p.simpleName, p.type)
+				]
+				method.annotations.forEach [ a |
+					addAnnotation(a)
+				]
+			]
+		}
+				
 		def addEmptyConstructor(MutableClassDeclaration cls) {
 			cls.addConstructor [
 				primarySourceElement = cls

@@ -69,7 +69,11 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 		methodName.startsWith('get') && methodName.length > 3 && Character.isUpperCase(methodName.charAt(3))
 	}
 	
-	def static getFieldName(String getterName) {
+	def static isSetter(String methodName) {
+		methodName.startsWith('set') && methodName.length > 3 && Character.isUpperCase(methodName.charAt(3))
+	}
+		
+	def static fieldNameFromGetter(String getterName) {
 		getterName.substring(3).toFirstLower
 	}
 	

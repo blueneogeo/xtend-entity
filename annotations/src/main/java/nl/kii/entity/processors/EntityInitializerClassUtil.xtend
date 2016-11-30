@@ -10,6 +10,7 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension nl.kii.util.IterableExtensions.*
+import static extension nl.kii.entity.processors.AccessorsUtil.*
 import static extension nl.kii.util.OptExtensions.*
 import nl.kii.entity.annotations.Entity
 
@@ -87,7 +88,7 @@ class EntityInitializerClassUtil {
 	val static APPLY_CONSTRUCTOR_METHOD_NAME = '_applyConstructorFields'
 	def addInitializerFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
 		val constructorTypeRef = initializerClass.newTypeReference
-				
+		
 		/** Interal method to apply values from the constructor class on to the entity */
 		entityClass.addMethod(APPLY_CONSTRUCTOR_METHOD_NAME) [
 			primarySourceElement = entityClass
@@ -188,7 +189,7 @@ class EntityInitializerClassUtil {
 				return new «entityClass»(constructor);
 			'''	
 		]
-
+		
 		/** Operator shortcut for 'mutate' method */
 		entityClass.addMethod('operator_doubleGreaterThan') [
 			primarySourceElement = entityClass
@@ -239,6 +240,15 @@ class EntityInitializerClassUtil {
 					'''
 				]
 		]
+	}
+	
+	def void moveOverriddenSetters() {
+		entityClass.declaredMethods
+			.filter [ returnType == primitiveVoid && simpleName.isSetter ]
+			.forEach [ 
+				copyTo(initializerClass)
+				remove
+			]
 	}
 	
 }

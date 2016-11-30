@@ -26,15 +26,11 @@ class MultiSerializer<O, S> implements Serializer<O, S> {
 		val serializer = serializers.head
 		if (!serializer.defined) none
 		else {
-			val result = optionally [ operation.apply(serializer) ]
+			val result = attempt [ operation.apply(serializer) ]
 			
 			if (result.defined) result
 			else serializers.tail.list.match(operation)
 		}
-	}
-	
-	def static <T> optionally(=>T value) {
-		try value.apply.option catch(Exception e) none
 	}
 	
 }

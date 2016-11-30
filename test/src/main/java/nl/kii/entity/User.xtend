@@ -7,6 +7,7 @@ import java.util.Map
 import nl.kii.entity.annotations.Field
 import nl.kii.entity.annotations.Require
 import nl.kii.util.Period
+import static extension nl.kii.util.IterableExtensions.*
 
 @nl.kii.entity.annotations.Entity(casing=underscore)
 class User {
@@ -24,12 +25,12 @@ class User {
 	List<User> friends
 	
 	@Field(casing=camel) 
-	def getFriendsCount() { if (friends != null) friends.size as Integer }
+	def Integer getFriendsCount() { if (friends != null) friends.size as Integer }
 	
 	Location location
 	Membership membership = Membership.free
 	
-	Map<String, String> attributes 
+	Map<String, String> attributes
 	Map<Membership, Period> membershipDurations
 	Map<Location, List<Double>> coordinates
 	
@@ -45,6 +46,10 @@ class User {
 	@nl.kii.entity.annotations.Serializer(Instant) 
 	val static s3 = Serializers.instant
 	
+	def void setCoordinates(Pair<Location, List<Double>>... coordinates) {
+		this.coordinates = coordinates.toMap
+	}
+		
 //	val static dateFormat = #[ 'yyyy-MM-dd' ]	
 //	val static serializers = #[
 //		Period -> Serializers.period,

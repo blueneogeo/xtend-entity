@@ -11,7 +11,6 @@ import nl.kii.util.MapExtensions
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
@@ -146,10 +145,14 @@ class EntitySerializationUtil {
 				«ENDIF»
 				
 				«FOR it:fields SEPARATOR '\n'»
-					«IF declaration instanceof FieldDeclaration»
+					«IF hasDeclaredGetter»
+						«IF declaration instanceof FieldDeclaration»
+							final «type» «name» = this.«(declaration as FieldDeclaration).getterName»();
+						«ELSE»
+							final «type» «name» = this.«name»();
+						«ENDIF»
+					«ELSE»
 						final «type» «name» = this.«name»;
-					«ELSEIF declaration instanceof MethodDeclaration»
-						final «type» «name» = this.«name»();
 					«ENDIF»
 					if («OptExtensions».defined(«name»)) {
 						«type.getSerializationBody('''«object» serializedValue =''', '''«name»''')»

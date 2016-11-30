@@ -1,19 +1,20 @@
 package nl.kii.entity.csv
 
+import java.text.SimpleDateFormat
 import nl.kii.entity.User
+import nl.kii.util.Minutes
 import org.junit.Test
 
+import static org.junit.Assert.*
+
 import static extension nl.kii.entity.csv.CSVExtensions.*
-import static extension org.junit.Assert.*
-import java.text.SimpleDateFormat
-import nl.kii.util.Minutes
 
 class CSVTests {
 	
 	@Test
 	def void testCsvDeserializing() {
 		val csvRecords = '''
-			"age","name","date_of_birth","best_time"
+			age,name,date_of_birth,best_time
 			30,"john","2016-01-01","pt20m"
 		'''.toString.csv
 		
@@ -34,5 +35,4 @@ class CSVTests {
 		assertEquals(user, users.head)
 	}
 	
-		
 }
