@@ -3,7 +3,7 @@ package nl.kii.entity.processors
 import com.google.common.collect.Sets
 import java.util.List
 import nl.kii.entity.EntityField
-import nl.kii.entity.processors.EntityProcessor.EntityFieldSignature
+import nl.kii.entity.processors.EntityProcessor.EntityFieldDeclaration
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
@@ -19,17 +19,17 @@ class EntityReflectionUtil {
 		this.baseUtil = new EntityProcessor.Util(context)
 	}
 	
-	def void populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends EntityFieldSignature> fields) {		
+	def void populateFieldsClass(MutableClassDeclaration fieldsClass, Iterable<? extends EntityFieldDeclaration> fields) {		
 		fields.forEach [ extension field |
 			/** Copy fields to Fields class */
 			fieldsClass.addField(field.name) [
-				primarySourceElement = declaration
+				primarySourceElement = element
 				type = EntityField.newTypeReference
 				visibility = Visibility.PUBLIC
 				static = true
 				final = true
 				initializer = '''new «EntityField»("«field.name»", "«field.serializedName»", «field.type.cleanTypeName».class, «required»)'''
-				docComment = declaration.docComment
+				docComment = element.docComment
 			]
 		]
 	}

@@ -5,7 +5,7 @@ import java.util.Map
 import nl.kii.entity.Entity
 import nl.kii.entity.EntityExtensions
 import nl.kii.entity.Serializer
-import nl.kii.entity.processors.EntityProcessor.EntityFieldSignature
+import nl.kii.entity.processors.EntityProcessor.EntityFieldDeclaration
 import nl.kii.entity.processors.EntityProcessor.Util
 import nl.kii.util.MapExtensions
 import nl.kii.util.OptExtensions
@@ -82,14 +82,14 @@ class EntitySerializationUtil {
 		}
 	}
 	
-	def validateFields(MutableClassDeclaration cls, Iterable<? extends EntityFieldSignature> fields) {
+	def validateFields(MutableClassDeclaration cls, Iterable<? extends EntityFieldDeclaration> fields) {
 		fields
 			.map [ it -> type.actualTypeArguments.concat(type).list ]
 			.flattenValues
 			.filter [ !value.isSupported ]
 			.list
 			.forEach [
-				key.declaration.addError('''Fields of type «value.name» cannot be serialized, add a Serializer to make the type compatible''')
+				key.element.addError('''Fields of type «value.name» cannot be serialized, add a Serializer to make the type compatible''')
 			]
 	}
 
@@ -131,7 +131,7 @@ class EntitySerializationUtil {
 	
 
 	val static serializeResultName = 'serialized'
-	def void addSerializeMethod(MutableClassDeclaration cls, Iterable<? extends EntityFieldSignature> fields) {
+	def void addSerializeMethod(MutableClassDeclaration cls, Iterable<? extends EntityFieldDeclaration> fields) {
 		cls.addMethod('serialize') [
 			val mapTypeRef = serializedMapTypeRef
 			primarySourceElement = cls
@@ -146,8 +146,8 @@ class EntitySerializationUtil {
 				
 				«FOR it:fields SEPARATOR '\n'»
 					«IF hasDeclaredGetter»
-						«IF declaration instanceof FieldDeclaration»
-							final «type» «name» = this.«(declaration as FieldDeclaration).getterName»();
+						«IF element instanceof FieldDeclaration»
+							final «type» «name» = this.«(element as FieldDeclaration).getterName»();
 						«ELSE»
 							final «type» «name» = this.«name»();
 						«ENDIF»
@@ -211,7 +211,7 @@ class EntitySerializationUtil {
 			
 	val static deserializeArgumentName = 'serialized'
 
-	def addDeserializeMethod(MutableClassDeclaration cls, Iterable<? extends EntityFieldSignature> fields) {
+	def addDeserializeMethod(MutableClassDeclaration cls, Iterable<? extends EntityFieldDeclaration> fields) {
 		cls.addMethod('deserialize') [
 			primarySourceElement = cls
 			addAnnotation(Override.newAnnotationReference)			

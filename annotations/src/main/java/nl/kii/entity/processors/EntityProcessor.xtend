@@ -76,10 +76,10 @@ class EntityProcessor extends AbstractClassProcessor {
 //				.forEach [ copyTo(cls) ]
 		val globalCasing = Casing.valueOf(entityAnnotation.getEnumValue('casing').simpleName)
 		
-		val entityFieldSignatures = serializeFields
+		val entityFieldDeclarations = serializeFields
 			.map [
-				new EntityFieldSignature => [ s |
-					s.declaration = it
+				new EntityFieldDeclaration => [ s |
+					s.element = it
 					s.name = simpleName
 					s.type = type
 					s.required = findAnnotation(Require.newTypeReference.type).defined
@@ -88,11 +88,11 @@ class EntityProcessor extends AbstractClassProcessor {
 				]
 			].list
 		
-		val computedFieldSignatures = cls.declaredMethods
+		val computedFieldDeclarations = cls.declaredMethods
 			.filter [ findAnnotation(Field.newTypeReference.type).defined ]
 			.map [ 
-				new EntityFieldSignature => [ s |
-					s.declaration = it
+				new EntityFieldDeclaration => [ s |
+					s.element = it
 					s.name = simpleName
 					s.required = false
 					s.type = returnType
@@ -104,24 +104,24 @@ class EntityProcessor extends AbstractClassProcessor {
 			.list
 		
 		/** Validate field ambiguity in class declaration */
-		if (!computedFieldSignatures.empty) {
+		if (!computedFieldDeclarations.empty) {
 			#[ 
-				[ EntityFieldSignature it | declaration.simpleName ],
-				[ EntityFieldSignature it | name ],
-				[ EntityFieldSignature it | serializedName ]
+				[ EntityFieldDeclaration it | element.simpleName ],
+				[ EntityFieldDeclaration it | name ],
+				[ EntityFieldDeclaration it | serializedName ]
 			]
 			.forEach [ grouping |
-				(computedFieldSignatures + entityFieldSignatures)
+				(computedFieldDeclarations + entityFieldDeclarations)
 					.groupBy(grouping)
 					.toPairs
 					.filter [ value.size > 1 ]
 					.forEach [ group |
-						group.value.forEach [ declaration.addError('Field name ambiguity: ' + group.key) ]
+						group.value.forEach [ element.addError('Field name ambiguity: ' + group.key) ]
 					]
 			]
 			
-			computedFieldSignatures
-				.map [ declaration as MethodDeclaration ]
+			computedFieldDeclarations
+				.map [ element as MethodDeclaration ]
 				.filter [ returnType.inferred ]
 				.forEach [ addError('Return type cannot be inferred.') ]
 		}
@@ -182,17 +182,17 @@ class EntityProcessor extends AbstractClassProcessor {
 		cls.addSerializers
 		//if (cls.needsSerializing) 
 		cls => [
-			addDeserializeMethod(entityFieldSignatures)
+			addDeserializeMethod(entityFieldDeclarations)
 			//if (!cls.abstract) 
 			addDeserializeContructor
-			addSerializeMethod(entityFieldSignatures + computedFieldSignatures)
+			addSerializeMethod(entityFieldDeclarations + computedFieldDeclarations)
 		]
 		
 		/** Add static 'Fields' class to the entity, that contains field reflection data */
 		val extension reflectionUtil = new EntityReflectionUtil(context)
 		
 		val fieldsClass = findClass(cls.entityFieldsClassName)
-		fieldsClass.populateFieldsClass(entityFieldSignatures)
+		fieldsClass.populateFieldsClass(entityFieldDeclarations)
 		cls.addFieldsGetter(fieldsClass)
 
 		if (cls.extendsEntity) 
@@ -228,7 +228,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		]
 		
 		/** Validate fields for serializability */
-		cls.validateFields(entityFieldSignatures)
+		cls.validateFields(entityFieldDeclarations)
 		
 		/** Validate in case of entity extending that the extended entity is marked abstract */
 		if (cls.extendsEntity && cls.extendedClass.declaredResolvedMethods.exists [ declaration.simpleName == 'mutate' ]) /** Workaround to find detect abstract super type */
@@ -241,13 +241,13 @@ class EntityProcessor extends AbstractClassProcessor {
 	}
 	
 	@Accessors
-	static class EntityFieldSignature {
+	static class EntityFieldDeclaration {
 		String name
 		String serializedName
 		TypeReference type
 		boolean required
 		boolean hasDeclaredGetter
-		MemberDeclaration declaration
+		MemberDeclaration element
 	}
 	
 	@FinalFieldsConstructor
