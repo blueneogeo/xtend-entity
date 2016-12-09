@@ -171,7 +171,7 @@ class EntityInitializerClassUtil {
 	
 	def addMutationFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
 		val constructorTypeRef = initializerClass.newTypeReference
-		val constructorOptionsTypeRef = Procedure1.newTypeReference(constructorTypeRef)
+		val constructorOptionsTypeRef = nl.kii.entity.Procedure1.newTypeReference(constructorTypeRef)
 		val pureAnnotationTypeRef = Pure.newAnnotationReference		
 		val entityTypeRef = entityClass.newTypeReference
 		
