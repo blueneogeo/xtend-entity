@@ -207,7 +207,7 @@ class EntityProcessor extends AbstractClassProcessor {
 				if (field.type != string) 
 					cls.addError('@Type field must be a String')
 				
-				val defaultTypeName = cls.simpleName.apply(globalCasing)
+				val defaultTypeName = cls.simpleName.serializeName(globalCasing)
 				if (!field.initializer.defined) 
 					field.initializer = '''"«defaultTypeName»"'''
 				
@@ -266,14 +266,26 @@ class EntityProcessor extends AbstractClassProcessor {
 			cls.extendedClass?.extendsType(Entity)
 		}
 		
-		def static apply(String input, Casing casing) {
+		def static serializeName(String input, Casing casing) {
 			switch casing {
 				case underscore, case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
-				case camel, case lowerCamel:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
+				case camel, case lowerCamel:			[ it ]
 				case dash, case hyphen: 				[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
 				case upperCamel: 						[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
 				case upperUnderscore, case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
 				case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
+				default: [ it ]
+			}.apply(input)
+		}
+		
+		def static deserializeName(String input, Casing casing) {
+			switch casing {
+				case underscore, case snake:			[ CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, it) ]
+				case camel, case lowerCamel:			[ it ]
+				case dash, case hyphen: 				[ CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, it) ] 
+				case upperCamel: 						[ CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
+				case upperUnderscore, case upperSnake: 	[ CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, it) ]
+				case dot: 								[ String it | CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, replace('.', '-'))  ]
 				default: [ it ]
 			}.apply(input)
 		}
@@ -289,11 +301,11 @@ class EntityProcessor extends AbstractClassProcessor {
 				if (!nameValue.nullOrEmpty) nameValue
 				else {
 					val casingValue = Casing.valueOf(fieldAnnotation.getEnumValue('casing').simpleName)
-					if (casingValue != Casing.ignore) name.apply(casingValue)
+					if (casingValue != Casing.ignore) name.serializeName(casingValue)
 				}
 			} 
 			
-			result ?: name.apply(globalCasing)
+			result ?: name.serializeName(globalCasing)
 		}
 		
 		def getSerializedName(MemberDeclaration declaration, Casing globalCasing) {
