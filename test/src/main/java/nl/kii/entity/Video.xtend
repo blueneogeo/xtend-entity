@@ -14,6 +14,14 @@ abstract class Video {
 	List<String> actors
 	Duration duration
 	
+	FileMetadata file
+	
+	@Entity
+	static class FileMetadata {
+		Long width
+		Long height
+	}
+	
 	@Serializer(Duration)
 	val static s1 = Serializers.duration
 }
