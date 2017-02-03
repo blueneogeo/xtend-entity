@@ -8,6 +8,7 @@ import nl.kii.entity.annotations.Ignore
 import nl.kii.entity.annotations.Require
 import nl.kii.entity.annotations.Serializer
 import nl.kii.entity.annotations.Type
+import nl.kii.entity.processors.AccessorsUtil.GetterOptions.CollectionGetterBehavior
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend.lib.annotations.ToStringConfiguration
@@ -18,6 +19,7 @@ import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MemberDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
@@ -26,7 +28,6 @@ import static extension nl.kii.entity.processors.AccessorsUtil.*
 import static extension nl.kii.entity.processors.EntityProcessor.Util.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 
 /** 
  * Active Annotation Processor for Entity annotations.
@@ -125,14 +126,21 @@ class EntityProcessor extends AbstractClassProcessor {
 				.filter [ returnType.inferred ]
 				.forEach [ addError('Return type cannot be inferred.') ]
 		}
-			
+		
 		/** Add getters for fields that need them. If @Entity.optionals is set to true, wrap them in an Opt, except for the required fields. */
 		val entityNeedsOptionals = entityAnnotation.getBooleanValue('optionals') && !cls.abstract
 		if (entityNeedsOptionals) {
-			cls.addGetters(requiredFields, false)
-			cls.addGetters(accessorsFields, true)
+			cls.addGetters(requiredFields) [ 
+				collections = CollectionGetterBehavior.returnLazily
+			]
+			cls.addGetters(accessorsFields) [ 
+				collections = CollectionGetterBehavior.returnLazily
+				optionals = true
+			]
 		} else {
-			cls.addGetters(accessorsFields, false)
+			cls.addGetters(accessorsFields) [ 
+				collections = CollectionGetterBehavior.returnLazily
+			]
 		}
 		
 		/** Setup the generated EntityConstructor class, by copying accessors and fields from Entity class. */
@@ -194,7 +202,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		val fieldsClass = findClass(cls.entityFieldsClassName)
 		fieldsClass.populateFieldsClass(entityFieldDeclarations)
 		cls.addFieldsGetter(fieldsClass)
-
+		
 		if (cls.extendsEntity) 
 			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
 		
@@ -218,7 +226,7 @@ class EntityProcessor extends AbstractClassProcessor {
 				null				
 			}
 		})	
-
+		
 		
 		/** Generate a nice toString, equals and hashCode. */
 		if (cls.needsToStringEqualsHashCode) cls => [

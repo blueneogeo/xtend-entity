@@ -1,5 +1,7 @@
 package nl.kii.entity.processors
 
+import nl.kii.entity.annotations.Entity
+import nl.kii.entity.processors.AccessorsUtil.GetterOptions.CollectionGetterBehavior
 import nl.kii.util.Opt
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.macro.TransformationContext
@@ -9,10 +11,13 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
-import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.entity.processors.AccessorsUtil.*
+import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import nl.kii.entity.annotations.Entity
+import java.util.List
+import java.util.Map
+import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableMap
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
@@ -49,7 +54,15 @@ class EntityInitializerClassUtil {
 			
 			/** Create getters and setters */
 			declaredFields.forEach [
-				addGetter(getterType?.toVisibility ?: Visibility.PUBLIC)
+				/** Add a 'lenient' getter for API convenience */
+				initializerClass.addGetter(it) [ 
+					optionals = false 
+					collections = CollectionGetterBehavior.setLazily
+					mutableCollections = true
+				]
+				/** Add a normal getter for internal use */
+				initializerClass.addGetter(it) [ o | o.getterName = internalGetterName ] 
+				
 				addSetter(setterType?.toVisibility ?: Visibility.PUBLIC)
 			]
 			
@@ -85,6 +98,10 @@ class EntityInitializerClassUtil {
 			.findFirst [ field.getterName == simpleName ]
 	}
 	
+	def String internalGetterName(FieldDeclaration field) {
+		'''_«field.getterName»'''
+	}
+	
 	val static APPLY_CONSTRUCTOR_METHOD_NAME = '_applyConstructorFields'
 	def addInitializerFunctionsToEntity(Iterable<? extends FieldDeclaration> fields) {
 		val constructorTypeRef = initializerClass.newTypeReference
@@ -100,8 +117,14 @@ class EntityInitializerClassUtil {
 					
 				«ENDIF»
 				«FOR field : fields SEPARATOR '\n'»
-					if (constructor.«field.getterName»() != null)
-						this.«field.simpleName» = constructor.«field.getterName»();
+					if (constructor.«field.internalGetterName»() != null)
+						this.«field.simpleName» = «IF List.newTypeReference.isAssignableFrom(field.type)»
+							«ImmutableList».copyOf(constructor.«field.internalGetterName»());
+						«ELSEIF Map.newTypeReference.isAssignableFrom(field.type)»
+							«ImmutableMap».copyOf(constructor.«field.internalGetterName»());
+						«ELSE»
+							constructor.«field.internalGetterName»();
+						«ENDIF»
 				«ENDFOR»
 			'''
 		]

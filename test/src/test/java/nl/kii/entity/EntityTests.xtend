@@ -448,6 +448,23 @@ class EntityTests {
 			catch(UnsupportedOperationException e) true
 			catch(Exception e) false
 		)
+		
+		assertTrue(
+			'constructor collection should be created on the fly',
+			!new User [ purchases.add(now) ].purchases.nullOrEmpty
+		)
+		
+		assertTrue(
+			'mutating list should fail even with mutable list initialized', 
+			try { 
+				val user = new User [ purchases.add(now) ]
+				println(user.purchases.size)
+				user.purchases.add(now)
+				false
+			} 
+			catch(UnsupportedOperationException e) true
+			catch(Exception e) false
+		)
 	}
 	
 	@Test
@@ -525,7 +542,7 @@ class EntityTests {
 				]
 			]
 		)
-	}			
+	}	
 }
 
 // TODO: move to xtend-vertx
@@ -559,4 +576,3 @@ class JsonExtensions {
 	}
 	
 }
-

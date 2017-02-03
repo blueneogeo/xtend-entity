@@ -119,7 +119,7 @@ class EntitySerializationUtil {
 				)
 			'''
 			
-			cls.addGetter(it, false) => [ m |
+			cls.addGetter(it) [ ] => [ m |
 				m.visibility = Visibility.PROTECTED
 				
 				m.simpleName = simpleName.hiddenName
