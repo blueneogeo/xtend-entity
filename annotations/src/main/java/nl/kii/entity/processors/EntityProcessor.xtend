@@ -48,7 +48,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		val extension baseUtil = new Util(context)
 		val extension accessorsUtil = new AccessorsUtil(context)
 		val extension toStringUtil = new ToStringProcessor.Util(context)
-		val extension equalsHashCodeUtil = new EntityEqualsHashCodeUtil(context)
+		val extension equalsHashCodeUtil = new EntityEqualsHashCodeToStringUtil(context)
 		val extension fieldValidationUtil = new FieldValidationUtil(context)
 		val initializerClass = findClass(cls.entityInitializerClassName)
 		val extension entityInitializerClassUtil = new EntityInitializerClassUtil(context, initializerClass, cls)
@@ -230,7 +230,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		/** Generate a nice toString, equals and hashCode. */
 		if (cls.needsToStringEqualsHashCode) cls => [
-			if (!hasToString) addToString(serializeFields, new ToStringConfiguration(true, false, false, false))
+			if (!hasToString) addToString(new ToStringConfiguration(true, false, false, false))
 			if (!hasEquals) addEquals(serializeFields, false)
 			if (!hasHashCode) addHashCode(serializeFields, false)
 		]

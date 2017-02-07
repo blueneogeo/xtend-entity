@@ -1,12 +1,15 @@
 package nl.kii.entity.processors
 
+import java.util.function.BiConsumer
 import org.eclipse.xtend.lib.annotations.EqualsHashCodeProcessor
+import org.eclipse.xtend.lib.annotations.ToStringConfiguration
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder
 
-class EntityEqualsHashCodeUtil extends EqualsHashCodeProcessor.Util {
+class EntityEqualsHashCodeToStringUtil extends EqualsHashCodeProcessor.Util {
 	val extension TransformationContext context
 	
 	new(TransformationContext context) {
@@ -44,4 +47,27 @@ class EntityEqualsHashCodeUtil extends EqualsHashCodeProcessor.Util {
 	def newWildCardSelfTypeReference(ClassDeclaration cls) {
 		cls.newTypeReference(cls.typeParameters.map [object.newWildcardTypeReference])
 	}
+	
+	def void addToString(MutableClassDeclaration cls, ToStringConfiguration config) {
+		cls.addMethod('toString') [
+			primarySourceElement = cls.primarySourceElement
+			returnType = string
+			addAnnotation(newAnnotationReference(Override))
+			addAnnotation(newAnnotationReference(Pure))
+			body = '''
+				«ToStringBuilder» b = new «ToStringBuilder»(this);
+				«IF config.skipNulls»b.skipNulls();«ENDIF»
+				«IF config.singleLine»b.singleLine();«ENDIF»
+				«IF config.hideFieldNames»b.hideFieldNames();«ENDIF»
+				«IF config.verbatimValues»b.verbatimValues();«ENDIF»
+				final «BiConsumer»<«String», «Object»> _function = («String» k, «Object» v) -> {
+					b.add(k, v);
+				};
+				this.serialize().forEach(_function);
+				
+				return b.toString();
+			'''
+		]
+	}
+	
 }
