@@ -201,7 +201,8 @@ class EntitySerializationUtil {
 			case t.extendsType(Enum): '''
 				«assignment» «valName».toString();
 			'''
-			case serializers.exists [ t.extendsType(key) ]: '''
+//			case serializers.exists [ t.extendsType(key) ]: '''
+			case serializers.exists [ t == key ]: '''
 				«assignment» «t.serializer».serialize(«valName»);
 			'''
 			case t.extendsType(Entity): '''
@@ -296,7 +297,8 @@ class EntitySerializationUtil {
 «««					else this.«simpleName» = «field.type».valueOf(«simpleName».toString());
 				else «assignment» «EntityExtensions».valueOfCaseInsensitive(«t».class, «valName».toString());
 			'''
-			case serializers.exists [ t.extendsType(key) ]: '''
+//			case serializers.exists [ t.extendsType(key) ]: '''
+			case serializers.exists [ t == key ]: '''
 				«assignment» «t.serializer».deserialize(«valName»);
 			'''
 			case t.extendsType(Entity): '''
