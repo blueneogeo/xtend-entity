@@ -206,27 +206,18 @@ class EntityProcessor extends AbstractClassProcessor {
 		if (cls.extendsEntity) 
 			fieldsClass.extendedClass = cls.extendedClass.getEntityFieldsClassName.newTypeReference
 		
+		val extension typeUtil = new TypeUtil(context)
 		/** Find @Type annotated field */
-		val typeFields = cls.declaredFields.filter [ findAnnotation(Type.newTypeReference.type).defined ]
-		cls.addValidationMethod(requiredFields, switch size:typeFields.size {
-			case 1: {
-				val field = typeFields.head
-				
-				if (field.type != string) 
-					cls.addError('@Type field must be a String')
-				
-				val defaultTypeName = cls.simpleName.serializeName(globalCasing)
-				if (!field.initializer.defined) 
-					field.initializer = '''"«defaultTypeName»"'''
-				
-				field -> (field.initializer?.toString?.replace('\'', '') ?: defaultTypeName)
-			}
-			case size > 1: {
-				cls.addError('There can only be one field marked with @Type')
-				null				
-			}
-		})	
-		
+		val typeField = cls.declaredFields.findFirst [ findAnnotation(Type.newTypeReference.type).defined ]
+		if (typeField.defined) {
+			cls.validateTypeAnnotation
+			val fallbackTypeValue = cls.simpleName.serializeName(globalCasing)
+			val typeValue = typeField.initializer?.toString?.replace('\'', '')
+			cls.addTypeAccessors(typeField, typeValue ?: fallbackTypeValue)
+			cls.addValidationMethod(requiredFields, typeField.simpleName -> TypeUtil.TYPE_STATIC_FIELD_NAME)
+		} else {
+			cls.addValidationMethod(requiredFields, null)
+		}
 		
 		/** Generate a nice toString, equals and hashCode. */
 		if (cls.needsToStringEqualsHashCode) cls => [

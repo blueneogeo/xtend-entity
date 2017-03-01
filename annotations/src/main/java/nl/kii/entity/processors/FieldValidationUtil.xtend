@@ -10,22 +10,37 @@ import static extension nl.kii.util.OptExtensions.*
 
 class FieldValidationUtil {
 	val extension TransformationContext context
-	//val extension AccessorsProcessor.Util accessorsUtil
+	val extension EntityProcessor.Util entityUtil
 		
 	new(TransformationContext context) {
 		this.context = context
+		this.entityUtil = new EntityProcessor.Util(context)
 		//this.accessorsUtil = new AccessorsProcessor.Util(context)
 	}
 	
-	def addValidationMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields, Pair<? extends FieldDeclaration, String> typeAssertion) {
+	def void addValidationMethod(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields, Pair<String, String> typeAssertion) {
+		if (typeAssertion.defined) cls.addMethod('validateType') [
+			exceptions = AssertionException.newTypeReference
+			returnType = cls.newSelfTypeReference
+			body = '''
+				if (!«typeAssertion.key».equals(«typeAssertion.value»))
+					throw new «AssertionException»("Field '«typeAssertion.key»' should be '" + «typeAssertion.value» + "', but was '" + «typeAssertion.key» + "'.");
+				
+				return this;
+			'''
+		]
+		
 		cls.addMethod('validate') [
 			exceptions = AssertionException.newTypeReference
 			returnType = cls.newSelfTypeReference
 			body = '''
+				«IF cls.extendsEntity»
+					super.validate();
+					
+				«ENDIF»
 				«IF typeAssertion.defined»
-					if (!«typeAssertion.key.simpleName».equals("«typeAssertion.value»"))
-						throw new «AssertionException»("Field '«typeAssertion.key.simpleName»' should be '«typeAssertion.value»', but was '" + «typeAssertion.key.simpleName» + "'.");
-						
+					validateType();
+					
 				«ENDIF»
 				«FOR f:fields»
 					if (!«OptExtensions».defined(«f.simpleName»)) 
