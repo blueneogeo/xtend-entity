@@ -1,5 +1,9 @@
 package nl.kii.entity.processors
 
+import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableMap
+import java.util.List
+import java.util.Map
 import nl.kii.entity.annotations.Entity
 import nl.kii.entity.processors.AccessorsUtil.GetterOptions.CollectionGetterBehavior
 import nl.kii.util.Opt
@@ -11,13 +15,9 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
-import static extension nl.kii.entity.processors.AccessorsUtil.*
 import static extension nl.kii.util.IterableExtensions.*
 import static extension nl.kii.util.OptExtensions.*
-import java.util.List
-import java.util.Map
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableMap
+import nl.kii.entity.annotations.ToConstructor
 
 class EntityInitializerClassUtil {
 	val extension TransformationContext context
@@ -252,7 +252,7 @@ class EntityInitializerClassUtil {
 	
 	def void addConvenienceNestedEntitySetters() {
 		initializerClass.declaredFields
-			.filter [ type.defined && (type.extendsType(Procedure1) || findClass(type.name)?.findAnnotation(Entity.newTypeReference.type).defined) ]
+			.filter [ type.defined && (type.extendsType(Procedure1) || findClass(type.type.qualifiedName)?.findAnnotation(Entity.newTypeReference.type).defined) ]
 			.forEach [ field |
 				initializerClass.addMethod(field.simpleName) [ 
 					val argName = field.simpleName
@@ -265,9 +265,10 @@ class EntityInitializerClassUtil {
 		]
 	}
 	
-	def void moveOverriddenSetters() {
+	def void moveAnnotatedMethodsToConstrucor() {
 		entityClass.declaredMethods
-			.filter [ returnType == primitiveVoid && simpleName.isSetter ]
+			.filter [ findAnnotation(ToConstructor.newAnnotationReference.annotationTypeDeclaration).defined ]
+			//.filter [ returnType == primitiveVoid && parameters.size == 1 && simpleName.isSetter ]
 			.forEach [ 
 				copyTo(initializerClass)
 				remove
