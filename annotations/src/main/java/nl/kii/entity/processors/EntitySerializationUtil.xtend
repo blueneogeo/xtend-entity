@@ -202,7 +202,7 @@ class EntitySerializationUtil {
 				«assignment» «valName».toString();
 			'''
 //			case serializers.exists [ t.extendsType(key) ]: '''
-			case serializers.exists [ t == key ]: '''
+			case serializers.exists [ t.type == key.type ]: '''
 				«assignment» «t.serializer».serialize(«valName»);
 			'''
 			case t.extendsType(Entity): '''
@@ -298,7 +298,7 @@ class EntitySerializationUtil {
 				else «assignment» «EntityExtensions».valueOfCaseInsensitive(«t».class, «valName».toString());
 			'''
 //			case serializers.exists [ t.extendsType(key) ]: '''
-			case serializers.exists [ t == key ]: '''
+			case serializers.exists [ t.type == key.type ]: '''
 				«assignment» «t.serializer».deserialize(«valName»);
 			'''
 			case t.extendsType(Entity): '''
