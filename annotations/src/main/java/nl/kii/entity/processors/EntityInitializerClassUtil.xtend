@@ -265,6 +265,23 @@ class EntityInitializerClassUtil {
 		]
 	}
 	
+	def void addStaticRequiredFieldsInitializer() {
+		if (entityClass.abstract) return
+		val requiredFields = entityClass.declaredFields.requiredFields
+		if (!requiredFields.empty) entityClass.addMethod('with') [
+			static = true
+			requiredFields.forEach [ f | addParameter(f.simpleName, f.type) ]
+			returnType = entityClass.newTypeReference
+			body = '''
+				«initializerClass» constructor = new «initializerClass»();
+				«FOR f:requiredFields»
+					constructor.«f.setterName»(«f.simpleName»);
+				«ENDFOR»
+				return new «entityClass»(constructor);
+			'''
+		]
+	}
+	
 	def void moveAnnotatedMethodsToConstrucor() {
 		entityClass.declaredMethods
 			.filter [ findAnnotation(ToConstructor.newAnnotationReference.annotationTypeDeclaration).defined ]

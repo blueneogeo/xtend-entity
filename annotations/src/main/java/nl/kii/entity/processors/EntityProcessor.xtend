@@ -152,6 +152,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		addConvenienceProcedureInitializer
 		addConvenienceNestedEntitySetters
+		addStaticRequiredFieldsInitializer
 		moveAnnotatedMethodsToConstrucor
 		
 		if (cls.abstract) cls.addEmptyConstructor //else cls.final = true
