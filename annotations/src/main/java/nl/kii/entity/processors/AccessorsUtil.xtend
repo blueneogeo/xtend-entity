@@ -47,8 +47,11 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 		boolean mutableCollections = false
 		
 		enum CollectionGetterBehavior {
+			/** Returns an empty collection if the getter value is null */
 			returnLazily,
+			/** Sets and returns the getter property to an empty collection if the value is null */
 			setLazily,
+			/** Just return null when the getter value is null */
 			none
 		}
 	}

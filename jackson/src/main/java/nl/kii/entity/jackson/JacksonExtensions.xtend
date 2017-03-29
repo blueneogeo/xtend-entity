@@ -17,7 +17,7 @@ class JacksonExtensions {
 		MAPPER.readValue(json, Map)
 	}
 	
-	def static List<Map<String, Object>> list(String jsonArray) {
+	def static List<Map<String, ?>> list(String jsonArray) {
 		MAPPER.readValue(jsonArray, List)
 	}
 	

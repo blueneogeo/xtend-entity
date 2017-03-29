@@ -30,11 +30,11 @@ class EntityExtensions {
 		serialized.deserialize(type)
 	}
 	
-	def static <T extends Entity> receive(Map<String, ?> serialized, Class<T> type) {
+	def static <T extends Entity> T receive(Map<String, ?> serialized, Class<T> type) {
 		type.create(serialized)
 	}
 
-	def static <T extends Entity> receiveList(List<Map<String, Object>> serialized, Class<T> type) {
+	def static <T extends Entity> receiveList(List<Map<String, ?>> serialized, Class<T> type) {
 		serialized.map [ receive(type) ]
 	}
 		

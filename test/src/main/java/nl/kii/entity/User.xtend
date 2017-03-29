@@ -8,6 +8,7 @@ import nl.kii.entity.annotations.Field
 import nl.kii.entity.annotations.Require
 import nl.kii.util.Period
 import static extension nl.kii.util.IterableExtensions.*
+import nl.kii.entity.annotations.ToConstructor
 
 @nl.kii.entity.annotations.Entity(casing=underscore)
 class User {
@@ -46,8 +47,8 @@ class User {
 	@nl.kii.entity.annotations.Serializer(Instant) 
 	val static s3 = Serializers.instant
 	
-	def void setCoordinates(Pair<Location, List<Double>>... coordinates) {
-		this.coordinates = coordinates.toMap
+	@ToConstructor def setCoordinates(Pair<Location, List<Double>>... coordinates) {
+		this => [ coordinates = coordinates.toMap ]
 	}
 		
 //	val static dateFormat = #[ 'yyyy-MM-dd' ]	
