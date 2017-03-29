@@ -125,14 +125,17 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 		return names
 	}
 	
-	/** Copied from parent, but added docComment and deprecated copying */
+	/** Copied from parent, but added docComment, copying of deprecated and fluency support */
 	override addSetter(MutableFieldDeclaration field, Visibility visibility) {
 		field.validateSetter
 		field.declaringType.addMethod(field.setterName) [
 			primarySourceElement = field.primarySourceElement
-			returnType = primitiveVoid
+			returnType = field.declaringType.newSelfTypeReference
 			val param = addParameter(field.simpleName, field.type.orObject)
-			body = '''«field.fieldOwner».«field.simpleName» = «param.simpleName»;'''
+			body = '''
+				«field.fieldOwner».«field.simpleName» = «param.simpleName»;
+				return this;
+			'''
 			static = field.static
 			docComment = field.docComment
 			deprecated = field.deprecated
