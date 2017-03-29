@@ -267,25 +267,53 @@ class EntityProcessor extends AbstractClassProcessor {
 		
 		def static serializeName(String input, Casing casing) {
 			switch casing {
-				case underscore, case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
-				case camel, case lowerCamel:			[ it ]
-				case dash, case hyphen: 				[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
-				case upperCamel: 						[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
-				case upperUnderscore, case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
-				case dot: 								[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
-				default: [ it ]
+				case underscore, 
+				case snake:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, it) ]
+				
+				case camel, 
+				case lowerCamel:	[ it ]
+				
+				case dash, 
+				case hyphen, 
+				case kebab, 
+				case lisp:			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it) ] 
+				
+				case upperCamel, 
+				case pascal: 		[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, it) ]
+				
+				case upperUnderscore, 
+				case screamingSnake,	
+				case upperSnake: 	[ CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, it) ]
+				
+				case dot: 			[ CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, it).replace('-', '.')  ]
+				
+				default: 			[ it ]
 			}.apply(input)
 		}
 		
 		def static deserializeName(String input, Casing casing) {
 			switch casing {
-				case underscore, case snake:			[ CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, it) ]
-				case camel, case lowerCamel:			[ it ]
-				case dash, case hyphen: 				[ CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, it) ] 
-				case upperCamel: 						[ CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
-				case upperUnderscore, case upperSnake: 	[ CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, it) ]
-				case dot: 								[ String it | CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, replace('.', '-'))  ]
-				default: [ it ]
+				case underscore, 
+				case snake:			[ CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, it) ]
+				
+				case camel, 
+				case lowerCamel:	[ it ]
+				
+				case dash, 
+				case hyphen, 
+				case kebab, 
+				case lisp:			[ CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, it) ] 
+				
+				case upperCamel, 
+				case pascal: 		[ CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, it) ]
+				
+				case upperUnderscore, 
+				case screamingSnake,	
+				case upperSnake: 	[ CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, it) ]
+				
+				case dot: 			[ String it | CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, replace('.', '-'))  ]
+				
+				default: 			[ it ]
 			}.apply(input)
 		}
 		

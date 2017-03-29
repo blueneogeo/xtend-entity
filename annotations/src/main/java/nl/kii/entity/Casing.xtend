@@ -18,6 +18,8 @@ enum Casing {
 	
 	/** FieldName */
 	upperCamel, 
+	/** FieldName */
+	pascal, 
 	
 	///////////////////
 
@@ -25,6 +27,10 @@ enum Casing {
 	dash, 
 	/** field-name */
 	hyphen, 
+	/** field-name */
+	kebab, 
+	/** field-name */
+	lisp, 
 
 	///////////////////
 	
@@ -32,6 +38,8 @@ enum Casing {
 	upperUnderscore,
 	/** FIELD_NAME */
 	upperSnake,
+	/** FIELD_NAME */
+	screamingSnake,
 	
 	///////////////////
 	
