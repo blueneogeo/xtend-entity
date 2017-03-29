@@ -1,6 +1,5 @@
 package nl.kii.entity.annotations
 
-import java.lang.annotation.ElementType
 import java.lang.annotation.Target
 
 /**
@@ -11,7 +10,7 @@ import java.lang.annotation.Target
  * case the field will always be filled with this value.
  */
 
-@Target(ElementType.FIELD)
+@Target(FIELD)
 annotation Type {
 	
 }

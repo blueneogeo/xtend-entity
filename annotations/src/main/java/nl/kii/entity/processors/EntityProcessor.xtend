@@ -43,7 +43,11 @@ class EntityProcessor extends AbstractClassProcessor {
 	def static String getEntityInitializerClassName(ClassDeclaration cls) '''«cls.qualifiedName»Constructor'''
 	def static String getEntityFieldsClassName(ClassDeclaration cls) '''«cls.qualifiedName».Fields'''
 	def static String getEntityFieldsClassName(TypeReference cls) '''«cls.name»$Fields'''
-		
+	def static String getEntityFieldsClassName(String fullClassName) '''«fullClassName»$Fields'''
+	
+	val public static TYPE_CONSTANT = 'TYPE'
+	val public static TYPE_FIELD_CONSTANT = 'TYPE_FIELD'
+	
 	override doTransform(MutableClassDeclaration cls, extension TransformationContext context) {
 		val extension baseUtil = new Util(context)
 		val extension accessorsUtil = new AccessorsUtil(context)
@@ -84,6 +88,7 @@ class EntityProcessor extends AbstractClassProcessor {
 					s.name = simpleName
 					s.type = type
 					s.required = findAnnotation(Require.newTypeReference.type).defined
+					s.isTypeField = findAnnotation(Type.newTypeReference.type).defined
 					s.serializedName = getSerializedName(globalCasing)
 					s.hasDeclaredGetter = hasGetter
 				]
@@ -215,7 +220,7 @@ class EntityProcessor extends AbstractClassProcessor {
 			val fallbackTypeValue = cls.simpleName.serializeName(globalCasing)
 			val typeValue = typeField.initializer?.toString?.replace('\'', '')
 			cls.addTypeAccessors(typeField, typeValue ?: fallbackTypeValue)
-			cls.addValidationMethod(requiredFields, typeField.simpleName -> TypeUtil.TYPE_STATIC_FIELD_NAME)
+			cls.addValidationMethod(requiredFields, typeField.simpleName -> TYPE_CONSTANT)
 		} else {
 			cls.addValidationMethod(requiredFields, null)
 		}
@@ -246,6 +251,7 @@ class EntityProcessor extends AbstractClassProcessor {
 		String serializedName
 		TypeReference type
 		boolean required
+		boolean isTypeField
 		boolean hasDeclaredGetter
 		MemberDeclaration element
 	}

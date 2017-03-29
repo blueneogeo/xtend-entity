@@ -7,8 +7,10 @@ import nl.kii.entity.processors.EntityProcessor.EntityFieldDeclaration
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
-import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+
+import static nl.kii.entity.processors.EntityProcessor.*
+import static extension nl.kii.util.OptExtensions.*
 
 class EntityReflectionUtil {
 	val extension TransformationContext context
@@ -28,8 +30,20 @@ class EntityReflectionUtil {
 				visibility = Visibility.PUBLIC
 				static = true
 				final = true
-				initializer = '''new «EntityField»("«field.name»", "«field.serializedName»", «field.type.cleanTypeName».class, «required»)'''
+				initializer = '''new «EntityField»("«field.name»", "«field.serializedName»", «field.type.type.newTypeReference».class, «required»)'''
 				docComment = element.docComment
+			]
+		]
+		
+		fields.findFirst [ isTypeField ].option => [ extension field |
+			fieldsClass.addField(TYPE_FIELD_CONSTANT) [
+				primarySourceElement = element
+				type = EntityField.newTypeReference
+				visibility = Visibility.PUBLIC
+				static = true				
+				final = true
+				initializer = '''«field.name»'''
+				docComment = 'Returns the field that is annotated with @Type'
 			]
 		]
 	}
@@ -66,9 +80,8 @@ class EntityReflectionUtil {
 		]
 	}
 	
-	def static cleanTypeName(TypeReference typeRef) {
-		typeRef.name.replaceAll('<.+>', '').replaceAll('\\$', '.')
-	}
-	
-}
+//	def static cleanTypeName(TypeReference typeRef) {
+//		typeRef.name.replaceAll('<.+>', '').replaceAll('\\$', '.')
+//	}
 
+}

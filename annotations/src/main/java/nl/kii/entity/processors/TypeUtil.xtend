@@ -6,6 +6,7 @@ import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 import static extension nl.kii.util.OptExtensions.*
+import static extension nl.kii.entity.processors.EntityProcessor.*
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 
 class TypeUtil {
@@ -25,10 +26,9 @@ class TypeUtil {
 				cls.addError('There can only be one field marked with @Type')
 		}
 	}
-		
-	val public static TYPE_STATIC_FIELD_NAME = 'TYPE'
+	
 	def void addTypeAccessors(MutableClassDeclaration cls, FieldDeclaration typeField, String value) {
-		cls.addField(TYPE_STATIC_FIELD_NAME) [
+		cls.addField(TYPE_CONSTANT) [
 			primarySourceElement = typeField
 			static = true
 			final = true
@@ -43,7 +43,7 @@ class TypeUtil {
 			static = true
 			returnType = string
 			docComment = '''Returns the value declared in the entity's {@code @Type} annotated field '«typeField.simpleName»' '''
-			body = '''return «TYPE_STATIC_FIELD_NAME»;'''
+			body = '''return «TYPE_CONSTANT»;'''
 		]
 	}
 }
