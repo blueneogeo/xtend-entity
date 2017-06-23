@@ -96,7 +96,7 @@ class EntitySerializationUtil {
 
 	val static serializersName = 'serializers'
 	val static String serializersFieldName = serializersName.hiddenName
-	val static String serializersGetterName = 'getSerializers'.hiddenName
+	// val static String serializersGetterName = 'getSerializers'.hiddenName
 	
 	def MutableFieldDeclaration addSerializers(MutableClassDeclaration cls) {
 		//if (serializers.nullOrEmpty) return null

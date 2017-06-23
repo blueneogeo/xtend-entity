@@ -3,7 +3,6 @@ package nl.kii.entity.processors
 import java.util.List
 import java.util.Map
 import nl.kii.entity.annotations.Require
-import nl.kii.entity.processors.AccessorsUtil.GetterOptions.CollectionGetterBehavior
 import nl.kii.util.Opt
 import nl.kii.util.OptExtensions
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -17,6 +16,7 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension nl.kii.util.OptExtensions.*
+import nl.kii.entity.processors.AccessorsUtil.GetterOptions.CollectionGetterBehavior
 
 class AccessorsUtil extends AccessorsProcessor.Util {
 	val extension TransformationContext context
@@ -28,7 +28,7 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 		//this.accessorsUtil = new AccessorsProcessor.Util(context)
 	}
 	
-	def addGetters(MutableClassDeclaration cls, Iterable<? extends FieldDeclaration> fields, (GetterOptions)=>void optionsFn) {
+	def addGetters(MutableClassDeclaration cls, Iterable<? extends MutableFieldDeclaration> fields, (GetterOptions)=>void optionsFn) {
 		fields.filter [ shouldAddGetter ].forEach [ field |
 			//addGetter(getterType?.toVisibility ?: Visibility.PUBLIC)
 			cls.addGetter(field, optionsFn)
@@ -56,11 +56,11 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 		}
 	}
 	
-	def addGetter(MutableClassDeclaration cls, FieldDeclaration field, (GetterOptions)=>void optionsFn) {
+	def addGetter(MutableClassDeclaration cls, MutableFieldDeclaration field, (GetterOptions)=>void optionsFn) {
 		val options = new GetterOptions => [ optionsFn.apply(it) ]
-		
+		field.markAsRead
 		cls.addMethod(options.getterName ?: field.getterName) [
-			primarySourceElement = field
+			it.primarySourceElement = field.primarySourceElement
 			
 			addAnnotation(Pure.newAnnotationReference)
 			docComment = field.docComment
@@ -130,6 +130,7 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 	
 	/** Copied from parent, but added docComment, copying of deprecated and fluency support */
 	override addSetter(MutableFieldDeclaration field, Visibility visibility) {
+		field.markAsRead
 		field.validateSetter
 		field.declaringType.addMethod(field.setterName) [
 			primarySourceElement = field.primarySourceElement
@@ -148,6 +149,7 @@ class AccessorsUtil extends AccessorsProcessor.Util {
 	}
 	
 	def void addGetter(MutableFieldDeclaration field, String customName, Visibility visibility) {
+		field.markAsRead
 		field.validateGetter
 		field.declaringType.addMethod(customName) [
 			primarySourceElement = field.primarySourceElement

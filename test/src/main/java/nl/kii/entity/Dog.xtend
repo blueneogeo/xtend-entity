@@ -1,12 +1,9 @@
 package nl.kii.entity
 
 import java.time.Instant
-import nl.kii.entity.Serializers
-import nl.kii.entity.annotations.Entity
-import nl.kii.entity.annotations.Serializer
 import nl.kii.entity.annotations.Type
 
-@Entity
+@nl.kii.entity.annotations.Entity
 abstract class Animal {
 	String color
 	int weight
@@ -14,18 +11,18 @@ abstract class Animal {
 	def Animal getMother()
 	def Animal getFather()
 	
-	@Serializer(Instant) 
+	@nl.kii.entity.annotations.Serializer(Instant) 
 	val static s1 = Serializers.instant
 }
 
-@Entity
+@nl.kii.entity.annotations.Entity
 abstract class Mammal extends Animal {
 	@Type String type = 'mammal'
 	
 	int legs
 }
 
-@Entity
+@nl.kii.entity.annotations.Entity
 class Dog extends Mammal {
 	@Type String type
 	

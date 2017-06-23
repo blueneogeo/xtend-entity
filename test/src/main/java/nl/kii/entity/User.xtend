@@ -26,7 +26,7 @@ class User {
 	List<User> friends
 	
 	@Field(casing=camel) 
-	def Integer getFriendsCount() { if (friends != null) friends.size as Integer }
+	def Integer getFriendsCount() { if (friends !== null) friends.size as Integer }
 	
 	Location location
 	Membership membership = Membership.free

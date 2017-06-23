@@ -16,8 +16,8 @@ interface Entity {
 	def Entity validate() throws AssertionException
 	
 	/** Returns all fields in this object */
-	def static List<EntityField> getEntityFields() { emptyList }
-	//def static List<EntityField> fields() { emptyList }
+	// def static List<EntityField> getEntityFields() { emptyList }
+	// def static List<EntityField> fields() { emptyList }
 	
 	def List<EntityField> getFields()
 	
